@@ -1,3 +1,7 @@
 APP_PLAN.md
 CLAUDE.md
+VENV_SETUP.md
 subs/*
+venv/
+__pycache__/
+*.pyc
