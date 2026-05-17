@@ -14,7 +14,7 @@ from PyQt6.QtGui import QFont, QPainter, QColor, QPalette
 import random
 
 from ui.styles import get_stylesheet
-from ui.widgets import DragDropArea, ScanlineOverlay, CRTEffect
+from ui.widgets import DragDropArea, CRTEffect
 from ui.tab_bar import TabBar
 
 
