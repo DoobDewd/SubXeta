@@ -3,122 +3,21 @@
 WhisperX → DaVinci Resolve Fusion comp automation.
 Takes WhisperX JSON (word-level timestamps) and generates a single subtitle comp.
 """
-import json
 import argparse
 from pathlib import Path
-from typing import List, Dict
+from typing import List
+from core.models import Word
+from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts
 
 
 def load_template() -> str:
     """Load the Fusion comp template."""
-    template_path = Path(__file__).parent / "Montserrat to Zeta Reticuli Template.comp"
+    template_path = Path(__file__).parent.parent / "Montserrat to Zeta Reticuli Template.comp"
     with open(template_path) as f:
         return f.read()
 
 
-def load_whisper_json(json_path: str) -> List[Dict]:
-    """Parse WhisperX JSON, return flat list of words."""
-    with open(json_path) as f:
-        data = json.load(f)
-
-    words = []
-    segments = data.get("segments", [])
-
-    for segment in segments:
-        for word_obj in segment.get("words", []):
-            text = word_obj["word"].strip()
-            if text:
-                words.append({
-                    "text": text,
-                    "start": word_obj["start"],
-                    "end": word_obj["end"]
-                })
-
-    return words
-
-
-def group_into_chunks(words: List[Dict], max_chars_per_line: int = 30, pause_threshold: float = 0.9, max_lines_per_chunk: int = 2) -> List[List[List[Dict]]]:
-    """Group words into subtitle chunks, breaking at pauses and character width limits."""
-    chunks = []
-    current_chunk = []
-    current_line = []
-    current_line_chars = 0
-
-    for i, word in enumerate(words):
-        word_len = len(word["text"])
-        space_len = 1 if current_line else 0
-
-        if current_line and current_line_chars + space_len + word_len > max_chars_per_line:
-            current_chunk.append(current_line)
-            current_line = []
-            current_line_chars = 0
-
-            # Finalize chunk after reaching max lines
-            if len(current_chunk) >= max_lines_per_chunk:
-                chunks.append(current_chunk)
-                current_chunk = []
-
-        current_line.append(word)
-        current_line_chars += space_len + word_len
-
-        if word["text"].endswith((".", "!", "?")):
-            current_chunk.append(current_line)
-            current_line = []
-            current_line_chars = 0
-            if len(current_chunk) >= 1:
-                chunks.append(current_chunk)
-                current_chunk = []
-
-        if i + 1 < len(words):
-            gap = words[i + 1]["start"] - word["end"]
-            if gap > pause_threshold and (current_line or current_chunk):
-                if current_line:
-                    current_chunk.append(current_line)
-                    current_line = []
-                    current_line_chars = 0
-                if current_chunk:
-                    chunks.append(current_chunk)
-                    current_chunk = []
-
-    if current_line or current_chunk:
-        if current_line:
-            current_chunk.append(current_line)
-        if current_chunk:
-            chunks.append(current_chunk)
-
-    return chunks
-
-
-def chunk_to_texts(chunk: List[List[Dict]], pause_threshold: float = 0.9) -> tuple[str, str]:
-    """Convert chunk to English and alien text strings, preserving lines and adding pauses."""
-    english_lines = []
-    alien_lines = []
-
-    for line in chunk:
-        english_parts = []
-        alien_parts = []
-
-        for i, word in enumerate(line):
-            english_parts.append(word["text"])
-            alien_parts.append(word["text"])
-
-            # Check for pause after this word (but not after last word in line)
-            if i + 1 < len(line):
-                gap = line[i + 1]["start"] - word["end"]
-                if gap > pause_threshold:
-                    english_parts.append("\n")
-                    alien_parts.append("\n")
-
-        english_lines.append(" ".join(english_parts))
-        alien_lines.append("".join(alien_parts))
-
-    english_text = "\\n".join(english_lines)
-    alien_text = "\\n".join(alien_lines)
-
-    return english_text, alien_text
-
-
-def generate_text_keyframes(chunks: List[List[List[Dict]]], fps: int, is_english: bool, pause_threshold: float = 0.9) -> str:
+def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english: bool, pause_threshold: float = 0.9) -> str:
     """Generate BezierSpline keyframes with text values for all chunks."""
     keyframes_lines = []
 
@@ -127,27 +26,25 @@ def generate_text_keyframes(chunks: List[List[List[Dict]]], fps: int, is_english
         for line in chunk:
             all_words.extend(line)
 
-        start_time = all_words[0]["start"]
+        start_time = all_words[0].start
         start_frame = round(start_time * fps)
 
-        english_text, alien_text = chunk_to_texts(chunk, pause_threshold)
-        text = english_text if is_english else alien_text
+        text_variant = chunk_to_texts(chunk, pause_threshold)
+        text = text_variant.english if is_english else text_variant.alien
 
-        # Escape quotes in text
         escaped_text = text.replace('"', '\\"')
 
-        # Build Bezier handle info
         if i == 0 and len(chunks) > 1:
-            next_frame = round(chunks[i + 1][0][0]["start"] * fps)
+            next_frame = round(chunks[i + 1][0][0].start * fps)
             rh_frame = start_frame + (next_frame - start_frame) // 3
             handles = f"{i}, RH = " + "{ " + f"{rh_frame}, {i}.333333333333333" + " }"
         elif i == len(chunks) - 1 and i > 0:
-            prev_frame = round(chunks[i - 1][0][0]["start"] * fps)
+            prev_frame = round(chunks[i - 1][0][0].start * fps)
             lh_frame = prev_frame + (start_frame - prev_frame) // 3
             handles = "LH = " + "{ " + f"{lh_frame}, {i - 1}.666666666666667" + " }" + f", {i}"
         elif len(chunks) > 1:
-            prev_frame = round(chunks[i - 1][0][0]["start"] * fps)
-            next_frame = round(chunks[i + 1][0][0]["start"] * fps)
+            prev_frame = round(chunks[i - 1][0][0].start * fps)
+            next_frame = round(chunks[i + 1][0][0].start * fps)
             lh_frame = prev_frame + (start_frame - prev_frame) // 3
             rh_frame = start_frame + (next_frame - start_frame) // 3
             handles = "LH = " + "{ " + f"{lh_frame}, {i - 1}.666666666666667" + " }" + f", {i}, RH = " + "{ " + f"{rh_frame}, {i}.333333333333333" + " }"
@@ -165,7 +62,7 @@ def generate_text_keyframes(chunks: List[List[List[Dict]]], fps: int, is_english
     return "{\n" + ",\n".join(keyframes_lines) + "\n\t\t\t}"
 
 
-def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause_threshold: float = 0.9, frame_offset: int = 0) -> str:
+def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9, frame_offset: int = 0) -> str:
     """Generate animation keyframes - each chunk animates 0->1, with reset at next chunk."""
     keyframes = {}
     reset_frames = []
@@ -175,10 +72,11 @@ def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause
         for line in chunk:
             all_words.extend(line)
 
-        start_time = all_words[0]["start"]
-        end_time = all_words[-1]["end"]
+        start_time = all_words[0].start
+        end_time = all_words[-1].end
 
-        english_text, _ = chunk_to_texts(chunk, pause_threshold)
+        text_variant = chunk_to_texts(chunk, pause_threshold)
+        english_text = text_variant.english
         total_len_eng = len(english_text.replace("\\n", "\n"))
 
         word_char_positions = []
@@ -186,7 +84,7 @@ def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause
         char_pos = 0
         for i, word in enumerate(all_words):
             word_char_positions.append(char_pos)
-            char_pos += len(word["text"])
+            char_pos += len(word.text)
             word_end_positions.append(char_pos)
             if i < len(all_words) - 1:
                 char_pos += 1
@@ -194,19 +92,16 @@ def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause
         start_frame = round(start_time * fps) - frame_offset
         final_frame = round(end_time * fps) - frame_offset
 
-        # Generate animation for this chunk (include every frame to prevent interpolation)
         previous_progress = 0.0
         for frame in range(start_frame, final_frame + 1):
-            # Convert absolute frame number to absolute time by accounting for chunk start offset
             frame_time = (frame - start_frame) / fps + start_time
             progress = previous_progress
 
             for i, word in enumerate(all_words):
-                word_start = word["start"]
-                word_end = word["end"]
+                word_start = word.start
+                word_end = word.end
 
                 if frame_time < word_start:
-                    # Haven't reached this word yet, keep progress from before
                     break
                 elif frame_time <= word_end:
                     word_duration = word_end - word_start
@@ -217,7 +112,7 @@ def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause
                         word_progress = 1.0
 
                     word_start_char = word_char_positions[i]
-                    word_end_char = word_start_char + len(word["text"])
+                    word_end_char = word_start_char + len(word.text)
                     char_progress = (word_start_char + (word_end_char - word_start_char) * word_progress) / total_len_eng
                     progress = min(1.0, char_progress)
                     break
@@ -227,27 +122,22 @@ def generate_animation_keyframes(chunks: List[List[List[Dict]]], fps: int, pause
             keyframes[frame] = progress
             previous_progress = progress
 
-        # Explicit hold keyframe at end of this chunk
         keyframes[final_frame] = 1.0
 
-        # Record hold and reset points for next chunk
         if chunk_idx < len(chunks) - 1:
             next_chunk = chunks[chunk_idx + 1]
             next_words = []
             for line in next_chunk:
                 next_words.extend(line)
-            next_start_time = next_words[0]["start"]
+            next_start_time = next_words[0].start
             next_start_frame = round(next_start_time * fps)
 
-            # Hold at 1.0 from final_frame through next_start_frame-1
             for hold_frame in range(final_frame, next_start_frame):
                 keyframes[hold_frame] = 1.0
 
-            # Reset to 0.0 at start of next chunk
             if next_start_frame != final_frame:
                 reset_frames.append(next_start_frame)
 
-    # Apply all resets after animation loops (so they don't get overwritten)
     for reset_frame in reset_frames:
         keyframes[reset_frame] = 0.0
 
@@ -291,26 +181,24 @@ def replace_keyframes_block(content: str, spline_name: str, new_keyframes: str) 
     return content[:keyframes_start] + new_keyframes + content[keyframes_end:]
 
 
-def generate_single_comp(chunks: List[List[List[Dict]]], fps: int, pause_threshold: float = 0.9) -> str:
+def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9) -> str:
     """Generate a single comp with keyframed text for all chunks."""
     content = load_template()
 
     if not chunks:
         return content
 
-    # Calculate total duration
     all_words = []
     for chunk in chunks:
         for line in chunk:
             all_words.extend(line)
 
     if all_words:
-        end_time = all_words[-1]["end"]
+        end_time = all_words[-1].end
         total_frames = round(end_time * fps)
     else:
         total_frames = 333
 
-    # Update render ranges
     content = content.replace(
         'RenderRange = { 0, 333 }',
         f'RenderRange = {{ 0, {total_frames} }}'
@@ -320,11 +208,9 @@ def generate_single_comp(chunks: List[List[List[Dict]]], fps: int, pause_thresho
         f'GlobalRange = {{ 0, {total_frames} }}'
     )
 
-    # Generate text keyframes
     alien_keyframes = generate_text_keyframes(chunks, fps, False, pause_threshold)
     english_keyframes = generate_text_keyframes(chunks, fps, True, pause_threshold)
 
-    # Update TextPlus nodes to reference BezierSpline instead of direct values
     content = content.replace(
         'StyledText = Input { Value = "boblazarismybestfriend.", },',
         'StyledText = Input { SourceOp = "TemplateStyledText", Source = "Value", },'
@@ -335,7 +221,6 @@ def generate_single_comp(chunks: List[List[List[Dict]]], fps: int, pause_thresho
         'StyledText = Input { SourceOp = "Template_1StyledText", Source = "Value", },'
     )
 
-    # Create BezierSpline nodes for text
     alien_spline = f"""TemplateStyledText = BezierSpline {{
 \t\tSplineColor = {{ Red = 237, Green = 142, Blue = 243 }},
 \t\tNameSet = true,
@@ -350,35 +235,29 @@ def generate_single_comp(chunks: List[List[List[Dict]]], fps: int, pause_thresho
 \t}},
 """
 
-    # Insert the spline definitions before TemplateWriteOnEnd
     tools_idx = content.find('\t\tTemplateWriteOnEnd = BezierSpline')
     if tools_idx > 0:
         content = content[:tools_idx] + alien_spline + english_spline + content[tools_idx:]
 
-    # Generate write-on animation keyframes for all chunks
     alien_anim_keyframes = generate_animation_keyframes(chunks, fps, pause_threshold, frame_offset=0)
     english_anim_keyframes = generate_animation_keyframes(chunks, fps, pause_threshold, frame_offset=0)
 
-    # Generate constant keyframes for the non-animated End parameters
     if all_words:
-        end_time = all_words[-1]["end"]
+        end_time = all_words[-1].end
         final_frame = round(end_time * fps)
     else:
         final_frame = 333
 
-    # TemplateWriteOnEnd is always 1.0 (alien text End parameter never animates)
     const_one_keyframes = f"""{{
 \t\t\t\t\t[0] = {{ 1.0, RH = {{ 0, 1.0 }}, Flags = {{ Linear = true }} }},
 \t\t\t\t\t[{final_frame}] = {{ 1.0, LH = {{ {final_frame}, 1.0 }}, Flags = {{ Linear = true }} }}
 \t\t\t\t}}"""
 
-    # Template_1WriteOnStart is always 0.0 (english text Start parameter never animates)
     const_zero_keyframes = f"""{{
 \t\t\t\t\t[0] = {{ 0.0, RH = {{ 0, 0.0 }}, Flags = {{ Linear = true }} }},
 \t\t\t\t\t[{final_frame}] = {{ 0.0, LH = {{ {final_frame}, 0.0 }}, Flags = {{ Linear = true }} }}
 \t\t\t\t}}"""
 
-    # Replace all animation keyframes
     content = replace_keyframes_block(content, 'TemplateWriteOnStart', alien_anim_keyframes)
     content = replace_keyframes_block(content, 'TemplateWriteOnEnd', const_one_keyframes)
     content = replace_keyframes_block(content, 'Template_1WriteOnStart', const_zero_keyframes)

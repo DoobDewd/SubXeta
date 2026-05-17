@@ -25,6 +25,7 @@ class Step2Widget(QGroupBox):
     def __init__(self):
         super().__init__("Step 2 • Review & Generate")
         self._typing_animator = TypingAnimator(char_delay_ms=25)
+        self._chunks = []
         self._build_ui()
 
     def _build_ui(self):
@@ -73,11 +74,13 @@ class Step2Widget(QGroupBox):
             if item.widget():
                 item.widget().deleteLater()
 
+        self._chunks = []
         typing_targets = []
         for timestamp, text in chunks:
             card, text_edit = self._create_chunk_card(timestamp, text)
             self.chunks_layout.addWidget(card)
             typing_targets.append((text_edit, text))
+            self._chunks.append((timestamp, text_edit))
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
@@ -126,8 +129,15 @@ class Step2Widget(QGroupBox):
         card.setLayout(layout)
         return card, text_edit
 
+    def get_edited_chunks(self):
+        """Get the currently edited chunks."""
+        edited = []
+        for timestamp, text_edit in self._chunks:
+            edited.append((timestamp, text_edit.toPlainText()))
+        return edited
+
     def _on_generate_clicked(self):
         self.progress_bar.setVisible(True)
-        self.result_label.setText("✓ Comp generated! Check the subs folder.")
+        self.generate_btn.setEnabled(False)
         self.generation_started.emit()
 
