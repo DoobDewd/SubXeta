@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QRect, QTimer, pyqtSignal, pyqtProperty
 from PyQt6.QtGui import QFont, QPainter, QColor
+from ui.animations import TypingAnimator
 
 
 class TabBar(QWidget):
@@ -22,8 +23,9 @@ class TabBar(QWidget):
         self.anim = None
         self._underline_x = 0
         self._underline_width = 0
-        self._typing_in_progress = False
-        self.disabled_steps = {2}  # Step 2 disabled by default
+        self._underline_opacity = 1.0
+        self.disabled_steps = {2}
+        self._typing_animator = TypingAnimator(char_delay_ms=25)
 
         for i, text in enumerate(["Transcribe Audio", "Review & Generate"]):
             label = QLabel("")  # Both start empty for animation
@@ -68,42 +70,28 @@ class TabBar(QWidget):
     def _animate_label_text_in(self, label, on_complete=None, target_step=None, fade_in=False):
         """Animate text typing in for a label."""
         full_text = label.full_text
-        char_index = [0]  # Use list to allow modification in nested function
-        self._typing_in_progress = True
         step_num = label.step if hasattr(label, 'step') else 1
+        target = target_step if target_step is not None else step_num
 
-        def type_char():
-            if char_index[0] < len(full_text):
-                label.setText(full_text[:char_index[0] + 1])
-                char_index[0] += 1
-                self.update()  # Force repaint each frame
-                QTimer.singleShot(25, type_char)
+        def on_typing_done():
+            if fade_in:
+                self.set_active(target, animate=False)
+                self._fade_in_underline()
             else:
-                # Typing complete
-                self._typing_in_progress = False
-                target = target_step if target_step is not None else step_num
+                self.set_active(target, animate=True)
+            if on_complete:
+                on_complete()
 
-                if fade_in:
-                    # Fade in the underline (for Step 1)
-                    self.set_active(target, animate=False)
-                    self._fade_in_underline()
-                else:
-                    # Slide underline (for Step 2)
-                    self.set_active(target, animate=True)
-
-                if on_complete:
-                    on_complete()
-
-        type_char()
+        self._typing_animator.animate_single(label, full_text, on_typing_done)
 
     def _fade_in_underline(self):
         """Fade in the underline opacity."""
-        self._underline_opacity = [0.0]
+        self._underline_opacity = 0.0
 
         def fade_tick():
-            self._underline_opacity[0] += 0.1
+            self._underline_opacity += 0.1
             self.update()
-            if self._underline_opacity[0] < 1.0:
+            if self._underline_opacity < 1.0:
                 QTimer.singleShot(20, fade_tick)
 
         fade_tick()
@@ -119,7 +107,6 @@ class TabBar(QWidget):
             font.setBold(is_active)
             label.setFont(font)
 
-            label.setCursor(Qt.CursorShape.PointingHandCursor)
             if is_disabled:
                 label.setStyleSheet("color: #444444; background-color: transparent;")
             else:
@@ -128,11 +115,9 @@ class TabBar(QWidget):
         self.active_step = step
 
         if animate:
-            # Defer animation until layout has settled
-            QTimer.singleShot(10, lambda: self._start_animation())
+            QTimer.singleShot(10, self._start_animation)
         else:
-            # Defer initial positioning until layout settles
-            QTimer.singleShot(10, lambda: self._set_initial_position())
+            QTimer.singleShot(10, self._set_initial_position)
 
     def _set_initial_position(self):
         """Set initial position after layout has settled."""
@@ -188,9 +173,8 @@ class TabBar(QWidget):
 
         if self._underline_width > 0:
             color = QColor("#00ff88")
-            if hasattr(self, '_underline_opacity'):
-                alpha = max(0, min(255, int(255 * self._underline_opacity[0])))
-                color.setAlpha(alpha)
+            alpha = max(0, min(255, int(255 * self._underline_opacity)))
+            color.setAlpha(alpha)
             underline_rect = QRect(
                 int(self._underline_x),
                 self.height() - 2,
