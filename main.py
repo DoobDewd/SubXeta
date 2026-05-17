@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
         layout.addSpacing(20)
 
         # Transcribe button
-        self.transcribe_btn = QPushButton("▶ Start Transcription")
+        self.transcribe_btn = QPushButton("Start Transcription")
         self.transcribe_btn.setEnabled(False)
         self.transcribe_btn.setMinimumHeight(48)
         self.transcribe_btn.clicked.connect(self.start_transcription)
@@ -180,7 +180,7 @@ class MainWindow(QMainWindow):
         layout.addSpacing(20)
 
         # Generate button
-        self.generate_btn = QPushButton("✨ Generate Comp")
+        self.generate_btn = QPushButton("Generate Comp")
         self.generate_btn.setEnabled(False)
         self.generate_btn.setMinimumHeight(48)
         self.generate_btn.clicked.connect(self.start_generation)
