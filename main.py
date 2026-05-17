@@ -11,9 +11,10 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QTimer
 from PyQt6.QtGui import QFont, QPainter, QColor, QPalette
+import random
 
 from ui.styles import get_stylesheet
-from ui.widgets import DragDropArea, ScanlineOverlay
+from ui.widgets import DragDropArea, ScanlineOverlay, CRTEffect
 from ui.tab_bar import TabBar
 
 
@@ -21,30 +22,22 @@ class ChunkCard(QGroupBox):
     """Chunk card with CRT scanline background pattern."""
     def __init__(self):
         super().__init__()
-        self._flicker = 0
+        self._crt_effect = CRTEffect()
         self._timer = QTimer(self)
-        self._timer.setInterval(100)
+        self._timer.setInterval(50)
         self._timer.timeout.connect(self._tick)
         self._timer.start()
 
     def _tick(self):
-        self._flicker = (self._flicker + 1) % 3
+        self._crt_effect.tick()
         self.update()
 
     def paintEvent(self, event):
         # Call parent paintEvent first to draw the groupbox and children
         super().paintEvent(event)
 
-        # Draw scanlines on top
         painter = QPainter(self)
-        h = self.height()
-        w = self.width()
-        for y in range(0, h, 2):
-            base_alpha = 15
-            flicker_alpha = base_alpha + (self._flicker * 2)
-            color = QColor(0, 255, 136, flicker_alpha)
-            painter.setPen(color)
-            painter.drawLine(0, y, w, y)
+        self._crt_effect.draw(painter, self.rect())
         painter.end()
 
 
