@@ -7,9 +7,9 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QProgressBar, QTextEdit,
-    QGroupBox, QScrollArea, QFrame
+    QGroupBox, QScrollArea, QFrame, QGraphicsOpacityEffect
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont
 
 from ui.styles import get_stylesheet
@@ -68,10 +68,16 @@ class MainWindow(QMainWindow):
 
         # Step 1: Transcribe
         self.step1_content = self.create_step1_content()
+        self.step1_effect = QGraphicsOpacityEffect()
+        self.step1_effect.setOpacity(1.0)
+        self.step1_content.setGraphicsEffect(self.step1_effect)
         layout.addWidget(self.step1_content)
 
         # Step 2: Review & Generate
         self.step2_content = self.create_step2_content()
+        self.step2_effect = QGraphicsOpacityEffect()
+        self.step2_effect.setOpacity(0.0)
+        self.step2_content.setGraphicsEffect(self.step2_effect)
         self.step2_content.setVisible(False)
         layout.addWidget(self.step2_content)
 
@@ -243,9 +249,39 @@ class MainWindow(QMainWindow):
         self.result_label.setText("✓ Comp generated! Check the subs folder.")
 
     def show_step(self, step):
-        """Show a specific step and hide others."""
-        self.step1_content.setVisible(step == 1)
-        self.step2_content.setVisible(step == 2)
+        """Show a specific step with smooth fade transition."""
+        self.tab_bar.set_active(step, animate=True)
+
+        outgoing = self.step1_content if step == 2 else self.step2_content
+        incoming = self.step2_content if step == 2 else self.step1_content
+        out_effect = self.step1_effect if step == 2 else self.step2_effect
+        in_effect = self.step2_effect if step == 2 else self.step1_effect
+
+        if not outgoing.isVisible():
+            incoming.setVisible(True)
+            in_effect.setOpacity(1.0)
+            return
+
+        fade_out = QPropertyAnimation(out_effect, b"opacity")
+        fade_out.setDuration(150)
+        fade_out.setStartValue(1.0)
+        fade_out.setEndValue(0.0)
+        fade_out.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        def on_fade_out_done():
+            outgoing.setVisible(False)
+            incoming.setVisible(True)
+            fade_in = QPropertyAnimation(in_effect, b"opacity")
+            fade_in.setDuration(150)
+            fade_in.setStartValue(0.0)
+            fade_in.setEndValue(1.0)
+            fade_in.setEasingCurve(QEasingCurve.Type.InCubic)
+            fade_in.start()
+            self._fade_in_anim = fade_in
+
+        fade_out.finished.connect(on_fade_out_done)
+        self._fade_out_anim = fade_out
+        fade_out.start()
 
 
 def main():
