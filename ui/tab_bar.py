@@ -22,15 +22,19 @@ class TabBar(QWidget):
         self.anim = None
         self._underline_x = 0
         self._underline_width = 0
+        self._typing_in_progress = False
+        self.disabled_steps = {2}  # Step 2 disabled by default
 
         for i, text in enumerate(["Transcribe Audio", "Review & Generate"]):
-            label = QLabel(text)
+            label = QLabel("")  # Both start empty for animation
             label.setCursor(Qt.CursorShape.PointingHandCursor)
             label.setContentsMargins(0, 0, 0, 0)
             label.setMaximumHeight(28)
             label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
             label.step = i + 1
+            label.full_text = text
             label.mousePressEvent = lambda e, s=i+1: self.on_tab_click(s)
+            label.setVisible(i == 0)  # Hide Step 2 initially
             self.labels.append(label)
             layout.addWidget(label)
 
@@ -38,23 +42,88 @@ class TabBar(QWidget):
         self.setLayout(layout)
 
     def showEvent(self, event):
-        """Initialize underline position when shown."""
+        """Initialize and animate Step 1 text in when shown."""
         super().showEvent(event)
-        self.set_active(1, animate=False)
+        # Animate Step 1 text in with fade-in underline
+        step1_label = self.labels[0]
+        self._animate_label_text_in(step1_label, fade_in=True)
 
     def on_tab_click(self, step):
+        if step in self.disabled_steps:
+            return
         self.set_active(step, animate=True)
         self.tab_changed.emit(step)
+
+    def enable_step(self, step, on_complete=None):
+        """Enable a previously disabled step and animate text in."""
+        if step in self.disabled_steps:
+            self.disabled_steps.remove(step)
+            label = self.labels[step - 1]
+            # Ensure underline is on Step 1 before showing Step 2
+            self.set_active(1, animate=False)
+            label.setVisible(True)
+            # Start typing animation for the label, targeting Step 2 when done
+            self._animate_label_text_in(label, on_complete, target_step=step)
+
+    def _animate_label_text_in(self, label, on_complete=None, target_step=None, fade_in=False):
+        """Animate text typing in for a label."""
+        full_text = label.full_text
+        char_index = [0]  # Use list to allow modification in nested function
+        self._typing_in_progress = True
+        step_num = label.step if hasattr(label, 'step') else 1
+
+        def type_char():
+            if char_index[0] < len(full_text):
+                label.setText(full_text[:char_index[0] + 1])
+                char_index[0] += 1
+                self.update()  # Force repaint each frame
+                QTimer.singleShot(25, type_char)
+            else:
+                # Typing complete
+                self._typing_in_progress = False
+                target = target_step if target_step is not None else step_num
+
+                if fade_in:
+                    # Fade in the underline (for Step 1)
+                    self.set_active(target, animate=False)
+                    self._fade_in_underline()
+                else:
+                    # Slide underline (for Step 2)
+                    self.set_active(target, animate=True)
+
+                if on_complete:
+                    on_complete()
+
+        type_char()
+
+    def _fade_in_underline(self):
+        """Fade in the underline opacity."""
+        self._underline_opacity = [0.0]
+
+        def fade_tick():
+            self._underline_opacity[0] += 0.1
+            self.update()
+            if self._underline_opacity[0] < 1.0:
+                QTimer.singleShot(20, fade_tick)
+
+        fade_tick()
 
     def set_active(self, step, animate=True):
         """Update tab styling and animate underline."""
         for i, label in enumerate(self.labels):
-            is_active = (i + 1) == step
+            step_num = i + 1
+            is_active = step_num == step
+            is_disabled = step_num in self.disabled_steps
             font = QFont()
             font.setPointSize(12)
             font.setBold(is_active)
             label.setFont(font)
-            label.setStyleSheet(f"color: {'#e0e0e0' if is_active else '#777777'}; background-color: transparent;")
+
+            label.setCursor(Qt.CursorShape.PointingHandCursor)
+            if is_disabled:
+                label.setStyleSheet("color: #444444; background-color: transparent;")
+            else:
+                label.setStyleSheet(f"color: {'#e0e0e0' if is_active else '#777777'}; background-color: transparent;")
 
         self.active_step = step
 
@@ -118,12 +187,16 @@ class TabBar(QWidget):
         painter = QPainter(self)
 
         if self._underline_width > 0:
+            color = QColor("#00ff88")
+            if hasattr(self, '_underline_opacity'):
+                alpha = int(255 * self._underline_opacity[0])
+                color.setAlpha(alpha)
             underline_rect = QRect(
                 int(self._underline_x),
                 self.height() - 2,
                 int(self._underline_width),
                 2
             )
-            painter.fillRect(underline_rect, QColor("#00ff88"))
+            painter.fillRect(underline_rect, color)
 
         painter.end()

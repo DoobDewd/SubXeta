@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QLabel, QProgressBar, QTextEdit,
     QGroupBox, QScrollArea, QFrame, QGraphicsOpacityEffect
 )
-from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve
+from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QTimer
 from PyQt6.QtGui import QFont
 
 from ui.styles import get_stylesheet
@@ -175,7 +175,7 @@ class MainWindow(QMainWindow):
     def start_transcription(self):
         self.transcribe_progress.setVisible(True)
         self.review_status.setText("Remember: AI transcription can get some words wrong, make sure to review the subtitles!")
-        self.show_step(2)
+        self.tab_bar.enable_step(2, on_complete=lambda: self.show_step(2))
         self.populate_chunks_table()
 
     def populate_chunks_table(self):
@@ -192,12 +192,15 @@ class MainWindow(QMainWindow):
                 item.widget().deleteLater()
 
         # Create chunk cards
+        typing_targets = []
         for timestamp, text in chunks:
-            card = self.create_chunk_card(timestamp, text)
+            card, text_edit = self.create_chunk_card(timestamp, text)
             self.chunks_layout.addWidget(card)
+            typing_targets.append((text_edit, text))
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
+        self._start_typing_sequence(typing_targets)
 
     def create_chunk_card(self, timestamp, text):
         """Create a chunk edit card."""
@@ -221,7 +224,7 @@ class MainWindow(QMainWindow):
 
         # Text edit
         text_edit = QTextEdit()
-        text_edit.setText(text)
+        text_edit.setText("")
         text_edit.setMinimumHeight(60)
         text_edit.setMaximumHeight(100)
         text_edit.setStyleSheet("""
@@ -241,12 +244,52 @@ class MainWindow(QMainWindow):
         layout.addWidget(text_edit)
 
         card.setLayout(layout)
-        return card
+        return card, text_edit
 
     def start_generation(self):
         """Start comp generation."""
         self.generate_progress.setVisible(True)
         self.result_label.setText("✓ Comp generated! Check the subs folder.")
+
+    def _start_typing_sequence(self, targets):
+        """Start typing animation for chunks sequentially."""
+        if not targets:
+            return
+        self._typing_targets = targets
+        self._typing_index = 0
+        self._typing_char_index = 0
+        self._typing_timer = QTimer()
+        self._typing_timer.setInterval(25)
+        self._typing_timer.timeout.connect(self._typing_tick)
+        self._typing_timer.start()
+
+    def _restart_typing_animation(self):
+        """Restart typing animation from the beginning."""
+        if not hasattr(self, '_typing_targets') or not self._typing_targets:
+            return
+        # Stop current animation
+        if hasattr(self, '_typing_timer') and self._typing_timer.isActive():
+            self._typing_timer.stop()
+        # Clear all text
+        for text_edit, _ in self._typing_targets:
+            text_edit.setText("")
+        # Restart from beginning
+        self._typing_index = 0
+        self._typing_char_index = 0
+        self._typing_timer.start()
+
+    def _typing_tick(self):
+        """Advance typing animation by one character."""
+        if self._typing_index >= len(self._typing_targets):
+            self._typing_timer.stop()
+            return
+        text_edit, full_text = self._typing_targets[self._typing_index]
+        if self._typing_char_index < len(full_text):
+            text_edit.setText(full_text[:self._typing_char_index + 1])
+            self._typing_char_index += 1
+        else:
+            self._typing_index += 1
+            self._typing_char_index = 0
 
     def show_step(self, step):
         """Show a specific step with smooth fade transition."""
@@ -260,6 +303,8 @@ class MainWindow(QMainWindow):
         if not outgoing.isVisible():
             incoming.setVisible(True)
             in_effect.setOpacity(1.0)
+            if step == 2:
+                self._restart_typing_animation()
             return
 
         fade_out = QPropertyAnimation(out_effect, b"opacity")
@@ -278,6 +323,8 @@ class MainWindow(QMainWindow):
             fade_in.setEasingCurve(QEasingCurve.Type.InCubic)
             fade_in.start()
             self._fade_in_anim = fade_in
+            if step == 2:
+                self._restart_typing_animation()
 
         fade_out.finished.connect(on_fade_out_done)
         self._fade_out_anim = fade_out
