@@ -24,8 +24,7 @@ class DragDropArea(QWidget):
                 border-radius: 5px;
                 padding: 40px;
                 color: #00ff88;
-                cursor: pointer;
-            }
+                            }
         """)
         layout.addWidget(self.label)
         self.setLayout(layout)
@@ -84,8 +83,7 @@ class DragDropArea(QWidget):
                 border-radius: 5px;
                 padding: 40px;
                 color: #00ff88;
-                cursor: pointer;
-                background-color: rgba(0, 255, 136, 0.1);
+                                background-color: rgba(0, 255, 136, 0.1);
             }
         """)
 
@@ -97,8 +95,7 @@ class DragDropArea(QWidget):
                 border-radius: 5px;
                 padding: 40px;
                 color: #00ff88;
-                cursor: pointer;
-            }
+                            }
         """)
 
     def mousePressEvent(self, event):

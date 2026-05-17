@@ -9,75 +9,12 @@ from PyQt6.QtWidgets import (
     QPushButton, QLabel, QProgressBar, QTextEdit,
     QGroupBox, QScrollArea, QFrame
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
 
 from ui.styles import get_stylesheet
 from ui.widgets import DragDropArea
-
-
-class TabItem(QWidget):
-    """Professional tab navigation item."""
-    clicked = pyqtSignal()
-
-    def __init__(self, icon, label, active=False):
-        super().__init__()
-        self.active = active
-        self.icon_text = icon
-        self.label_text = label
-
-        layout = QHBoxLayout()
-        layout.setContentsMargins(20, 12, 20, 12)
-        layout.setSpacing(10)
-
-        # Icon
-        self.icon_label = QLabel(icon)
-        icon_font = QFont()
-        icon_font.setPointSize(12)
-        self.icon_label.setFont(icon_font)
-        layout.addWidget(self.icon_label)
-
-        # Label
-        self.text_label = QLabel(label)
-        text_font = QFont()
-        text_font.setPointSize(11)
-        if active:
-            text_font.setBold(True)
-        self.text_label.setFont(text_font)
-        layout.addWidget(self.text_label)
-
-        self.setLayout(layout)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.update_style()
-
-    def set_active(self, active):
-        self.active = active
-        self.update_style()
-
-    def update_style(self):
-        self.setStyleSheet("""
-            TabItem {
-                background-color: transparent;
-                border: none;
-            }
-        """)
-        if self.active:
-            font = QFont()
-            font.setPointSize(11)
-            font.setBold(True)
-            self.text_label.setFont(font)
-            self.icon_label.setStyleSheet("color: #00ff88; background: transparent; border: none;")
-            self.text_label.setStyleSheet("color: #e0e0e0; background: transparent; border: none;")
-        else:
-            font = QFont()
-            font.setPointSize(11)
-            self.text_label.setFont(font)
-            self.icon_label.setStyleSheet("color: #999999; background: transparent; border: none;")
-            self.text_label.setStyleSheet("color: #aaaaaa; background: transparent; border: none;")
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-        super().mousePressEvent(event)
+from ui.tab_bar import TabBar
 
 
 class MainWindow(QMainWindow):
@@ -90,11 +27,23 @@ class MainWindow(QMainWindow):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         main_widget.setLayout(main_layout)
 
-        # Top navigation
-        nav = self.create_navigation()
-        main_layout.addWidget(nav)
+        # Navigation bar with padding
+        nav_container = QWidget()
+        nav_layout = QVBoxLayout()
+        nav_layout.setContentsMargins(40, 12, 40, 0)
+        nav_layout.setSpacing(0)
+
+        self.tab_bar = TabBar()
+        self.tab_bar.tab_changed.connect(self.on_tab_changed)
+        nav_layout.addWidget(self.tab_bar)
+
+        nav_container.setLayout(nav_layout)
+        nav_container.setStyleSheet("background-color: #1a1a1a;")
+        main_layout.addWidget(nav_container)
 
         # Content area
         content = self.create_content_area()
@@ -103,45 +52,8 @@ class MainWindow(QMainWindow):
         # Apply stylesheet
         self.setStyleSheet(get_stylesheet())
 
-    def create_navigation(self):
-        """Create top tab navigation."""
-        nav = QWidget()
-        nav.setStyleSheet("""
-            QWidget {
-                background-color: #1a1a1a;
-                border-bottom: 1px solid #00ff88;
-            }
-        """)
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-
-        # Tab items
-        self.step1_tab = TabItem("📝", "Step 1: Transcribe", active=True)
-        self.step1_tab.clicked.connect(lambda: self.show_step(1))
-        layout.addWidget(self.step1_tab)
-
-        # Separator widget
-        sep = QWidget()
-        sep.setFixedSize(1, 28)
-        sep.setStyleSheet("""
-            QWidget {
-                background-color: rgba(0, 255, 136, 0.3);
-                border: none;
-                margin: 0px;
-                padding: 0px;
-            }
-        """)
-        layout.addWidget(sep, alignment=Qt.AlignmentFlag.AlignVCenter)
-
-        self.step2_tab = TabItem("✨", "Step 2: Review & Generate", active=False)
-        self.step2_tab.clicked.connect(lambda: self.show_step(2))
-        layout.addWidget(self.step2_tab)
-
-        layout.addStretch()
-
-        nav.setLayout(layout)
-        return nav
+    def on_tab_changed(self, step):
+        self.show_step(step)
 
     def create_content_area(self):
         """Create main content area that changes per step."""
@@ -251,7 +163,6 @@ class MainWindow(QMainWindow):
         group.setLayout(layout)
         return group
 
-
     def on_audio_selected(self, file_path):
         self.transcribe_btn.setEnabled(True)
 
@@ -335,10 +246,6 @@ class MainWindow(QMainWindow):
         """Show a specific step and hide others."""
         self.step1_content.setVisible(step == 1)
         self.step2_content.setVisible(step == 2)
-
-        # Update tab states
-        self.step1_tab.set_active(step == 1)
-        self.step2_tab.set_active(step == 2)
 
 
 def main():
