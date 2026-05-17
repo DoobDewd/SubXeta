@@ -195,7 +195,7 @@ def get_stylesheet():
 
     QScrollArea {
         border: none;
-        background-color: #1a1a1a;
+        background: rgba(0, 255, 136, 0.02);
     }
 
     QFrame {

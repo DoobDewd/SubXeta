@@ -189,7 +189,7 @@ class TabBar(QWidget):
         if self._underline_width > 0:
             color = QColor("#00ff88")
             if hasattr(self, '_underline_opacity'):
-                alpha = int(255 * self._underline_opacity[0])
+                alpha = max(0, min(255, int(255 * self._underline_opacity[0])))
                 color.setAlpha(alpha)
             underline_rect = QRect(
                 int(self._underline_x),
