@@ -133,17 +133,10 @@ class MainWindow(QMainWindow):
             # Load original words
             words = load_whisper_json(self._current_json_path)
 
-            # Delete temp JSON file after loading (it was saved to temp)
-            try:
-                Path(self._current_json_path).unlink()
-                logger.info("Cleaned up temporary JSON file")
-            except Exception as e:
-                logger.warning(f"Could not delete temp JSON: {e}")
-
             # Get edited chunk texts
             edited_chunks = self.step2.get_edited_chunks()
 
-            # Rebuild chunks with edited text but original timing (preserve line breaks + character limit)
+            # Rebuild chunks with edited text but original timing
             rebuilt_chunks = []
             word_idx = 0
 
@@ -157,7 +150,7 @@ class MainWindow(QMainWindow):
                     line_words = []
                     current_line_chars = 0
 
-                    # Map edited text back to original words, enforcing character limit
+                    # Map edited text back to original words
                     for word_text in edited_words:
                         if word_idx < len(words):
                             original_word = words[word_idx]
@@ -170,7 +163,7 @@ class MainWindow(QMainWindow):
                                 line_words = []
                                 current_line_chars = 0
 
-                            # Create word
+                            # Create word with edited text but original timing
                             edited_word = Word(
                                 text=word_text,
                                 start=original_word.start,
@@ -207,6 +200,13 @@ class MainWindow(QMainWindow):
                 self.step2.progress_bar.setVisible(False)
                 self.step2.generate_btn.setEnabled(True)
                 self.step2.result_label.setText("Cancelled")
+
+            # Delete temp JSON file after comp generation is complete
+            try:
+                Path(self._current_json_path).unlink()
+                logger.info("Cleaned up temporary JSON file")
+            except Exception as e:
+                logger.warning(f"Could not delete temp JSON: {e}")
 
         except Exception as e:
             self.step2.progress_bar.setVisible(False)

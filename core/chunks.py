@@ -97,7 +97,7 @@ def chunk_to_texts(chunk: List[List[Word]], pause_threshold: float = 0.9) -> Tex
                     alien_parts.append("\n")
 
         english_lines.append(" ".join(english_parts))
-        alien_lines.append("".join(alien_parts))
+        alien_lines.append(" ".join(alien_parts))
 
     english_text = "\\n".join(english_lines)
     alien_text = "\\n".join(alien_lines)
