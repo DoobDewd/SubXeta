@@ -13,6 +13,7 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
         self.file_path = None
         self.placeholder_text = placeholder_text
         self._is_hovering = False
+        self._file_imported = False
         self._init_crt_effect()
 
         layout = QVBoxLayout()
@@ -30,13 +31,13 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
         self.setMinimumHeight(140)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-    _STYLE_DEFAULT  = "QLabel { border: 2px dashed #00ff88; border-radius: 5px; padding: 40px; color: #00ff88; }"
+    _STYLE_DEFAULT  = "QLabel { border: 2px dashed #00ff88; border-radius: 5px; padding: 40px; color: #00ff88; background-color: transparent; }"
     _STYLE_HOVER    = "QLabel { border: 2px solid #00ff88;  border-radius: 5px; padding: 40px; color: #00ff88; background-color: transparent; }"
-    _STYLE_DRAGGING = "QLabel { border: 2px dashed #ff00ff; border-radius: 5px; padding: 40px; color: #ff00ff; }"
+    _STYLE_DRAGGING = "QLabel { border: 2px dashed #ff00ff; border-radius: 5px; padding: 40px; color: #ff00ff; background-color: transparent; }"
 
     def _tick_crt_effect(self):
-        if self._is_hovering:
-            self._crt_effect.tick()
+        self._crt_effect.tick()
+        if self._is_hovering or self._file_imported:
             self.update()
 
     def dragEnterEvent(self, event):
@@ -52,6 +53,9 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
         if files:
             self.file_path = files[0]
             self.setText(self.file_path)
+            self._file_imported = True
+            self._crt_effect.start_sweep()
+            self.update()
             self.fileSelected.emit(self.file_path)
         self.label.setStyleSheet(self._STYLE_DEFAULT)
 
@@ -82,15 +86,16 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
         if file_path:
             self.file_path = file_path
             self.setText(file_path)
+            self._file_imported = True
+            self._crt_effect.start_sweep()
+            self.update()
             self.fileSelected.emit(file_path)
 
     def paintEvent(self, event):
         super().paintEvent(event)
 
-        if not self._is_hovering:
-            return
-
-        painter = QPainter(self)
-        label_rect = self.label.geometry()
-        self._draw_crt_effect(painter, label_rect)
-        painter.end()
+        if self._is_hovering or self._file_imported:
+            painter = QPainter(self)
+            label_rect = self.label.geometry()
+            self._draw_crt_effect(painter, label_rect)
+            painter.end()

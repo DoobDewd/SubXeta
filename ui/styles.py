@@ -137,6 +137,14 @@ def get_stylesheet():
     QProgressBar::chunk {
         background-color: #00ff88;
         border-radius: 2px;
+        margin: 0px;
+    }
+
+    QProgressBar::chunk[active="true"] {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                    stop: 0 #00ff88,
+                                    stop: 50 #00ffaa,
+                                    stop: 100 #00ff88);
     }
 
     QLabel {

@@ -31,7 +31,7 @@ class TranscriptionWorker(QThread):
             logger.info("=" * 60)
             logger.info("Starting transcription worker")
 
-            self.progress.emit(10)
+            self.progress.emit(0)
 
             # Check if WhisperX is installed
             if not shutil.which("whisperx"):
@@ -100,17 +100,51 @@ class TranscriptionWorker(QThread):
             logger.info("Starting WhisperX transcription...")
 
             self.progress.emit(30)
+            logger.info("Loading model and initializing (this may take a moment)...")
 
             try:
-                # Run whisperx (may take a while for large files)
-                result = subprocess.run(
+                # Run whisperx with real-time output parsing
+                process = subprocess.Popen(
                     cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    text=True,
-                    timeout=1800  # 30 minutes max
+                    text=True
                 )
+
+                stdout_lines = []
+                stderr_lines = []
+                current_progress = 35
+
+                # Read output and update progress based on stages
+                for line in process.stdout:
+                    stdout_lines.append(line)
+                    logger.info("WhisperX: " + line.strip())
+
+                    # Update progress based on WhisperX stages
+                    if "Performing transcription" in line and current_progress < 50:
+                        current_progress = 50
+                        self.progress.emit(current_progress)
+                    elif "Performing alignment" in line and current_progress < 65:
+                        current_progress = 65
+                        self.progress.emit(current_progress)
+                    elif "Performing diarization" in line and current_progress < 75:
+                        current_progress = 75
+                        self.progress.emit(current_progress)
+                    elif current_progress < 45:
+                        current_progress = min(45, current_progress + 1)
+                        self.progress.emit(current_progress)
+
+                # Collect stderr
+                for line in process.stderr:
+                    stderr_lines.append(line)
+
+                process.wait(timeout=1800)
+                result_returncode = process.returncode
+                stdout_text = ''.join(stdout_lines)
+                stderr_text = ''.join(stderr_lines)
+
             except subprocess.TimeoutExpired:
+                process.kill()
                 error_msg = "Transcription took too long (>30 min). Try a smaller model or shorter audio."
                 logger.error(error_msg)
                 self.error.emit(error_msg)
@@ -119,11 +153,8 @@ class TranscriptionWorker(QThread):
                 self.error.emit("WhisperX executable not found. Try reinstalling: pip install openai-whisper-x")
                 return
 
-            if result.returncode != 0:
-                stderr = (result.stderr or "").strip()
-                stdout = (result.stdout or "").strip()
-                # Get last line of output for error message
-                error_msg = stderr.split('\n')[-1] if stderr else stdout.split('\n')[-1] if stdout else "Unknown error"
+            if result_returncode != 0:
+                error_msg = stderr_text.strip().split('\n')[-1] if stderr_text else stdout_text.strip().split('\n')[-1] if stdout_text else "Unknown error"
                 logger.error(f"WhisperX error: {error_msg}")
                 self.error.emit(f"WhisperX error: {error_msg}")
                 return

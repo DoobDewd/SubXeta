@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         self.step1.transcribe_btn.setEnabled(False)
         self.step1.progress_bar.setValue(0)
 
-        self._transcription_worker = TranscriptionWorker(file_path, model="medium")
+        self._transcription_worker = TranscriptionWorker(file_path, model="large")
         self._transcription_worker.progress.connect(self.step1.progress_bar.setValue)
         self._transcription_worker.finished.connect(self._on_transcription_finished)
         self._transcription_worker.error.connect(self._on_transcription_error)
@@ -87,6 +87,7 @@ class MainWindow(QMainWindow):
     def _on_transcription_finished(self, json_path):
         """Handle successful transcription."""
         self._current_json_path = json_path
+        self.step1.stop_shimmer()
         self.step1.progress_bar.setVisible(False)
 
         try:
@@ -111,6 +112,7 @@ class MainWindow(QMainWindow):
 
     def _on_transcription_error(self, error_msg):
         """Handle transcription error."""
+        self.step1.stop_shimmer()
         self.step1.transcribe_btn.setEnabled(True)
         self.step1.progress_bar.setVisible(False)
 
