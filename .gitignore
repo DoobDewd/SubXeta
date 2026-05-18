@@ -1,7 +1,12 @@
 APP_PLAN.md
 CLAUDE.md
 VENV_SETUP.md
+ui_mockup.html
 subs/*
 venv/
+activate.bat
+build/
+dist/
+pyi_rth_*
 __pycache__/
 *.pyc

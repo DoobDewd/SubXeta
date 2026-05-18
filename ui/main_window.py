@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect
+import logging
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 
 from ui.styles import get_stylesheet
@@ -10,6 +11,8 @@ from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts
 from core.models import Word
 from core.subtitle_gen import generate_single_comp
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -93,7 +96,7 @@ class MainWindow(QMainWindow):
 
         try:
             words = load_whisper_json(json_path)
-            chunks = group_into_chunks(words, max_chars_per_line=30, pause_threshold=0.3)
+            chunks = group_into_chunks(words, max_chars_per_line=20, pause_threshold=0.3)
 
             chunk_data = []
             for chunk in chunks:
@@ -101,7 +104,10 @@ class MainWindow(QMainWindow):
                 for line in chunk:
                     all_words.extend(line)
                 timestamp = f"{all_words[0].start:.3f}"
-                text = " ".join(w.text for w in all_words)
+                # Use chunk_to_texts to get proper multi-line format
+                text_variant = chunk_to_texts(chunk, pause_threshold=0.3)
+                # Replace literal \n with actual newlines for display
+                text = text_variant.english.replace("\\n", "\n")
                 chunk_data.append((timestamp, text))
 
             self.step2.set_status("Review and edit chunks as needed, then click Generate Comp")
@@ -127,33 +133,55 @@ class MainWindow(QMainWindow):
             # Load original words
             words = load_whisper_json(self._current_json_path)
 
+            # Delete temp JSON file after loading (it was saved to temp)
+            try:
+                Path(self._current_json_path).unlink()
+                logger.info("Cleaned up temporary JSON file")
+            except Exception as e:
+                logger.warning(f"Could not delete temp JSON: {e}")
+
             # Get edited chunk texts
             edited_chunks = self.step2.get_edited_chunks()
 
-            # Rebuild chunks with edited text but original timing
+            # Rebuild chunks with edited text but original timing (preserve line breaks + character limit)
             rebuilt_chunks = []
             word_idx = 0
 
             for timestamp_str, edited_text in edited_chunks:
                 chunk_lines = []
-                edited_words = edited_text.split()
+                # Split by newlines to preserve line structure
+                text_lines = edited_text.split('\n')
 
-                # Map edited text back to original words
-                line_words = []
-                for word_text in edited_words:
-                    if word_idx < len(words):
-                        original_word = words[word_idx]
-                        # Create a new Word with edited text but original timing
-                        edited_word = Word(
-                            text=word_text,
-                            start=original_word.start,
-                            end=original_word.end
-                        )
-                        line_words.append(edited_word)
-                        word_idx += 1
+                for text_line in text_lines:
+                    edited_words = text_line.split()
+                    line_words = []
+                    current_line_chars = 0
 
-                if line_words:
-                    chunk_lines.append(line_words)
+                    # Map edited text back to original words, enforcing character limit
+                    for word_text in edited_words:
+                        if word_idx < len(words):
+                            original_word = words[word_idx]
+                            word_len = len(word_text)
+                            space_len = 1 if line_words else 0
+
+                            # Break line if exceeds 20 chars
+                            if line_words and current_line_chars + space_len + word_len > 20:
+                                chunk_lines.append(line_words)
+                                line_words = []
+                                current_line_chars = 0
+
+                            # Create word
+                            edited_word = Word(
+                                text=word_text,
+                                start=original_word.start,
+                                end=original_word.end
+                            )
+                            line_words.append(edited_word)
+                            current_line_chars += space_len + word_len
+                            word_idx += 1
+
+                    if line_words:
+                        chunk_lines.append(line_words)
 
                 if chunk_lines:
                     rebuilt_chunks.append(chunk_lines)
@@ -161,14 +189,24 @@ class MainWindow(QMainWindow):
             # Generate comp
             comp_content = generate_single_comp(rebuilt_chunks, fps=24, pause_threshold=0.3)
 
-            # Save comp file
-            output_path = Path("subs") / "subtitles.comp"
-            output_path.parent.mkdir(exist_ok=True, parents=True)
-            output_path.write_text(comp_content)
+            # Save comp file with "Save As" dialog
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save Composition",
+                "subtitle.comp",
+                "Fusion Compositions (*.comp);;All Files (*)"
+            )
 
-            self.step2.progress_bar.setVisible(False)
-            self.step2.generate_btn.setEnabled(True)
-            self.step2.result_label.setText(f"✓ Generated: {output_path}")
+            if file_path:
+                output_path = Path(file_path)
+                output_path.write_text(comp_content)
+                self.step2.progress_bar.setVisible(False)
+                self.step2.generate_btn.setEnabled(True)
+                self.step2.result_label.setText(f"✓ Generated: {output_path.name}")
+            else:
+                self.step2.progress_bar.setVisible(False)
+                self.step2.generate_btn.setEnabled(True)
+                self.step2.result_label.setText("Cancelled")
 
         except Exception as e:
             self.step2.progress_bar.setVisible(False)
