@@ -26,6 +26,7 @@ class Step2Widget(QGroupBox):
         super().__init__("Step 2 • Review & Generate")
         self._typing_animator = TypingAnimator(char_delay_ms=25)
         self._chunks = []
+        self._original_texts = []
         self._build_ui()
 
     def _build_ui(self):
@@ -90,12 +91,14 @@ class Step2Widget(QGroupBox):
                 item.widget().deleteLater()
 
         self._chunks = []
+        self._original_texts = []
         typing_targets = []
         for timestamp, text in chunks:
             card, text_edit = self._create_chunk_card(timestamp, text)
             self.chunks_layout.addWidget(card)
             typing_targets.append((text_edit, text))
             self._chunks.append((timestamp, text_edit))
+            self._original_texts.append((timestamp, text))
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
@@ -145,11 +148,24 @@ class Step2Widget(QGroupBox):
         return card, text_edit
 
     def get_edited_chunks(self):
-        """Get the currently edited chunks."""
+        """Get the currently edited chunks and track which were actually edited."""
         edited = []
-        for timestamp, text_edit in self._chunks:
-            edited.append((timestamp, text_edit.toPlainText()))
+        edited_flags = []
+        for idx, (timestamp, text_edit) in enumerate(self._chunks):
+            current_text = text_edit.toPlainText()
+            original_text = self._original_texts[idx][1] if idx < len(self._original_texts) else ""
+            was_edited = current_text != original_text
+
+            edited.append((timestamp, current_text))
+            edited_flags.append(was_edited)
+
+        # Store flags for later use in main_window
+        self._edited_flags = edited_flags
         return edited
+
+    def get_edited_flags(self):
+        """Get which chunks were actually edited."""
+        return getattr(self, '_edited_flags', [])
 
     def _on_generate_clicked(self):
         self.progress_bar.setVisible(True)

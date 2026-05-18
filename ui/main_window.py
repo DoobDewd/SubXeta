@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
 
         self._transcription_worker = None
         self._current_json_path = None
+        self._original_chunks = None
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -97,6 +98,7 @@ class MainWindow(QMainWindow):
         try:
             words = load_whisper_json(json_path)
             chunks = group_into_chunks(words, max_chars_per_line=20, pause_threshold=0.3)
+            self._original_chunks = chunks
 
             chunk_data = []
             for chunk in chunks:
@@ -133,45 +135,84 @@ class MainWindow(QMainWindow):
             # Load original words
             words = load_whisper_json(self._current_json_path)
 
-            # Get edited chunk texts
+            # Get edited chunk texts and which chunks were actually edited
             edited_chunks = self.step2.get_edited_chunks()
+            edited_flags = self.step2.get_edited_flags()
 
             # Rebuild chunks with edited text but original timing
             rebuilt_chunks = []
-            word_idx = 0
 
-            for timestamp_str, edited_text in edited_chunks:
+            for chunk_idx, (timestamp_str, edited_text) in enumerate(edited_chunks):
+                # If chunk wasn't edited, use the original chunk structure as-is
+                if chunk_idx < len(edited_flags) and not edited_flags[chunk_idx]:
+                    if chunk_idx < len(self._original_chunks):
+                        rebuilt_chunks.append(self._original_chunks[chunk_idx])
+                    continue
+
+                # Chunk was edited, so reconstruct it with new text and timing
+                if chunk_idx < len(self._original_chunks):
+                    original_chunk = self._original_chunks[chunk_idx]
+                else:
+                    original_chunk = []
+
                 chunk_lines = []
                 # Split by newlines to preserve line structure
                 text_lines = edited_text.split('\n')
 
-                for text_line in text_lines:
+                for line_idx, text_line in enumerate(text_lines):
                     edited_words = text_line.split()
+
+                    # Get original words for this specific line
+                    if line_idx < len(original_chunk):
+                        original_words_list = original_chunk[line_idx]
+                    else:
+                        original_words_list = []
+
                     line_words = []
                     current_line_chars = 0
 
+                    # Calculate split timing if needed
+                    edited_count = len(edited_words)
+                    original_count = len(original_words_list)
+                    extra_words = max(0, edited_count - original_count)
+
                     # Map edited text back to original words
-                    for word_text in edited_words:
-                        if word_idx < len(words):
-                            original_word = words[word_idx]
-                            word_len = len(word_text)
-                            space_len = 1 if line_words else 0
+                    for edit_idx, word_text in enumerate(edited_words):
+                        word_len = len(word_text)
+                        space_len = 1 if line_words else 0
 
-                            # Break line if exceeds 20 chars
-                            if line_words and current_line_chars + space_len + word_len > 20:
-                                chunk_lines.append(line_words)
-                                line_words = []
-                                current_line_chars = 0
+                        # Break line if exceeds 20 chars
+                        if line_words and current_line_chars + space_len + word_len > 20:
+                            chunk_lines.append(line_words)
+                            line_words = []
+                            current_line_chars = 0
 
-                            # Create word with edited text but original timing
+                        # Get timing for this word
+                        if edit_idx < original_count:
+                            # Use corresponding original word
+                            original_word = original_words_list[edit_idx]
                             edited_word = Word(
                                 text=word_text,
                                 start=original_word.start,
                                 end=original_word.end
                             )
-                            line_words.append(edited_word)
-                            current_line_chars += space_len + word_len
-                            word_idx += 1
+                        elif extra_words > 0 and original_words_list:
+                            # Split the last original word's timing
+                            last_word = original_words_list[-1]
+                            duration = last_word.end - last_word.start
+                            split_duration = duration / (extra_words + 1)
+                            position = edit_idx - original_count
+
+                            edited_word = Word(
+                                text=word_text,
+                                start=last_word.start + (split_duration * (position + 1)),
+                                end=last_word.start + (split_duration * (position + 2))
+                            )
+                        else:
+                            continue
+
+                        line_words.append(edited_word)
+                        current_line_chars += space_len + word_len
 
                     if line_words:
                         chunk_lines.append(line_words)
