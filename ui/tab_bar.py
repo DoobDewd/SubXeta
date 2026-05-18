@@ -26,6 +26,7 @@ class TabBar(QWidget):
         self._underline_opacity = 1.0
         self.disabled_steps = {2}
         self._typing_animator = TypingAnimator(char_delay_ms=25)
+        self._first_show = True
 
         for i, text in enumerate(["Transcribe Audio", "Review & Generate"]):
             label = QLabel("")  # Both start empty for animation
@@ -44,11 +45,13 @@ class TabBar(QWidget):
         self.setLayout(layout)
 
     def showEvent(self, event):
-        """Initialize and animate Step 1 text in when shown."""
+        """Initialize and animate Step 1 text in on first show only."""
         super().showEvent(event)
-        # Animate Step 1 text in with fade-in underline
-        step1_label = self.labels[0]
-        self._animate_label_text_in(step1_label, fade_in=True)
+        if self._first_show:
+            # Animate Step 1 text in with fade-in underline only on first show
+            step1_label = self.labels[0]
+            self._animate_label_text_in(step1_label, fade_in=True)
+            self._first_show = False
 
     def on_tab_click(self, step):
         if step in self.disabled_steps:

@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar,
-    QScrollArea, QWidget, QTextEdit
+    QScrollArea, QWidget, QTextEdit, QHBoxLayout
 )
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QPainter
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtGui import QPainter, QFont
 from ui.animations import CRTAnimatedMixin, TypingAnimator
 
 
@@ -32,6 +32,15 @@ class Step2Widget(QGroupBox):
         layout = QVBoxLayout()
         layout.setSpacing(16)
 
+        desc = QLabel("Remember: AI transcription can get some words wrong, make sure to review the subtitles!")
+        desc_font = QFont()
+        desc_font.setPointSize(12)
+        desc.setFont(desc_font)
+        desc.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        layout.addWidget(desc)
+
+        layout.addSpacing(20)
+
         self.status_label = QLabel("Waiting for transcription...")
         self.status_label.setStyleSheet("color: #e0e0e0; background-color: transparent; padding: 0px 12px;")
         layout.addWidget(self.status_label)
@@ -51,9 +60,14 @@ class Step2Widget(QGroupBox):
 
         self.generate_btn = QPushButton("Generate Comp")
         self.generate_btn.setEnabled(False)
-        self.generate_btn.setMinimumHeight(48)
+        self.generate_btn.setFixedHeight(56)
+        self.generate_btn.setMaximumWidth(300)
         self.generate_btn.clicked.connect(self._on_generate_clicked)
-        layout.addWidget(self.generate_btn)
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        btn_layout.addWidget(self.generate_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout, stretch=0)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
@@ -63,6 +77,7 @@ class Step2Widget(QGroupBox):
         self.result_label.setStyleSheet("background-color: transparent; color: #00ff88; font-weight: bold;")
         layout.addWidget(self.result_label)
 
+        layout.addStretch()
         self.setLayout(layout)
 
     def set_status(self, text):

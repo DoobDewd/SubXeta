@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar
-from PyQt6.QtCore import pyqtSignal, QTimer, QRect
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar, QHBoxLayout
+from PyQt6.QtCore import pyqtSignal, QTimer, QRect, Qt
 from PyQt6.QtGui import QFont, QPainter, QColor, QLinearGradient, QPen
 from ui.widgets import DragDropArea
 
@@ -62,7 +62,7 @@ class Step1Widget(QGroupBox):
         layout = QVBoxLayout()
         layout.setSpacing(16)
 
-        desc = QLabel("Upload an audio or video file to transcribe using WhisperX")
+        desc = QLabel("Upload an audio or video file to transcribe.")
         desc_font = QFont()
         desc_font.setPointSize(12)
         desc.setFont(desc_font)
@@ -79,9 +79,14 @@ class Step1Widget(QGroupBox):
 
         self.transcribe_btn = QPushButton("Start Transcription")
         self.transcribe_btn.setEnabled(False)
-        self.transcribe_btn.setMinimumHeight(48)
+        self.transcribe_btn.setFixedHeight(56)
+        self.transcribe_btn.setMaximumWidth(300)
         self.transcribe_btn.clicked.connect(self._on_transcribe_clicked)
-        layout.addWidget(self.transcribe_btn)
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        btn_layout.addWidget(self.transcribe_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout, stretch=0)
 
         self.progress_bar = ShimmerProgressBar()
         self.progress_bar.setVisible(False)

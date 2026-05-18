@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Subtitle Comp App")
         self.setGeometry(100, 100, 1200, 800)
+        self.setFixedSize(1200, 800)
 
         self._transcription_worker = None
         self._current_json_path = None

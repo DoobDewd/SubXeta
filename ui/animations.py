@@ -33,11 +33,12 @@ class CRTEffect:
                 self._sweep_progress = 0.0
 
     def draw(self, painter, rect):
-        """Draw the CRT effect on the given rect."""
+        """Draw the CRT effect (scanlines + sweep animation)."""
         h = rect.height()
         w = rect.width()
         freq = 6.5
 
+        # Scanlines
         flicker_val = (self._frame % 2) / 1.0
         if flicker_val > 1.0:
             flicker_val = 2.0 - flicker_val
@@ -52,10 +53,11 @@ class CRTEffect:
             painter.setPen(color)
             painter.drawLine(rect.x(), rect.y() + y, rect.x() + w, rect.y() + y)
 
+        # Sweep line (only when active)
         if self._sweep_active:
             sweep_y = int(self._sweep_progress * h)
             if 0 <= sweep_y < h:
-                sweep_color = QColor(0, 255, 136, 60)
+                sweep_color = QColor(0, 255, 136, 120)
                 painter.setPen(sweep_color)
                 painter.drawLine(rect.x(), rect.y() + sweep_y, rect.x() + w, rect.y() + sweep_y)
 

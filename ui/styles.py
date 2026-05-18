@@ -38,12 +38,13 @@ def get_stylesheet():
     QPushButton {
         background-color: #00ff88;
         color: #000000;
-        border: 1px solid #00aa55;
+        border: 2px solid #00aa55;
         border-radius: 6px;
-        padding: 12px 28px;
+        padding: 10px 28px;
         font-weight: 600;
         font-size: 14px;
         margin: 5px 0px;
+        text-align: center;
     }
 
     QPushButton:hover {
