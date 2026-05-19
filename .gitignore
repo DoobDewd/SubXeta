@@ -10,3 +10,4 @@ dist/
 pyi_rth_*
 __pycache__/
 *.pyc
+.claude/
