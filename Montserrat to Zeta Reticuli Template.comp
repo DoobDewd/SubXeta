@@ -1,8 +1,8 @@
 Composition {
-	CurrentTime = 3,
-	RenderRange = { -62, 1423 },
-	GlobalRange = { -62, 1423 },
-	CurrentID = 202,
+	CurrentTime = 12,
+	RenderRange = { 0, 759 },
+	GlobalRange = { 0, 759 },
+	CurrentID = 319,
 	HiQ = true,
 	PlaybackUpdateMode = 0,
 	StereoMode = false,
@@ -16,20 +16,20 @@ Composition {
 	OutputClips = {
 	},
 	Tools = {
-		PrismBlur1 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
+		PrismBlur1_2 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			Inputs = {
 				Source = Input {
-					SourceOp = "Template",
+					SourceOp = "Merge3",
 					Source = "Output",
 				},
 				CenterXPos = Input { Value = 0.5, },
 				CenterYPos = Input { Value = 0.5, },
 				xyPosition = Input { Value = { 0.290055274963379, 0.198523685336113 }, },
-				BlurStrength = Input { Value = 0, },
-				AberrationDistance = Input { Value = 0.019, },
+				BlurStrength = Input { Value = 0.289, },
+				AberrationDistance = Input { Value = 0, },
 				AberrationStrength = Input {
-					SourceOp = "PrismBlur1AberrationStrength",
+					SourceOp = "PrismBlur1_2AberrationStrength",
 					Source = "Value",
 				},
 				VignetteSize = Input { Value = 0.100000001490116, },
@@ -47,39 +47,34 @@ Composition {
 				dstProcessingAlphaMode = Input { Value = -1, },
 				resolvefxVersion = Input { Value = "2.3", }
 			},
-			ViewInfo = OperatorInfo { Pos = { 4002.67, 787.97 } },
+			ViewInfo = OperatorInfo { Pos = { 3119.04, 747.647 } },
 		},
-		PrismBlur1AberrationStrength = BezierSpline {
-			SplineColor = { Red = 0, Green = 222, Blue = 243 },
-			CtrlWZoom = false,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 1, RH = { 0.333333333333333, 0.666666666666667 }, Flags = { Linear = true } },
-				[1] = { 0, LH = { 0.666666666666667, 0.333333333333333 }, RH = { 2.33333333333333, 0.333333333333333 }, Flags = { Linear = true } },
-				[5] = { 1, LH = { 3.66666666666667, 0.666666666666667 }, RH = { 6, 0.666666666666667 }, Flags = { Linear = true } },
-				[8] = { 0, LH = { 7, 0.333333333333333 }, RH = { 9, 0.333333333333333 }, Flags = { Linear = true } },
-				[11] = { 1, LH = { 10, 0.666666666666667 }, Flags = { Linear = true } }
-			}
-		},
-		JPEGDamage1 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
+		Scanlines1_1 = ofx.com.blackmagicdesign.resolvefx.ScanlineV2 {
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			Inputs = {
 				Source = Input {
-					SourceOp = "PrismBlur1",
+					SourceOp = "JPEGDamage1_1",
 					Source = "Output",
 				},
-				ofxQuality = Input {
-					SourceOp = "JPEGDamage1Quality",
-					Source = "Value",
-				},
-				Resolution = Input {
-					SourceOp = "JPEGDamage1Resolution",
-					Source = "Value",
-				},
-				AspectRatio = Input { Value = 0.912, },
-				FrequencyScale = Input { Value = 0.85, },
-				FrequencyType = Input { Value = FuID { "FREQUENCY_TYPE_XY" }, },
-				BlendAmount = Input { Value = 0, },
+				appearanceGroup = Input { Value = 1, },
+				frequency = Input { Value = 20, },
+				sharpness = Input { Value = 0.772, },
+				angle = Input { Value = 0, },
+				width = Input { Value = 0.551, },
+				shift = Input { Value = -0.02, },
+				colorGroup = Input { Value = 1, },
+				color1Red = Input { Value = 1, },
+				color1Green = Input { Value = 1, },
+				color1Blue = Input { Value = 1, },
+				color2Red = Input { Value = 0, },
+				color2Green = Input { Value = 0, },
+				color2Blue = Input { Value = 0, },
+				phaseOffR = Input { Value = 0, },
+				phaseOffG = Input { Value = 0, },
+				phaseOffB = Input { Value = 0, },
+				compositeGroup = Input { Value = 1, },
+				LinesOnly = Input { Value = 0, },
+				CompositeType = Input { Value = FuID { "COMPOSITE_OVERLAY" }, },
 				blendGroup = Input { Value = 0, },
 				blendIn = Input { Value = 1, },
 				blend = Input { Value = 0, },
@@ -91,10 +86,11 @@ Composition {
 				dstProcessingAlphaMode = Input { Value = -1, },
 				resolvefxVersion = Input { Value = "1.1", }
 			},
-			ViewInfo = OperatorInfo { Pos = { 4190, 789.182 } },
+			ViewInfo = OperatorInfo { Pos = { 4601.19, 547.621 } },
 		},
 		JPEGDamage1Quality = BezierSpline {
 			SplineColor = { Red = 244, Green = 139, Blue = 217 },
+			CtrlWZoom = false,
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			KeyFrames = {
 				[1] = { 4.71, RH = { 1.66666666666667, 15.9466666666667 }, Flags = { Linear = true } },
@@ -103,15 +99,78 @@ Composition {
 				[9] = { 68.82, LH = { 8, 47.7733333333333 }, Flags = { Linear = true } }
 			}
 		},
-		JPEGDamage1Resolution = BezierSpline {
-			SplineColor = { Red = 217, Green = 182, Blue = 243 },
+		SoftGlow1_1 = SoftGlow {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Filter = Input { Value = FuID { "Fast Gaussian" }, },
+				Gain = Input { Value = 0.7, },
+				XGlowSize = Input { Value = 11, },
+				Input = Input {
+					SourceOp = "Merge1_1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = OperatorInfo { Pos = { 4808.52, 775.772 } },
+		},
+		Merge1_1 = Merge {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Background = Input {
+					SourceOp = "Displace1_1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Background1_1",
+					Source = "Output",
+				},
+				PerformDepthMerge = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4603.85, 776.984 } },
+		},
+		Merge1 = Merge {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Background = Input {
+					SourceOp = "Displace1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Background1",
+					Source = "Output",
+				},
+				PerformDepthMerge = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4393.33, 1010.06 } },
+		},
+		Displace1_2 = Displace {
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Type = Input { Value = 1, },
+				XOffset = Input { Value = 0.127, },
+				XRefraction = Input { Value = -0.0097, },
+				YChannel = Input { Value = 0, },
+				YOffset = Input { Value = -0.5, },
+				YRefraction = Input { Value = -0.0073, },
+				Input = Input {
+					SourceOp = "Scanlines1_2",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Output",
+				}
+			},
+			ViewInfo = OperatorInfo { Pos = { 3120.37, 615.799 } },
+		},
+		TemplateWriteOnEnd = BezierSpline {
+			SplineColor = { Red = 218, Green = 249, Blue = 145 },
 			CtrlWZoom = false,
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			KeyFrames = {
-				[0] = { 1.14, RH = { 0.333333333333333, 1.09333333333333 }, Flags = { Linear = true } },
-				[1] = { 1, LH = { 0.666666666666667, 1.04666666666667 }, RH = { 2, 1.03666666666667 }, Flags = { Linear = true } },
-				[4] = { 1.11, LH = { 3, 1.07333333333333 }, RH = { 5, 1.07333333333333 }, Flags = { Linear = true } },
-				[7] = { 1, LH = { 6, 1.03666666666667 }, Flags = { Linear = true } }
+				[0] = { 1, RH = { 0.666666666666667, 1 }, Flags = { Linear = true } },
+				[2] = { 1, LH = { 1.33333333333333, 1 }, RH = { 7, 1 }, Flags = { Linear = true } },
+				[17] = { 1, LH = { 12, 1 }, Flags = { Linear = true } }
 			}
 		},
 		Scanlines1 = ofx.com.blackmagicdesign.resolvefx.ScanlineV2 {
@@ -153,6 +212,39 @@ Composition {
 			},
 			ViewInfo = OperatorInfo { Pos = { 4396, 790.394 } },
 		},
+		SoftGlow1 = SoftGlow {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Filter = Input { Value = FuID { "Fast Gaussian" }, },
+				Threshold = Input { Value = 0.1, },
+				Gain = Input { Value = 0.63, },
+				XGlowSize = Input { Value = 11, },
+				Input = Input {
+					SourceOp = "Merge1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = OperatorInfo { Pos = { 4615.33, 1011.27 } },
+		},
+		TemplateWriteOnStart = BezierSpline {
+			SplineColor = { Red = 249, Green = 211, Blue = 150 },
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
+				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0.333333333333333 }, Flags = { Linear = true } },
+				[17] = { 1, LH = { 12, 0.666666666666667 }, Flags = { Linear = true } }
+			}
+		},
+		Template_1WriteOnEnd = BezierSpline {
+			SplineColor = { Red = 218, Green = 249, Blue = 145 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
+				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0.333333333333333 }, Flags = { Linear = true } },
+				[17] = { 1, LH = { 12, 0.666666666666667 }, Flags = { Linear = true } }
+			}
+		},
 		Displace1 = Displace {
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			Inputs = {
@@ -170,87 +262,21 @@ Composition {
 			},
 			ViewInfo = OperatorInfo { Pos = { 4396, 890.061 } },
 		},
-		Background1 = Background {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				GlobalIn = Input { Value = -62, },
-				GlobalOut = Input { Value = 1423, },
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				UseFrameFormatSettings = Input { Value = 1, },
-				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-				TopLeftAlpha = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4394, 1088.85 } },
-		},
-		Merge1 = Merge {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Background = Input {
-					SourceOp = "Displace1",
-					Source = "Output",
-				},
-				Foreground = Input {
-					SourceOp = "Background1",
-					Source = "Output",
-				},
-				PerformDepthMerge = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4393.33, 1010.06 } },
-		},
-		SoftGlow1 = SoftGlow {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Filter = Input { Value = FuID { "Fast Gaussian" }, },
-				Threshold = Input { Value = 0.1, },
-				Gain = Input { Value = 0.63, },
-				XGlowSize = Input { Value = 11, },
-				Input = Input {
-					SourceOp = "Merge1",
-					Source = "Output",
-				}
-			},
-			ViewInfo = OperatorInfo { Pos = { 4615.33, 1011.27 } },
-		},
-		PrismBlur1_1 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
+		JPEGDamage1 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
 			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
 			Inputs = {
 				Source = Input {
-					SourceOp = "Template_1",
+					SourceOp = "PrismBlur1",
 					Source = "Output",
 				},
-				CenterXPos = Input { Value = 0.5, },
-				CenterYPos = Input { Value = 0.5, },
-				xyPosition = Input { Value = { 0.272324770689011, 0.138643458485603 }, },
-				BlurStrength = Input { Value = 0, },
-				AberrationDistance = Input { Value = 0.011, },
-				AberrationStrength = Input { Value = 1, },
-				VignetteSize = Input { Value = 0.100000001490116, },
-				VignetteSharpness = Input { Value = 4.88, },
-				BlendAmount = Input { Value = 0, },
-				isUseLegacyPosition = Input { Value = 0, },
-				blendGroup = Input { Value = 0, },
-				blendIn = Input { Value = 1, },
-				blend = Input { Value = 0, },
-				ignoreContentShape = Input { Value = 0, },
-				legacyIsProcessRGBOnly = Input { Value = 0, },
-				IsNoTemporalFramesReqd = Input { Value = 0, },
-				refreshTrigger = Input { Value = 1, },
-				srcProcessingAlphaMode = Input { Value = -1, },
-				dstProcessingAlphaMode = Input { Value = -1, },
-				resolvefxVersion = Input { Value = "2.3", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4234.52, 543.984 } },
-		},
-		JPEGDamage1_1 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Source = Input {
-					SourceOp = "PrismBlur1_1",
-					Source = "Output",
+				ofxQuality = Input {
+					SourceOp = "JPEGDamage1Quality",
+					Source = "Value",
 				},
-				ofxQuality = Input { Value = 100, },
-				Resolution = Input { Value = 1.14, },
+				Resolution = Input {
+					SourceOp = "JPEGDamage1Resolution",
+					Source = "Value",
+				},
 				AspectRatio = Input { Value = 0.912, },
 				FrequencyScale = Input { Value = 0.85, },
 				FrequencyType = Input { Value = FuID { "FREQUENCY_TYPE_XY" }, },
@@ -266,417 +292,7 @@ Composition {
 				dstProcessingAlphaMode = Input { Value = -1, },
 				resolvefxVersion = Input { Value = "1.1", }
 			},
-			ViewInfo = OperatorInfo { Pos = { 4449.85, 546.409 } },
-		},
-		Scanlines1_1 = ofx.com.blackmagicdesign.resolvefx.ScanlineV2 {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Source = Input {
-					SourceOp = "JPEGDamage1_1",
-					Source = "Output",
-				},
-				appearanceGroup = Input { Value = 1, },
-				frequency = Input { Value = 20, },
-				sharpness = Input { Value = 0.772, },
-				angle = Input { Value = 0, },
-				width = Input { Value = 0.551, },
-				shift = Input { Value = -0.02, },
-				colorGroup = Input { Value = 1, },
-				color1Red = Input { Value = 1, },
-				color1Green = Input { Value = 1, },
-				color1Blue = Input { Value = 1, },
-				color2Red = Input { Value = 0, },
-				color2Green = Input { Value = 0, },
-				color2Blue = Input { Value = 0, },
-				phaseOffR = Input { Value = 0, },
-				phaseOffG = Input { Value = 0, },
-				phaseOffB = Input { Value = 0, },
-				compositeGroup = Input { Value = 1, },
-				LinesOnly = Input { Value = 0, },
-				CompositeType = Input { Value = FuID { "COMPOSITE_OVERLAY" }, },
-				blendGroup = Input { Value = 0, },
-				blendIn = Input { Value = 1, },
-				blend = Input { Value = 0, },
-				ignoreContentShape = Input { Value = 0, },
-				legacyIsProcessRGBOnly = Input { Value = 0, },
-				IsNoTemporalFramesReqd = Input { Value = 0, },
-				refreshTrigger = Input { Value = 1, },
-				srcProcessingAlphaMode = Input { Value = -1, },
-				dstProcessingAlphaMode = Input { Value = -1, },
-				resolvefxVersion = Input { Value = "1.1", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4601.19, 547.621 } },
-		},
-		Displace1_1 = Displace {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Type = Input { Value = 1, },
-				XRefraction = Input { Value = 0.006, },
-				YRefraction = Input { Value = 0.0093, },
-				Input = Input {
-					SourceOp = "Scanlines1_1",
-					Source = "Output",
-				},
-				Foreground = Input {
-					SourceOp = "FastNoise1_1_1",
-					Source = "Output",
-				}
-			},
-			ViewInfo = OperatorInfo { Pos = { 4602.52, 671.53 } },
-		},
-		Background1_1 = Background {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				GlobalIn = Input { Value = -62, },
-				GlobalOut = Input { Value = 1423, },
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				UseFrameFormatSettings = Input { Value = 1, },
-				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-				TopLeftAlpha = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4605.85, 871.53 } },
-		},
-		Merge1_1 = Merge {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Background = Input {
-					SourceOp = "Displace1_1",
-					Source = "Output",
-				},
-				Foreground = Input {
-					SourceOp = "Background1_1",
-					Source = "Output",
-				},
-				PerformDepthMerge = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4603.85, 776.984 } },
-		},
-		SoftGlow1_1 = SoftGlow {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Filter = Input { Value = FuID { "Fast Gaussian" }, },
-				Gain = Input { Value = 0.7, },
-				XGlowSize = Input { Value = 11, },
-				Input = Input {
-					SourceOp = "Merge1_1",
-					Source = "Output",
-				}
-			},
-			ViewInfo = OperatorInfo { Pos = { 4808.52, 775.772 } },
-		},
-		Template_1 = TextPlus {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				GlobalIn = Input { Value = -62, },
-				GlobalOut = Input { Value = 1423, },
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				UseFrameFormatSettings = Input { Value = 1, },
-				Center = Input { Value = { 0.5, 0.510847860538827 }, },
-				Perspective = Input { Value = 0.906, },
-				CharacterSpacing = Input { Value = 0.995, },
-				CharacterPivot = Input { Value = { 0, 0.578 }, },
-				TransformShear = Input { Value = 1, },
-				TransformSize = Input { Value = 1, },
-				SelectElement = Input { Value = 2, },
-				Select = Input { Value = 2, },
-				Enabled2 = Input { Value = 1, },
-				Enabled3 = Input { Value = 1, },
-				Red1 = Input { Value = 0.258823529411765, },
-				Green1 = Input { Value = 0.756862745098039, },
-				Blue1 = Input { Value = 0.509803921568627, },
-				StyledText = Input { Value = "bob lazar is", },
-				Font = Input { Value = "Montserrat", },
-				Style = Input { Value = "Bold", },
-				Size = Input { Value = 0.1, },
-				VerticalJustificationNew = Input { Value = 3, },
-				HorizontalJustificationNew = Input { Value = 3, },
-				Start = Input {
-					SourceOp = "Template_1WriteOnStart",
-					Source = "Value",
-				},
-				End = Input {
-					SourceOp = "Template_1WriteOnEnd",
-					Source = "Value",
-				},
-				Red2 = Input { Value = 0, },
-				Softness2 = Input { Value = 1, },
-				Softness3 = Input { Value = 1, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4011.19, 532.285 } },
-		},
-		Template_1WriteOnStart = BezierSpline {
-			SplineColor = { Red = 249, Green = 211, Blue = 150 },
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
-				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0 }, Flags = { Linear = true } },
-				[17] = { 0, LH = { 12, 0 }, Flags = { Linear = true } }
-			}
-		},
-		Template_1WriteOnEnd = BezierSpline {
-			SplineColor = { Red = 218, Green = 249, Blue = 145 },
-			CtrlWZoom = false,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
-				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0.333333333333333 }, Flags = { Linear = true } },
-				[17] = { 1, LH = { 12, 0.666666666666667 }, Flags = { Linear = true } }
-			}
-		},
-		Template = TextPlus {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				GlobalIn = Input { Value = -62, },
-				GlobalOut = Input { Value = 1423, },
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				UseFrameFormatSettings = Input { Value = 1, },
-				Center = Input { Value = { 0.515271, 0.464157361776879 }, },
-				LayoutSize = Input { Value = 0.989, },
-				Perspective = Input { Value = 0.906, },
-				LineSpacing = Input { Value = 1.407, },
-				CharacterSpacing = Input { Value = 0.898, },
-				CharacterOffset = Input { Value = { -0.022, -0.003 }, },
-				CharacterPivot = Input { Value = { 0, 0.578 }, },
-				TransformShear = Input { Value = 1, },
-				TransformSize = Input { Value = 1, },
-				CharacterSizeX = Input { Value = 1.299, },
-				SelectElement = Input { Value = 2, },
-				Select = Input { Value = 2, },
-				Enabled2 = Input { Value = 1, },
-				Enabled3 = Input { Value = 1, },
-				Red1 = Input { Value = 0.258823529411765, },
-				Green1 = Input { Value = 0.756862745098039, },
-				Blue1 = Input { Value = 0.509803921568627, },
-				StyledText = Input { Value = "bob lazar is", },
-				Font = Input { Value = "Zeta Reticuli", },
-				Style = Input { Value = "Regular", },
-				Size = Input { Value = 0.0654, },
-				VerticalJustificationNew = Input { Value = 3, },
-				HorizontalJustificationNew = Input { Value = 3, },
-				Start = Input {
-					SourceOp = "TemplateWriteOnStart",
-					Source = "Value",
-				},
-				End = Input {
-					SourceOp = "TemplateWriteOnEnd",
-					Source = "Value",
-				},
-				Red2 = Input { Value = 0, },
-				Softness2 = Input { Value = 1, },
-				Softness3 = Input { Value = 1, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 3999.33, 668.178 } },
-		},
-		TemplateWriteOnStart = BezierSpline {
-			SplineColor = { Red = 249, Green = 211, Blue = 150 },
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
-				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0.333333333333333 }, Flags = { Linear = true } },
-				[17] = { 1, LH = { 12, 0.666666666666667 }, Flags = { Linear = true } }
-			}
-		},
-		TemplateWriteOnEnd = BezierSpline {
-			SplineColor = { Red = 218, Green = 249, Blue = 145 },
-			CtrlWZoom = false,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 1, RH = { 0.666666666666667, 1 }, Flags = { Linear = true } },
-				[2] = { 1, LH = { 1.33333333333333, 1 }, RH = { 7, 1 }, Flags = { Linear = true } },
-				[17] = { 1, LH = { 12, 1 }, Flags = { Linear = true } }
-			}
-		},
-		Merge3 = Merge {
-			Inputs = {
-				Background = Input {
-					SourceOp = "Template_1",
-					Source = "Output",
-				},
-				Foreground = Input {
-					SourceOp = "Template",
-					Source = "Output",
-				},
-				ApplyMode = Input { Value = FuID { "Geometric" }, },
-				Operator = Input { Value = FuID { "Mask" }, },
-				PerformDepthMerge = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 3617.71, 760.981 } },
-		},
-		PrismBlur1_2 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Source = Input {
-					SourceOp = "Merge3",
-					Source = "Output",
-				},
-				CenterXPos = Input { Value = 0.5, },
-				CenterYPos = Input { Value = 0.5, },
-				xyPosition = Input { Value = { 0.290055274963379, 0.198523685336113 }, },
-				BlurStrength = Input { Value = 0.289, },
-				AberrationDistance = Input { Value = 0, },
-				AberrationStrength = Input {
-					SourceOp = "PrismBlur1_2AberrationStrength",
-					Source = "Value",
-				},
-				VignetteSize = Input { Value = 0.100000001490116, },
-				VignetteSharpness = Input { Value = 4.88, },
-				BlendAmount = Input { Value = 0, },
-				isUseLegacyPosition = Input { Value = 0, },
-				blendGroup = Input { Value = 0, },
-				blendIn = Input { Value = 1, },
-				blend = Input { Value = 0, },
-				ignoreContentShape = Input { Value = 0, },
-				legacyIsProcessRGBOnly = Input { Value = 0, },
-				IsNoTemporalFramesReqd = Input { Value = 0, },
-				refreshTrigger = Input { Value = 1, },
-				srcProcessingAlphaMode = Input { Value = -1, },
-				dstProcessingAlphaMode = Input { Value = -1, },
-				resolvefxVersion = Input { Value = "2.3", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 3119.04, 747.647 } },
-		},
-		PrismBlur1_2AberrationStrength = BezierSpline {
-			SplineColor = { Red = 0, Green = 222, Blue = 243 },
-			CtrlWZoom = false,
-			NameSet = true,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 1, RH = { 0.333333333333333, 0.666666666666667 }, Flags = { Linear = true } },
-				[1] = { 0, LH = { 0.666666666666667, 0.333333333333333 }, RH = { 2.33333333333333, 0.333333333333333 }, Flags = { Linear = true } },
-				[5] = { 1, LH = { 3.66666666666667, 0.666666666666667 }, RH = { 6, 0.666666666666667 }, Flags = { Linear = true } },
-				[8] = { 0, LH = { 7, 0.333333333333333 }, RH = { 8.33333333333333, 0.126444433333333 }, Flags = { Linear = true } },
-				[9] = { 0.3793333, LH = { 8.66666666666667, 0.252888866666667 }, RH = { 9.66666666666667, 0.5862222 }, Flags = { Linear = true } },
-				[11] = { 1, LH = { 10.3333333333333, 0.7931111 }, RH = { 11.3333333333333, 0.93 }, Flags = { Linear = true } },
-				[12] = { 0.79, LH = { 11.6666666666667, 0.86 }, Flags = { Linear = true } }
-			}
-		},
-		JPEGDamage1_2 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Source = Input {
-					SourceOp = "PrismBlur1_2",
-					Source = "Output",
-				},
-				ofxQuality = Input { Value = 100, },
-				Resolution = Input {
-					SourceOp = "JPEGDamage1_2Resolution",
-					Source = "Value",
-				},
-				AspectRatio = Input { Value = 0.200000002980232, },
-				FrequencyScale = Input { Value = 0, },
-				FrequencyType = Input { Value = FuID { "FREQUENCY_TYPE_XY" }, },
-				BlendAmount = Input { Value = 0, },
-				blendGroup = Input { Value = 0, },
-				blendIn = Input { Value = 1, },
-				blend = Input { Value = 0, },
-				ignoreContentShape = Input { Value = 0, },
-				legacyIsProcessRGBOnly = Input { Value = 0, },
-				IsNoTemporalFramesReqd = Input { Value = 0, },
-				refreshTrigger = Input { Value = 1, },
-				srcProcessingAlphaMode = Input { Value = -1, },
-				dstProcessingAlphaMode = Input { Value = -1, },
-				resolvefxVersion = Input { Value = "1.1", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 2953.04, 730.678 } },
-		},
-		JPEGDamage1_2Resolution = BezierSpline {
-			SplineColor = { Red = 217, Green = 182, Blue = 243 },
-			CtrlWZoom = false,
-			NameSet = true,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			KeyFrames = {
-				[0] = { 1.14, RH = { 0.333333333333333, 1.09333333333333 }, Flags = { Linear = true } },
-				[1] = { 1, LH = { 0.666666666666667, 1.04666666666667 }, RH = { 3, 1 }, Flags = { Linear = true } },
-				[7] = { 1, LH = { 5, 1 }, RH = { 7.66666666666667, 1.03666666666667 }, Flags = { Linear = true } },
-				[9] = { 1.11, LH = { 8.33333333333333, 1.07333333333333 }, RH = { 9.66666666666667, 1.07333333333333 }, Flags = { Linear = true } },
-				[11] = { 1, LH = { 10.3333333333333, 1.03666666666667 }, Flags = { Linear = true } }
-			}
-		},
-		Scanlines1_2 = ofx.com.blackmagicdesign.resolvefx.ScanlineV2 {
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Source = Input {
-					SourceOp = "JPEGDamage1_2",
-					Source = "Output",
-				},
-				appearanceGroup = Input { Value = 1, },
-				frequency = Input { Value = 20, },
-				sharpness = Input { Value = 1.343, },
-				angle = Input { Value = 2, },
-				width = Input { Value = 0.551, },
-				shift = Input { Value = 0.443, },
-				colorGroup = Input { Value = 1, },
-				color1Red = Input { Value = 1, },
-				color1Green = Input { Value = 1, },
-				color1Blue = Input { Value = 1, },
-				color2Red = Input { Value = 0, },
-				color2Green = Input { Value = 0, },
-				color2Blue = Input { Value = 0, },
-				phaseOffR = Input { Value = 0, },
-				phaseOffG = Input { Value = 0, },
-				phaseOffB = Input { Value = 0, },
-				compositeGroup = Input { Value = 1, },
-				LinesOnly = Input { Value = 0, },
-				CompositeType = Input { Value = FuID { "COMPOSITE_OVERLAY" }, },
-				blendGroup = Input { Value = 0, },
-				blendIn = Input { Value = 1, },
-				blend = Input { Value = 0, },
-				ignoreContentShape = Input { Value = 0, },
-				legacyIsProcessRGBOnly = Input { Value = 0, },
-				IsNoTemporalFramesReqd = Input { Value = 0, },
-				refreshTrigger = Input { Value = 1, },
-				srcProcessingAlphaMode = Input { Value = -1, },
-				dstProcessingAlphaMode = Input { Value = -1, },
-				resolvefxVersion = Input { Value = "1.1", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 2947.04, 645.829 } },
-		},
-		Displace1_2 = Displace {
-			CtrlWZoom = false,
-			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
-			Inputs = {
-				Type = Input { Value = 1, },
-				XOffset = Input { Value = 0.127, },
-				XRefraction = Input { Value = -0.0097, },
-				YChannel = Input { Value = 0, },
-				YOffset = Input { Value = -0.5, },
-				YRefraction = Input { Value = -0.0073, },
-				Input = Input {
-					SourceOp = "Scanlines1_2",
-					Source = "Output",
-				},
-				Foreground = Input {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Output",
-				}
-			},
-			ViewInfo = OperatorInfo { Pos = { 3120.37, 615.799 } },
-		},
-		MultiMerge1 = MultiMerge {
-			Inputs = {
-				LayerOrder = Input { Value = ScriptVal { {
-							[0] = 1,
-							2
-						} }, },
-				Background = Input {
-					SourceOp = "SoftGlow1",
-					Source = "Output",
-				},
-				["Layer1.Foreground"] = Input {
-					SourceOp = "SoftGlow1_1",
-					Source = "Output",
-				},
-				LayerName1 = Input { Value = "Merge2 Layer", },
-				["Layer2.Foreground"] = Input {
-					SourceOp = "Displace1_2",
-					Source = "Output",
-				},
-				LayerName2 = Input { Value = "Displace1_2 Layer", }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4904.37, 996.133 } },
+			ViewInfo = OperatorInfo { Pos = { 4190, 789.182 } },
 		},
 		MediaOut1 = Saver {
 			Inputs = {
@@ -688,33 +304,53 @@ Composition {
 			},
 			ViewInfo = OperatorInfo { Pos = { 5132.87, 918.203 } },
 		},
-		Merge2 = Merge {
-			Inputs = {
-				PerformDepthMerge = Input { Value = 0, }
-			},
-			ViewInfo = OperatorInfo { Pos = { 4810.32, 895.193 } },
+		PrismBlur1_2AberrationStrength = BezierSpline {
+			SplineColor = { Red = 0, Green = 222, Blue = 243 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 1, RH = { 0.333333333333333, 0.666666666666667 }, Flags = { Linear = true } },
+				[1] = { 0, LH = { 0.666666666666667, 0.333333333333333 }, RH = { 2.33333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+				[5] = { 1, LH = { 3.66666666666667, 0.666666666666667 }, RH = { 6, 0.666666666666667 }, Flags = { Linear = true } },
+				[8] = { 0, LH = { 7, 0.333333333333333 }, RH = { 8.33333333333333, 0.126444433333333 }, Flags = { Linear = true } },
+				[9] = { 0.3793333, LH = { 8.66666666666667, 0.252888866666667 }, RH = { 9.66666666666667, 0.5862222 }, Flags = { Linear = true } },
+				[11] = { 1, LH = { 10.3333333333333, 0.7931111 }, RH = { 11.3333333333333, 0.93 }, Flags = { Linear = true } },
+				[12] = { 0.79, LH = { 11.6666666666667, 0.86 }, Flags = { Linear = true } }
+			}
+		},
+		PrismBlur1AberrationStrength = BezierSpline {
+			SplineColor = { Red = 0, Green = 222, Blue = 243 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 1, RH = { 0.333333333333333, 0.666666666666667 }, Flags = { Linear = true } },
+				[1] = { 0, LH = { 0.666666666666667, 0.333333333333333 }, RH = { 2.33333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+				[5] = { 1, LH = { 3.66666666666667, 0.666666666666667 }, RH = { 6, 0.666666666666667 }, Flags = { Linear = true } },
+				[8] = { 0, LH = { 7, 0.333333333333333 }, RH = { 9, 0.333333333333333 }, Flags = { Linear = true } },
+				[11] = { 1, LH = { 10, 0.666666666666667 }, Flags = { Linear = true } }
+			}
 		},
 		NoiseGradient_1 = GroupOperator {
 			CurrentSettings = 6,
 			CustomData = {
-				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1920 }, SeetheRate = Input { Value = 0.1 }, UseFrameFormatSettings = Input { Value = 1 }, Start = Input { Value = { 0.5, 1 } } } } }, ViewInfo = GroupInfo { Flags = { AllowPan = false, AutoSnap = true, RemoveRouters = true }, Direction = "Horizontal", Size = { 126, 66.3636, 63, 24.2424 }, PipeStyle = "Direct", Scale = 1, Offset = { 0, 0 }, Pos = { 508, 109.182 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
+				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1920 }, UseFrameFormatSettings = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Start = Input { Value = { 0.5, 1 } } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Flags = { AllowPan = false, AutoSnap = true, RemoveRouters = true }, Direction = "Horizontal", Pos = { 508, 109.182 }, PipeStyle = "Direct", Offset = { 0, 0 }, Scale = 1, Size = { 126, 66.3636, 63, 24.2424 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, Start = Input { Value = { 0.5, 1 } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, SeetheRate = Input { Value = 0.1 }, Detail = Input { Value = 3 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Width = Input { Value = 1920 }, Start = Input { Value = { 0.5, 1 } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 3 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					}, [3] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 2 }, Start = Input { Value = { 0.5, 0.2 } }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, Seethe = Input { Value = 0.341 }, Detail = Input { Value = 1 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, Seethe = Input { Value = 0.341 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 2 }, Start = Input { Value = { 0.5, 0.2 } }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 1 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					}, [4] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Height = Input { Value = 1080 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, Brightness = Input { Value = 1 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, GlobalOut = Input { Value = 119 }, Start = Input { Value = { 0.5, 0.5 } }, Repeat = Input { Value = 2 }, SeetheRate = Input { Value = 0.03 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.935323383084577] = { 0.704000000000001, 0, 1, 1 }, [1] = { 1, 1, 1, 1 } } } } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Repeat = Input { Value = 2 }, SeetheRate = Input { Value = 0.03 }, Width = Input { Value = 1920 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.935323383084577] = { 0.704000000000001, 0, 1, 1 }, [1] = { 1, 1, 1, 1 } } } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, Start = Input { Value = { 0.5, 0.5 } }, GlobalOut = Input { Value = 119 }, Brightness = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Height = Input { Value = 1080 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					}, [5] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Repeat = Input { Value = 2 }, GradientType = Input { Value = 5 }, Height = Input { Value = 1080 }, Width = Input { Value = 1920 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 0.5 } }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, GlobalOut = Input { Value = 119 }, Brightness = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Repeat = Input { Value = 2 }, GradientType = Input { Value = 5 }, Height = Input { Value = 1080 }, Width = Input { Value = 1920 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 0.5 } }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, GlobalOut = Input { Value = 119 }, Brightness = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					} },
@@ -902,10 +538,9 @@ Composition {
 					CtrlWZoom = false,
 					CtrlWShown = false,
 					Inputs = {
-						GlobalIn = Input { Value = -62, },
-						GlobalOut = Input { Value = 1423, },
-						Width = Input { Value = 1920, },
-						Height = Input { Value = 1080, },
+						GlobalOut = Input { Value = 759, },
+						Width = Input { Value = 1080, },
+						Height = Input { Value = 1920, },
 						UseFrameFormatSettings = Input { Value = 1, },
 						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
 						Detail = Input { Value = 0.55, },
@@ -932,17 +567,56 @@ Composition {
 				}
 			},
 		},
-		NoiseGradient = GroupOperator {
+		Scanlines1_2 = ofx.com.blackmagicdesign.resolvefx.ScanlineV2 {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Source = Input {
+					SourceOp = "JPEGDamage1_2",
+					Source = "Output",
+				},
+				appearanceGroup = Input { Value = 1, },
+				frequency = Input { Value = 20, },
+				sharpness = Input { Value = 1.343, },
+				angle = Input { Value = 2, },
+				width = Input { Value = 0.551, },
+				shift = Input { Value = 0.443, },
+				colorGroup = Input { Value = 1, },
+				color1Red = Input { Value = 1, },
+				color1Green = Input { Value = 1, },
+				color1Blue = Input { Value = 1, },
+				color2Red = Input { Value = 0, },
+				color2Green = Input { Value = 0, },
+				color2Blue = Input { Value = 0, },
+				phaseOffR = Input { Value = 0, },
+				phaseOffG = Input { Value = 0, },
+				phaseOffB = Input { Value = 0, },
+				compositeGroup = Input { Value = 1, },
+				LinesOnly = Input { Value = 0, },
+				CompositeType = Input { Value = FuID { "COMPOSITE_OVERLAY" }, },
+				blendGroup = Input { Value = 0, },
+				blendIn = Input { Value = 1, },
+				blend = Input { Value = 0, },
+				ignoreContentShape = Input { Value = 0, },
+				legacyIsProcessRGBOnly = Input { Value = 0, },
+				IsNoTemporalFramesReqd = Input { Value = 0, },
+				refreshTrigger = Input { Value = 1, },
+				srcProcessingAlphaMode = Input { Value = -1, },
+				dstProcessingAlphaMode = Input { Value = -1, },
+				resolvefxVersion = Input { Value = "1.1", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 2947.04, 645.829 } },
+		},
+		NoiseGradient_2 = GroupOperator {
 			CurrentSettings = 6,
 			CustomData = {
-				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1920 }, UseFrameFormatSettings = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Start = Input { Value = { 0.5, 1 } } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Flags = { AllowPan = false, AutoSnap = true, RemoveRouters = true }, Direction = "Horizontal", Pos = { 508, 109.182 }, PipeStyle = "Direct", Offset = { 0, 0 }, Scale = 1, Size = { 126, 66.3636, 63, 24.2424 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
+				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 1 } }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, UseFrameFormatSettings = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Height = Input { Value = 1920 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Flags = { RemoveRouters = true, AllowPan = false, AutoSnap = true }, Direction = "Horizontal", Pos = { 508, 109.182 }, PipeStyle = "Direct", Offset = { 0, 0 }, Scale = 1, Size = { 126, 66.3636, 63, 24.2424 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Width = Input { Value = 1920 }, Start = Input { Value = { 0.5, 1 } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 3 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Start = Input { Value = { 0.5, 1 } }, GradientType = Input { Value = 1 }, SeetheRate = Input { Value = 0.1 }, Width = Input { Value = 1920 }, GlobalOut = Input { Value = 119 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1080 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 3 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					}, [3] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, Seethe = Input { Value = 0.341 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 2 }, Start = Input { Value = { 0.5, 0.2 } }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 1 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, Seethe = Input { Value = 0.341 }, Start = Input { Value = { 0.5, 0.2 } }, GradientType = Input { Value = 2 }, GlobalOut = Input { Value = 119 }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, Height = Input { Value = 1080 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 1 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					}, [4] = {
@@ -952,7 +626,564 @@ Composition {
 						}
 					}, [5] = {
 						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Repeat = Input { Value = 2 }, GradientType = Input { Value = 5 }, Height = Input { Value = 1080 }, Width = Input { Value = 1920 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 0.5 } }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, GlobalOut = Input { Value = 119 }, Brightness = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, GradientType = Input { Value = 5 }, Start = Input { Value = { 0.5, 0.5 } }, Width = Input { Value = 1920 }, Brightness = Input { Value = 1 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, Height = Input { Value = 1080 }, Repeat = Input { Value = 2 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
+						}
+					} },
+				Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } },
+			},
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Center",
+					Page = "Controls",
+				},
+				Input2 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Detail",
+					Default = 2,
+				},
+				Input3 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Contrast",
+					Default = 1,
+				},
+				Input4 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Brightness",
+					Default = 0,
+				},
+				Input5 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "LockXY",
+					Default = 1,
+				},
+				Input6 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "XScale",
+					Default = 2,
+				},
+				Input7 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "YScale",
+					Default = 2,
+				},
+				Input8 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Angle",
+					Default = 0,
+				},
+				Input9 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Seethe",
+					Default = 0,
+				},
+				Input10 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "SeetheRate",
+					Default = 0.1,
+				},
+				Input11 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Discontinuous",
+					Default = 0,
+				},
+				Input12 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Inverted",
+					Default = 0,
+				},
+				Input13 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Type",
+					Page = "Gradient",
+					Default = 1,
+				},
+				Input14 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color1Red",
+					Name = "Color 1",
+					ControlGroup = 14,
+					Default = 0,
+				},
+				Input15 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color1Green",
+					ControlGroup = 14,
+					Default = 0,
+				},
+				Input16 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color1Blue",
+					ControlGroup = 14,
+					Default = 0,
+				},
+				Input17 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color1Alpha",
+					ControlGroup = 14,
+					Default = 0,
+				},
+				Input18 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color2Red",
+					Name = "Color 2",
+					ControlGroup = 15,
+					Default = 1,
+				},
+				Input19 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color2Green",
+					ControlGroup = 15,
+					Default = 1,
+				},
+				Input20 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color2Blue",
+					ControlGroup = 15,
+					Default = 1,
+				},
+				Input21 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Color2Alpha",
+					ControlGroup = 15,
+					Default = 1,
+				},
+				Input22 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "GradientType",
+					Default = 1,
+				},
+				Input23 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Start",
+					DefaultX = 0.5,
+					DefaultY = 1,
+				},
+				Input24 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "End",
+					DefaultX = 0.5,
+					DefaultY = 0,
+				},
+				Input25 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Gradient",
+				},
+				Input26 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "GradientInterpolationMethod",
+				},
+				Input27 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Offset",
+					Default = 0,
+				},
+				Input28 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Repeat",
+					Default = 0,
+				},
+				Input29 = InstanceInput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "SubPixel",
+					Default = 0,
+				}
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "FastNoise1_1_2",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo {
+				Pos = { 3131.71, 529.753 },
+				Flags = {
+					AllowPan = false,
+					AutoSnap = true,
+					RemoveRouters = true
+				},
+				Size = { 126, 66.3636, 63, 24.2424 },
+				Direction = "Horizontal",
+				PipeStyle = "Direct",
+				Scale = 1,
+				Offset = { 0, 0 }
+			},
+			Tools = ordered() {
+				FastNoise1_1_2 = FastNoise {
+					CtrlWZoom = false,
+					CtrlWShown = false,
+					Inputs = {
+						GlobalOut = Input { Value = 759, },
+						Width = Input { Value = 1080, },
+						Height = Input { Value = 1920, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Detail = Input { Value = 10, },
+						Contrast = Input { Value = 5, },
+						Brightness = Input { Value = -0.36, },
+						LockXY = Input { Value = 0, },
+						XScale = Input { Value = 6.3, },
+						YScale = Input { Value = 81.5, },
+						SeetheRate = Input { Value = 2, },
+						Type = Input { Value = 1, },
+						Start = Input { Value = { 0.5, 0.5 }, },
+						End = Input { Value = { 0.5206751054852, 0.503003003003 }, },
+						Gradient = Input {
+							Value = Gradient {
+								Colors = {
+									[0.134328358208955] = { 1, 1, 1, 1 },
+									[0.238805970149254] = { 0, 0, 0.0078431372549, 1 }
+								}
+							},
+						},
+						Offset = Input { Value = 0.101, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } },
+				}
+			},
+		},
+		JPEGDamage1_2Resolution = BezierSpline {
+			SplineColor = { Red = 217, Green = 182, Blue = 243 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 1.14, RH = { 0.333333333333333, 1.09333333333333 }, Flags = { Linear = true } },
+				[1] = { 1, LH = { 0.666666666666667, 1.04666666666667 }, RH = { 3, 1 }, Flags = { Linear = true } },
+				[7] = { 1, LH = { 5, 1 }, RH = { 7.66666666666667, 1.03666666666667 }, Flags = { Linear = true } },
+				[9] = { 1.11, LH = { 8.33333333333333, 1.07333333333333 }, RH = { 9.66666666666667, 1.07333333333333 }, Flags = { Linear = true } },
+				[11] = { 1, LH = { 10.3333333333333, 1.03666666666667 }, Flags = { Linear = true } }
+			}
+		},
+		PrismBlur1 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Source = Input {
+					SourceOp = "Template",
+					Source = "Output",
+				},
+				CenterXPos = Input { Value = 0.5, },
+				CenterYPos = Input { Value = 0.5, },
+				xyPosition = Input { Value = { 0.290055274963379, 0.198523685336113 }, },
+				BlurStrength = Input { Value = 0, },
+				AberrationDistance = Input { Value = 0.019, },
+				AberrationStrength = Input {
+					SourceOp = "PrismBlur1AberrationStrength",
+					Source = "Value",
+				},
+				VignetteSize = Input { Value = 0.100000001490116, },
+				VignetteSharpness = Input { Value = 4.88, },
+				BlendAmount = Input { Value = 0, },
+				isUseLegacyPosition = Input { Value = 0, },
+				blendGroup = Input { Value = 0, },
+				blendIn = Input { Value = 1, },
+				blend = Input { Value = 0, },
+				ignoreContentShape = Input { Value = 0, },
+				legacyIsProcessRGBOnly = Input { Value = 0, },
+				IsNoTemporalFramesReqd = Input { Value = 0, },
+				refreshTrigger = Input { Value = 1, },
+				srcProcessingAlphaMode = Input { Value = -1, },
+				dstProcessingAlphaMode = Input { Value = -1, },
+				resolvefxVersion = Input { Value = "2.3", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4002.67, 787.97 } },
+		},
+		PrismBlur1_1 = ofx.com.blackmagicdesign.resolvefx.PrismBlur {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Source = Input {
+					SourceOp = "Template_1",
+					Source = "Output",
+				},
+				CenterXPos = Input { Value = 0.5, },
+				CenterYPos = Input { Value = 0.5, },
+				xyPosition = Input { Value = { 0.272324770689011, 0.138643458485603 }, },
+				BlurStrength = Input { Value = 0, },
+				AberrationDistance = Input { Value = 0.011, },
+				AberrationStrength = Input { Value = 1, },
+				VignetteSize = Input { Value = 0.100000001490116, },
+				VignetteSharpness = Input { Value = 4.88, },
+				BlendAmount = Input { Value = 0, },
+				isUseLegacyPosition = Input { Value = 0, },
+				blendGroup = Input { Value = 0, },
+				blendIn = Input { Value = 1, },
+				blend = Input { Value = 0, },
+				ignoreContentShape = Input { Value = 0, },
+				legacyIsProcessRGBOnly = Input { Value = 0, },
+				IsNoTemporalFramesReqd = Input { Value = 0, },
+				refreshTrigger = Input { Value = 1, },
+				srcProcessingAlphaMode = Input { Value = -1, },
+				dstProcessingAlphaMode = Input { Value = -1, },
+				resolvefxVersion = Input { Value = "2.3", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4234.52, 543.984 } },
+		},
+		Background1 = Background {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				GlobalOut = Input { Value = 759, },
+				Width = Input { Value = 1080, },
+				Height = Input { Value = 1920, },
+				UseFrameFormatSettings = Input { Value = 1, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				TopLeftAlpha = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4394, 1088.85 } },
+		},
+		Displace1_1 = Displace {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Type = Input { Value = 1, },
+				XRefraction = Input { Value = 0.006, },
+				YRefraction = Input { Value = 0.0093, },
+				Input = Input {
+					SourceOp = "Scanlines1_1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "FastNoise1_1_1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = OperatorInfo { Pos = { 4602.52, 671.53 } },
+		},
+		Template_1 = TextPlus {
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				GlobalOut = Input { Value = 759, },
+				Width = Input { Value = 1080, },
+				Height = Input { Value = 1920, },
+				UseFrameFormatSettings = Input { Value = 1, },
+				Center = Input {
+					Value = { 0.5, 0.50601875 },
+					Expression = "{ 0.5, 0.5 + 0.0107 * self.Width / self.Height }",
+				},
+				Perspective = Input { Value = 0.906, },
+				CharacterSpacing = Input { Value = 0.995, },
+				CharacterPivot = Input { Value = { 0, 0.578 }, },
+				TransformShear = Input { Value = 1, },
+				TransformSize = Input { Value = 1, },
+				SelectElement = Input { Value = 2, },
+				Select = Input { Value = 2, },
+				Enabled2 = Input { Value = 1, },
+				Enabled3 = Input { Value = 1, },
+				Red1 = Input { Value = 0.258823529411765, },
+				Green1 = Input { Value = 0.756862745098039, },
+				Blue1 = Input { Value = 0.509803921568627, },
+				StyledText = Input { Value = "bob lazar is", },
+				Font = Input { Value = "Montserrat", },
+				Style = Input { Value = "Bold", },
+				Size = Input { Value = 0.1, },
+				VerticalJustificationNew = Input { Value = 3, },
+				HorizontalJustificationNew = Input { Value = 3, },
+				Start = Input {
+					SourceOp = "Template_1WriteOnStart",
+					Source = "Value",
+				},
+				End = Input {
+					SourceOp = "Template_1WriteOnEnd",
+					Source = "Value",
+				},
+				Red2 = Input { Value = 0, },
+				Softness2 = Input { Value = 1, },
+				Softness3 = Input { Value = 1, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4011.19, 532.285 } },
+		},
+		JPEGDamage1_1 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Source = Input {
+					SourceOp = "PrismBlur1_1",
+					Source = "Output",
+				},
+				ofxQuality = Input { Value = 100, },
+				Resolution = Input { Value = 1.14, },
+				AspectRatio = Input { Value = 0.912, },
+				FrequencyScale = Input { Value = 0.85, },
+				FrequencyType = Input { Value = FuID { "FREQUENCY_TYPE_XY" }, },
+				BlendAmount = Input { Value = 0, },
+				blendGroup = Input { Value = 0, },
+				blendIn = Input { Value = 1, },
+				blend = Input { Value = 0, },
+				ignoreContentShape = Input { Value = 0, },
+				legacyIsProcessRGBOnly = Input { Value = 0, },
+				IsNoTemporalFramesReqd = Input { Value = 0, },
+				refreshTrigger = Input { Value = 1, },
+				srcProcessingAlphaMode = Input { Value = -1, },
+				dstProcessingAlphaMode = Input { Value = -1, },
+				resolvefxVersion = Input { Value = "1.1", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4449.85, 546.409 } },
+		},
+		Merge3 = Merge {
+			Inputs = {
+				Background = Input {
+					SourceOp = "Template_1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Template",
+					Source = "Output",
+				},
+				ApplyMode = Input { Value = FuID { "Geometric" }, },
+				Operator = Input { Value = FuID { "Mask" }, },
+				PerformDepthMerge = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 3617.71, 760.981 } },
+		},
+		Background1_1 = Background {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				GlobalOut = Input { Value = 759, },
+				Width = Input { Value = 1080, },
+				Height = Input { Value = 1920, },
+				UseFrameFormatSettings = Input { Value = 1, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				TopLeftAlpha = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4605.85, 871.53 } },
+		},
+		Merge2 = Merge {
+			Inputs = {
+				PerformDepthMerge = Input { Value = 0, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4810.32, 895.193 } },
+		},
+		MultiMerge1 = MultiMerge {
+			Inputs = {
+				LayerOrder = Input { Value = ScriptVal { {
+							[0] = 1,
+							2
+						} }, },
+				Background = Input {
+					SourceOp = "SoftGlow1",
+					Source = "Output",
+				},
+				["Layer1.Foreground"] = Input {
+					SourceOp = "SoftGlow1_1",
+					Source = "Output",
+				},
+				LayerName1 = Input { Value = "Merge2 Layer", },
+				["Layer2.Foreground"] = Input {
+					SourceOp = "Displace1_2",
+					Source = "Output",
+				},
+				LayerName2 = Input { Value = "Displace1_2 Layer", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 4904.37, 996.133 } },
+		},
+		JPEGDamage1_2 = ofx.com.blackmagicdesign.resolvefx.JPEGDamage {
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				Source = Input {
+					SourceOp = "PrismBlur1_2",
+					Source = "Output",
+				},
+				ofxQuality = Input { Value = 100, },
+				Resolution = Input {
+					SourceOp = "JPEGDamage1_2Resolution",
+					Source = "Value",
+				},
+				AspectRatio = Input { Value = 0.200000002980232, },
+				FrequencyScale = Input { Value = 0, },
+				FrequencyType = Input { Value = FuID { "FREQUENCY_TYPE_XY" }, },
+				BlendAmount = Input { Value = 0, },
+				blendGroup = Input { Value = 0, },
+				blendIn = Input { Value = 1, },
+				blend = Input { Value = 0, },
+				ignoreContentShape = Input { Value = 0, },
+				legacyIsProcessRGBOnly = Input { Value = 0, },
+				IsNoTemporalFramesReqd = Input { Value = 0, },
+				refreshTrigger = Input { Value = 1, },
+				srcProcessingAlphaMode = Input { Value = -1, },
+				dstProcessingAlphaMode = Input { Value = -1, },
+				resolvefxVersion = Input { Value = "1.1", }
+			},
+			ViewInfo = OperatorInfo { Pos = { 2953.04, 730.678 } },
+		},
+		Template = TextPlus {
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			Inputs = {
+				GlobalOut = Input { Value = 759, },
+				Width = Input { Value = 1080, },
+				Height = Input { Value = 1920, },
+				UseFrameFormatSettings = Input { Value = 1, },
+				Center = Input {
+					Value = { 0.5, 0.494375 },
+					Expression = "{ 0.5, 0.5 - 0.01* self.Width / self.Height }",
+				},
+				LayoutSize = Input { Value = 0.989, },
+				Perspective = Input { Value = 0.906, },
+				SelectTransform = Input { Value = 1, },
+				LineSpacing = Input { Value = 1.588, },
+				WordOffset = Input { Value = { 0, -0.009 }, },
+				CharacterSpacing = Input { Value = 0.898, },
+				CharacterOffset = Input { Value = { -0.022, -0.003 }, },
+				CharacterPivot = Input { Value = { 0, 0.578 }, },
+				TransformShear = Input { Value = 1, },
+				TransformSize = Input { Value = 1, },
+				CharacterSizeX = Input { Value = 1.299, },
+				SelectElement = Input { Value = 2, },
+				Select = Input { Value = 2, },
+				Enabled2 = Input { Value = 1, },
+				Enabled3 = Input { Value = 1, },
+				Red1 = Input { Value = 0.258823529411765, },
+				Green1 = Input { Value = 0.756862745098039, },
+				Blue1 = Input { Value = 0.509803921568627, },
+				StyledText = Input { Value = "bob lazar is", },
+				Font = Input { Value = "Zeta Reticuli", },
+				Style = Input { Value = "Regular", },
+				Size = Input { Value = 0.0654, },
+				VerticalJustificationNew = Input { Value = 3, },
+				HorizontalJustificationNew = Input { Value = 3, },
+				Start = Input {
+					SourceOp = "TemplateWriteOnStart",
+					Source = "Value",
+				},
+				End = Input {
+					SourceOp = "TemplateWriteOnEnd",
+					Source = "Value",
+				},
+				Red2 = Input { Value = 0, },
+				Softness2 = Input { Value = 1, },
+				Softness3 = Input { Value = 1, }
+			},
+			ViewInfo = OperatorInfo { Pos = { 3998, 668.178 } },
+		},
+		Template_1WriteOnStart = BezierSpline {
+			SplineColor = { Red = 249, Green = 211, Blue = 150 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 0, RH = { 0.666666666666667, 0 }, Flags = { Linear = true } },
+				[2] = { 0, LH = { 1.33333333333333, 0 }, RH = { 7, 0 }, Flags = { Linear = true } },
+				[17] = { 0, LH = { 12, 0 }, Flags = { Linear = true } }
+			}
+		},
+		NoiseGradient = GroupOperator {
+			CurrentSettings = 6,
+			CustomData = {
+				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1920 }, SeetheRate = Input { Value = 0.1 }, UseFrameFormatSettings = Input { Value = 1 }, Start = Input { Value = { 0.5, 1 } } } } }, ViewInfo = GroupInfo { Flags = { AllowPan = false, AutoSnap = true, RemoveRouters = true }, Direction = "Horizontal", Size = { 126, 66.3636, 63, 24.2424 }, PipeStyle = "Direct", Scale = 1, Offset = { 0, 0 }, Pos = { 508, 109.182 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
+						Tools = ordered() {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, Start = Input { Value = { 0.5, 1 } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, SeetheRate = Input { Value = 0.1 }, Detail = Input { Value = 3 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
+						}
+					}, [3] = {
+						Tools = ordered() {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Height = Input { Value = 1080 }, GradientType = Input { Value = 2 }, Start = Input { Value = { 0.5, 0.2 } }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, GlobalOut = Input { Value = 119 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, Seethe = Input { Value = 0.341 }, Detail = Input { Value = 1 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
+						}
+					}, [4] = {
+						Tools = ordered() {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, GlobalOut = Input { Value = 119 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, Brightness = Input { Value = 1 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, Height = Input { Value = 1080 }, Start = Input { Value = { 0.5, 0.5 } }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.935323383084577] = { 0.704000000000001, 0, 1, 1 }, [1] = { 1, 1, 1, 1 } } } }, SeetheRate = Input { Value = 0.03 }, Repeat = Input { Value = 2 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
+								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
+						}
+					}, [5] = {
+						Tools = ordered() {
+							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Repeat = Input { Value = 2 }, GradientType = Input { Value = 5 }, Height = Input { Value = 1080 }, Width = Input { Value = 1920 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 0.5 } }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, GlobalOut = Input { Value = 119 }, Brightness = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
 								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
 						}
 					} },
@@ -1140,10 +1371,9 @@ Composition {
 					CtrlWZoom = false,
 					CtrlWShown = false,
 					Inputs = {
-						GlobalIn = Input { Value = -62, },
-						GlobalOut = Input { Value = 1423, },
-						Width = Input { Value = 1920, },
-						Height = Input { Value = 1080, },
+						GlobalOut = Input { Value = 759, },
+						Width = Input { Value = 1080, },
+						Height = Input { Value = 1920, },
 						UseFrameFormatSettings = Input { Value = 1, },
 						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
 						Detail = Input { Value = 0.55, },
@@ -1170,243 +1400,16 @@ Composition {
 				}
 			},
 		},
-		NoiseGradient_2 = GroupOperator {
-			CurrentSettings = 6,
-			CustomData = {
-				Settings = { [1] = { Tools = ordered() { NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Page = "Controls", SourceOp = "FastNoise1_1", Source = "Center" }, Input2 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "Detail" }, Input3 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "Contrast" }, Input4 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Brightness" }, Input5 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "LockXY" }, Input6 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "XScale" }, Input7 = InstanceInput { Default = 2, SourceOp = "FastNoise1_1", Source = "YScale" }, Input8 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Angle" }, Input9 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Seethe" }, Input10 = InstanceInput { Default = 0.1, SourceOp = "FastNoise1_1", Source = "SeetheRate" }, Input11 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Discontinuous" }, Input12 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Inverted" }, Input13 = InstanceInput { Source = "Type", Default = 1, SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Green" }, Input16 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Blue" }, Input17 = InstanceInput { ControlGroup = 14, Default = 0, SourceOp = "FastNoise1_1", Source = "Color1Alpha" }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Green" }, Input20 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Blue" }, Input21 = InstanceInput { ControlGroup = 15, Default = 1, SourceOp = "FastNoise1_1", Source = "Color2Alpha" }, Input22 = InstanceInput { Default = 1, SourceOp = "FastNoise1_1", Source = "GradientType" }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Offset" }, Input28 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "Repeat" }, Input29 = InstanceInput { Default = 0, SourceOp = "FastNoise1_1", Source = "SubPixel" } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } }, CtrlWZoom = false, Inputs = { Type = Input { Value = 1 }, Width = Input { Value = 1080 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Start = Input { Value = { 0.5, 1 } }, End = Input { Value = { 0.5, 0 } }, GlobalOut = Input { Value = 119 }, SeetheRate = Input { Value = 0.1 }, UseFrameFormatSettings = Input { Value = 1 }, Height = Input { Value = 1920 } } } }, ViewInfo = GroupInfo { Flags = { RemoveRouters = true, AllowPan = false, AutoSnap = true }, Direction = "Horizontal", Size = { 126, 66.3636, 63, 24.2424 }, PipeStyle = "Direct", Scale = 1, Offset = { 0, 0 }, Pos = { 508, 109.182 } }, CustomData = { Path = { Map = { ["Setting:"] = "Templates:\\Templates.drfx\\Edit\\Generators\\" } } }, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } } } }, [2] = {
-						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Type = Input { Value = 1 }, Inverted = Input { Value = 1 }, Start = Input { Value = { 0.5, 1 } }, GradientType = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, GlobalOut = Input { Value = 119 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0 } }, Height = Input { Value = 1080 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.427860696517413] = { 0.766169154228856, 0, 0, 1 }, [0.776119402985075] = { 0.890547263681592, 0.890547263681592, 0, 1 }, [1] = { 1, 1, 1, 1 } } } }, SeetheRate = Input { Value = 0.1 }, Detail = Input { Value = 3 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
-								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
-						}
-					}, [3] = {
-						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { XScale = Input { Value = 0.1 }, Type = Input { Value = 1 }, UseFrameFormatSettings = Input { Value = 1 }, Start = Input { Value = { 0.5, 0.2 } }, GradientType = Input { Value = 2 }, GlobalOut = Input { Value = 119 }, Width = Input { Value = 1920 }, SeetheRate = Input { Value = 0.05 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, End = Input { Value = { 0.5, 0.5 } }, Height = Input { Value = 1080 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 1, 1, 1, 1 }, [0.1741293532338] = { 0.011196, 0.431429152, 0.622, 1 }, [0.577114427860697] = { 0.0070300465116, 0.1420319352558, 0.3905581395349, 1 }, [1] = { 0, 0, 0, 1 } } } }, Seethe = Input { Value = 0.341 }, Detail = Input { Value = 1 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
-								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
-						}
-					}, [4] = {
-						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Height = Input { Value = 1080 }, UseFrameFormatSettings = Input { Value = 1 }, Width = Input { Value = 1920 }, Brightness = Input { Value = 1 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, Discontinuous = Input { Value = 1 }, GlobalOut = Input { Value = 119 }, Start = Input { Value = { 0.5, 0.5 } }, Repeat = Input { Value = 2 }, SeetheRate = Input { Value = 0.03 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0, 0, 0, 1 }, [0.935323383084577] = { 0.704000000000001, 0, 1, 1 }, [1] = { 1, 1, 1, 1 } } } } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
-								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
-						}
-					}, [5] = {
-						Tools = ordered() {
-							NoiseGradient = GroupOperator { Inputs = ordered() { Input1 = InstanceInput { Source = "Center", SourceOp = "FastNoise1_1", Page = "Controls" }, Input2 = InstanceInput { Source = "Detail", SourceOp = "FastNoise1_1", Default = 2 }, Input3 = InstanceInput { Source = "Contrast", SourceOp = "FastNoise1_1", Default = 1 }, Input4 = InstanceInput { Source = "Brightness", SourceOp = "FastNoise1_1", Default = 0 }, Input5 = InstanceInput { Source = "LockXY", SourceOp = "FastNoise1_1", Default = 1 }, Input6 = InstanceInput { Source = "XScale", SourceOp = "FastNoise1_1", Default = 2 }, Input7 = InstanceInput { Source = "YScale", SourceOp = "FastNoise1_1", Default = 2 }, Input8 = InstanceInput { Source = "Angle", SourceOp = "FastNoise1_1", Default = 0 }, Input9 = InstanceInput { Source = "Seethe", SourceOp = "FastNoise1_1", Default = 0 }, Input10 = InstanceInput { Source = "SeetheRate", SourceOp = "FastNoise1_1", Default = 0.1 }, Input11 = InstanceInput { Source = "Discontinuous", SourceOp = "FastNoise1_1", Default = 0 }, Input12 = InstanceInput { Source = "Inverted", SourceOp = "FastNoise1_1", Default = 0 }, Input13 = InstanceInput { Default = 1, Source = "Type", SourceOp = "FastNoise1_1", Page = "Gradient" }, Input14 = InstanceInput { ControlGroup = 14, Source = "Color1Red", Name = "Color 1", SourceOp = "FastNoise1_1", Default = 0 }, Input15 = InstanceInput { ControlGroup = 14, Source = "Color1Green", SourceOp = "FastNoise1_1", Default = 0 }, Input16 = InstanceInput { ControlGroup = 14, Source = "Color1Blue", SourceOp = "FastNoise1_1", Default = 0 }, Input17 = InstanceInput { ControlGroup = 14, Source = "Color1Alpha", SourceOp = "FastNoise1_1", Default = 0 }, Input18 = InstanceInput { ControlGroup = 15, Source = "Color2Red", Name = "Color 2", SourceOp = "FastNoise1_1", Default = 1 }, Input19 = InstanceInput { ControlGroup = 15, Source = "Color2Green", SourceOp = "FastNoise1_1", Default = 1 }, Input20 = InstanceInput { ControlGroup = 15, Source = "Color2Blue", SourceOp = "FastNoise1_1", Default = 1 }, Input21 = InstanceInput { ControlGroup = 15, Source = "Color2Alpha", SourceOp = "FastNoise1_1", Default = 1 }, Input22 = InstanceInput { Source = "GradientType", SourceOp = "FastNoise1_1", Default = 1 }, Input23 = InstanceInput { DefaultY = 1, Source = "Start", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input24 = InstanceInput { DefaultY = 0, Source = "End", DefaultX = 0.5, SourceOp = "FastNoise1_1" }, Input25 = InstanceInput { SourceOp = "FastNoise1_1", Source = "Gradient" }, Input26 = InstanceInput { SourceOp = "FastNoise1_1", Source = "GradientInterpolationMethod" }, Input27 = InstanceInput { Source = "Offset", SourceOp = "FastNoise1_1", Default = 0 }, Input28 = InstanceInput { Source = "Repeat", SourceOp = "FastNoise1_1", Default = 0 }, Input29 = InstanceInput { Source = "SubPixel", SourceOp = "FastNoise1_1", Default = 0 } }, CtrlWZoom = false, Tools = ordered() { FastNoise1_1 = FastNoise { CtrlWShown = false, Inputs = { Offset = Input { Value = 0.101 }, Type = Input { Value = 1 }, Contrast = Input { Value = 4.37 }, Gradient = Input { Value = Gradient { Colors = { [0] = { 0.250980392156863, 0.0980392156862745, 0.00784313725490196, 1 }, [0.164179104477612] = { 0.454901960784314, 0.258823529411765, 0.141176470588235, 1 }, [0.348258706467662] = { 0.4, 0.207843137254902, 0.0901960784313725, 1 }, [0.557213930348259] = { 0.490196078431373, 0.286274509803922, 0.16078431372549, 1 }, [0.771144278606965] = { 0.27843137254902, 0.117647058823529, 0.00784313725490196, 1 }, [0.885572139303483] = { 0.349019607843137, 0.164705882352941, 0.0588235294117647, 1 }, [1] = { 0.262745098039216, 0.109803921568627, 0.0156862745098039, 1 } } } }, GradientType = Input { Value = 5 }, Start = Input { Value = { 0.5, 0.5 } }, Width = Input { Value = 1920 }, Brightness = Input { Value = 1 }, ["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } }, GlobalOut = Input { Value = 119 }, End = Input { Value = { 0.520675105485232, 0.503003003003003 } }, Height = Input { Value = 1080 }, Repeat = Input { Value = 2 }, UseFrameFormatSettings = Input { Value = 1 }, Detail = Input { Value = 10 } }, CtrlWZoom = false, ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } } } }, ViewInfo = GroupInfo { Pos = { 782.934, 52.7839 } }, CustomData = {
-								}, Outputs = { MainOutput1 = InstanceOutput { SourceOp = "FastNoise1_1", Source = "Output" } } }
-						}
-					}, },
-				Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } },
-			},
-			Inputs = ordered() {
-				Input1 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Center",
-					Page = "Controls",
-				},
-				Input2 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Detail",
-					Default = 2,
-				},
-				Input3 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Contrast",
-					Default = 1,
-				},
-				Input4 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Brightness",
-					Default = 0,
-				},
-				Input5 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "LockXY",
-					Default = 1,
-				},
-				Input6 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "XScale",
-					Default = 2,
-				},
-				Input7 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "YScale",
-					Default = 2,
-				},
-				Input8 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Angle",
-					Default = 0,
-				},
-				Input9 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Seethe",
-					Default = 0,
-				},
-				Input10 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "SeetheRate",
-					Default = 0.1,
-				},
-				Input11 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Discontinuous",
-					Default = 0,
-				},
-				Input12 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Inverted",
-					Default = 0,
-				},
-				Input13 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Type",
-					Page = "Gradient",
-					Default = 1,
-				},
-				Input14 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color1Red",
-					Name = "Color 1",
-					ControlGroup = 14,
-					Default = 0,
-				},
-				Input15 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color1Green",
-					ControlGroup = 14,
-					Default = 0,
-				},
-				Input16 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color1Blue",
-					ControlGroup = 14,
-					Default = 0,
-				},
-				Input17 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color1Alpha",
-					ControlGroup = 14,
-					Default = 0,
-				},
-				Input18 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color2Red",
-					Name = "Color 2",
-					ControlGroup = 15,
-					Default = 1,
-				},
-				Input19 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color2Green",
-					ControlGroup = 15,
-					Default = 1,
-				},
-				Input20 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color2Blue",
-					ControlGroup = 15,
-					Default = 1,
-				},
-				Input21 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Color2Alpha",
-					ControlGroup = 15,
-					Default = 1,
-				},
-				Input22 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "GradientType",
-					Default = 1,
-				},
-				Input23 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Start",
-					DefaultX = 0.5,
-					DefaultY = 1,
-				},
-				Input24 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "End",
-					DefaultX = 0.5,
-					DefaultY = 0,
-				},
-				Input25 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Gradient",
-				},
-				Input26 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "GradientInterpolationMethod",
-				},
-				Input27 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Offset",
-					Default = 0,
-				},
-				Input28 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Repeat",
-					Default = 0,
-				},
-				Input29 = InstanceInput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "SubPixel",
-					Default = 0,
-				}
-			},
-			Outputs = {
-				MainOutput1 = InstanceOutput {
-					SourceOp = "FastNoise1_1_2",
-					Source = "Output",
-				}
-			},
-			ViewInfo = GroupInfo {
-				Pos = { 3131.71, 529.753 },
-				Flags = {
-					AllowPan = false,
-					AutoSnap = true,
-					RemoveRouters = true
-				},
-				Size = { 126, 66.3636, 63, 24.2424 },
-				Direction = "Horizontal",
-				PipeStyle = "Direct",
-				Scale = 1,
-				Offset = { 0, 0 }
-			},
-			Tools = ordered() {
-				FastNoise1_1_2 = FastNoise {
-					CtrlWZoom = false,
-					CtrlWShown = false,
-					Inputs = {
-						GlobalIn = Input { Value = -62, },
-						GlobalOut = Input { Value = 1423, },
-						Width = Input { Value = 1920, },
-						Height = Input { Value = 1080, },
-						UseFrameFormatSettings = Input { Value = 1, },
-						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-						Detail = Input { Value = 10, },
-						Contrast = Input { Value = 5, },
-						Brightness = Input { Value = -0.36, },
-						LockXY = Input { Value = 0, },
-						XScale = Input { Value = 6.3, },
-						YScale = Input { Value = 81.5, },
-						SeetheRate = Input { Value = 2, },
-						Type = Input { Value = 1, },
-						Start = Input { Value = { 0.5, 0.5 }, },
-						End = Input { Value = { 0.5206751054852, 0.503003003003 }, },
-						Gradient = Input {
-							Value = Gradient {
-								Colors = {
-									[0.134328358208955] = { 1, 1, 1, 1 },
-									[0.238805970149254] = { 0, 0, 0.0078431372549, 1 }
-								}
-							},
-						},
-						Offset = Input { Value = 0.101, }
-					},
-					ViewInfo = OperatorInfo { Pos = { 0, 8.75758 } },
-				}
-			},
+		JPEGDamage1Resolution = BezierSpline {
+			SplineColor = { Red = 217, Green = 182, Blue = 243 },
+			CtrlWZoom = false,
+			CustomData = { Path = { Map = { ["Setting:"] = "C:\\Users\\tomwt\\Downloads\\" } }, },
+			KeyFrames = {
+				[0] = { 1.14, RH = { 0.333333333333333, 1.09333333333333 }, Flags = { Linear = true } },
+				[1] = { 1, LH = { 0.666666666666667, 1.04666666666667 }, RH = { 2, 1.03666666666667 }, Flags = { Linear = true } },
+				[4] = { 1.11, LH = { 3, 1.07333333333333 }, RH = { 5, 1.07333333333333 }, Flags = { Linear = true } },
+				[7] = { 1, LH = { 6, 1.03666666666667 }, Flags = { Linear = true } }
+			}
 		}
 	},
 	Frames = {
@@ -1417,13 +1420,13 @@ Composition {
 			PresetName = "Default",
 			Left = 0,
 			Top = 0,
-			Width = 2698,
-			Height = 1003,
+			Width = 2754,
+			Height = 1032,
 			ZoneInfo = { ["!Right"] = {
 				}, ["!Left"] = {
 				}, AuxLeft = { Expanded = true }, Right = { Expanded = true, }, Left = { Expanded = false, }, AuxRight = { Expanded = true } },
 			ViewInfo = { Viewer1 = { Show = true, RatioX = 1, RatioY = 0.01, }, InnerLeft = {
-				}, MainSplit = { RatioX = 100, RatioY = 1.84736842105264, }, CenterSplit = { RatioX = 1, RatioY = 100, }, Viewer2 = { Show = true, RatioX = 1, RatioY = 0.01, }, Comments = { Show = false }, Time = { Show = true, RatioX = 100, }, InnerColumns = { RatioX = 100, RatioY = 1.15263157894737, }, Keyframes = { Show = false, }, LayoutStrip = { Show = true, }, Inspector = { Show = true, RatioX = 100, RatioY = 1, }, InnerRight = {
+				}, MainSplit = { RatioX = 100, RatioY = 1.22267620020429, }, CenterSplit = { RatioX = 1, RatioY = 100, }, Viewer2 = { Show = true, RatioX = 1, RatioY = 0.01, }, Comments = { Show = false }, Time = { Show = true, RatioX = 100, }, InnerColumns = { RatioX = 100, RatioY = 1.77732379979572, }, Keyframes = { Show = false, }, LayoutStrip = { Show = true, }, Inspector = { Show = true, RatioX = 100, RatioY = 1, }, InnerRight = {
 				}, ActionStrip = { Show = true, RatioX = 100, }, OuterColumns = { RatioX = 100, RatioY = 1, }, Effects = { Show = false, }, Clips = { Show = false, }, Metadata = { Show = false, }, OuterLeft = {
 				}, ViewerSplit = { RatioX = 100, RatioY = 1, }, Nodes = { Show = true, RatioX = 1, RatioY = 100, }, OuterRight = { RatioY = 100, PixelX = 420, }, MediaPool = { Show = false, }, Spline = { Show = false, } },
 			Views = ordered() {
@@ -1441,6 +1444,7 @@ Composition {
 					},
 					FlowView = FlowView {
 						Flags = {
+							Navigator = true,
 							AutoHideNavigator = true,
 							AutoSnap = true,
 							RemoveRouters = true
@@ -1449,7 +1453,7 @@ Composition {
 						Direction = "Horizontal",
 						PipeStyle = "Direct",
 						RootScale = 0.5,
-						RootOffset = { -2523.03, -432.496 }
+						RootOffset = { -1884.67, -595.242 }
 					}
 				},
 				Keyframes = MultiView {
@@ -1469,7 +1473,7 @@ Composition {
 						KeyFrameView = {
 							Position = { Left = 232, Bottom = 324 },
 							ScaleX = 0.280851063829787,
-							OffsetX = -7.86382978723404,
+							OffsetX = -8.98723404255318,
 							OffsetY = 0,
 							AutoScaling = "scroll",
 							AutoSnapTo = "frame",
@@ -1489,7 +1493,7 @@ Composition {
 						LeftPos = 264,
 						ScaleX = 0.2,
 						ScaleY = 0.00334448160535117,
-						OffsetX = -3.40000000000001,
+						OffsetX = -3.6,
 						OffsetY = 0,
 						AutoScaling = "scroll",
 						AutoSnapTo = "frame",
@@ -1628,16 +1632,18 @@ Composition {
 				},
 				LeftView = {
 					Viewer = {
-						Layer = ":Default",
+						Layer = ":Default"
 					},
 				},
 			},
 			Paths = {
 				Map = {
-					["ResolveCaches:"] = "F:\\Videos\\CacheClip\\3d8c8225-9de9-495d-be61-dcc33d91d02c\\0a79fea0-035e-4e07-80f7-7b6de42ff213\\a630a285-3c19-440e-aa52-df39dffc2159\\Fusion",
+					["ResolveCaches:"] = "F:\\Videos\\CacheClip\\3849fb97-dc73-40f7-b5da-7f8c7c8d4f42\\5b4ae544-fcc3-49df-b04f-c4c5fa60c790\\b52977b7-59ac-4acf-865b-5c26c7ee8013\\Fusion",
 				},
 			},
 			FrameFormat = {
+				Width = 1080,
+				Height = 1920,
 				Rate = 24,
 				GuideRatio = 1.77777777777778,
 				DepthFull = 3,
@@ -1645,8 +1651,7 @@ Composition {
 				DepthInteractive = 3,
 			},
 			Unsorted = {
-				GlobalStart = 4294967234,
-				GlobalEnd = 1423
+				GlobalEnd = 759
 			},
 			FreehandPrecDlg = {
 				Window = {

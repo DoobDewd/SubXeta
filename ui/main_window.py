@@ -1,4 +1,5 @@
 import logging
+from difflib import SequenceMatcher
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 
@@ -125,6 +126,33 @@ class MainWindow(QMainWindow):
         self.step1.transcribe_btn.setEnabled(True)
         self.step1.progress_bar.setVisible(False)
 
+    def _map_edited_words_to_original(self, original_words, edited_words):
+        """Map edited words to original words using sequence matching, handling multiple edits."""
+        if not original_words:
+            return {i: None for i in range(len(edited_words))}
+
+        # Use SequenceMatcher to find matching blocks
+        matcher = SequenceMatcher(None, original_words, edited_words)
+        matching_blocks = matcher.get_matching_blocks()
+
+        # Build a mapping of edited word index to original word index
+        mapping = {}
+        last_original_idx = len(original_words) - 1
+
+        for block in matching_blocks[:-1]:  # Skip the final end marker
+            orig_start, edit_start, size = block
+            # Map matched words
+            for i in range(size):
+                mapping[edit_start + i] = orig_start + i
+                last_original_idx = max(last_original_idx, orig_start + i)
+
+        # Map all unmapped edited words to the last original word
+        for i in range(len(edited_words)):
+            if i not in mapping:
+                mapping[i] = last_original_idx
+
+        return mapping
+
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
         try:
@@ -168,13 +196,16 @@ class MainWindow(QMainWindow):
                     else:
                         original_words_list = []
 
+                    # Map edited words to original words using sequence matching
+                    original_texts = [w.text for w in original_words_list] if original_words_list else []
+                    word_mapping = self._map_edited_words_to_original(original_texts, edited_words)
+                    logger.debug(f"Line {line_idx}: original={original_texts}, edited={edited_words}, mapping={word_mapping}")
+
                     line_words = []
                     current_line_chars = 0
 
-                    # Calculate split timing if needed
-                    edited_count = len(edited_words)
-                    original_count = len(original_words_list)
-                    extra_words = max(0, edited_count - original_count)
+                    # Track which original words have been used for split timing
+                    split_words = {}
 
                     # Map edited text back to original words
                     for edit_idx, word_text in enumerate(edited_words):
@@ -187,27 +218,37 @@ class MainWindow(QMainWindow):
                             line_words = []
                             current_line_chars = 0
 
-                        # Get timing for this word
-                        if edit_idx < original_count:
-                            # Use corresponding original word
-                            original_word = original_words_list[edit_idx]
-                            edited_word = Word(
-                                text=word_text,
-                                start=original_word.start,
-                                end=original_word.end
-                            )
-                        elif extra_words > 0 and original_words_list:
-                            # Split the last original word's timing
-                            last_word = original_words_list[-1]
-                            duration = last_word.end - last_word.start
-                            split_duration = duration / (extra_words + 1)
-                            position = edit_idx - original_count
+                        # Get the original word this edited word maps to
+                        orig_idx = word_mapping.get(edit_idx)
 
-                            edited_word = Word(
-                                text=word_text,
-                                start=last_word.start + (split_duration * (position + 1)),
-                                end=last_word.start + (split_duration * (position + 2))
-                            )
+                        if orig_idx is not None and orig_idx < len(original_words_list):
+                            original_word = original_words_list[orig_idx]
+
+                            # Check if this original word needs to be split among multiple edited words
+                            matching_edited_indices = [i for i, o in word_mapping.items() if o == orig_idx]
+
+                            if len(matching_edited_indices) > 1:
+                                # This original word is being split among multiple edited words
+                                if orig_idx not in split_words:
+                                    # First time encountering this split: calculate split timing
+                                    duration = original_word.end - original_word.start
+                                    num_parts = len(matching_edited_indices)
+                                    split_duration = duration / num_parts
+                                    split_words[orig_idx] = split_duration
+
+                                position = matching_edited_indices.index(edit_idx)
+                                edited_word = Word(
+                                    text=word_text,
+                                    start=original_word.start + (split_words[orig_idx] * position),
+                                    end=original_word.start + (split_words[orig_idx] * (position + 1))
+                                )
+                            else:
+                                # This edited word maps directly to one original word
+                                edited_word = Word(
+                                    text=word_text,
+                                    start=original_word.start,
+                                    end=original_word.end
+                                )
                         else:
                             continue
 
