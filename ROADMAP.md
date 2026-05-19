@@ -90,11 +90,12 @@ core/
 - [x] Tested: transcription ~30s on RTX 3060 Ti, works on PCs without FFmpeg
 
 ### Phase 4 — Polish, Logging & Optimization
-- [ ] **Sparse Keyframing Optimization**
-  - [ ] Switch from every-frame to value-change-only keyframing
-  - [ ] Generate keyframes only when animation values change (not every frame)
-  - [ ] Same visual output, ~99% fewer keyframes (massive file size reduction)
-  - [ ] Apply to both text and animation keyframe generation in `subtitle_gen.py`
+- [x] **Sparse Keyframing Optimization** ✅ Complete
+  - [x] Switch from every-frame to character-based keyframing
+  - [x] Generate keyframes only when characters are revealed (not every frame)
+  - [x] Same visual output, ~50% fewer animation keyframes (1 keyframe per character)
+  - [x] Simplify hold phase: 2 boundary keyframes instead of per-frame hold loop
+  - [x] Testing verified: 1329 → 633 animation keyframes on 55s video
 - [ ] Splash screen: show on startup (before main window loads)
 - [ ] Particle effects: subtle floating green dots in background
 - [ ] Settings panel: fps, max-chars, pause-threshold, model selector
