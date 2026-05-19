@@ -2,6 +2,8 @@
 import json
 import logging
 import tempfile
+import os
+import sys
 from pathlib import Path
 from PyQt6.QtCore import QThread, pyqtSignal
 from core.chunks import load_whisper_json
@@ -31,6 +33,19 @@ class TranscriptionWorker(QThread):
             logger.info("=" * 60)
             logger.info("Starting transcription worker")
             self.progress.emit(0)
+
+            # Ensure bundled FFmpeg is in PATH (for PyInstaller exe)
+            # In PyInstaller one-dir mode, executables are in _internal folder
+            ffmpeg_bundled = Path(sys.executable).parent / "_internal" / "ffmpeg" / "bin"
+            if not ffmpeg_bundled.exists():
+                # Fallback for development or system FFmpeg
+                ffmpeg_bundled = Path(sys.executable).parent / "ffmpeg" / "bin"
+
+            if ffmpeg_bundled.exists():
+                logger.info(f"Found bundled FFmpeg at: {ffmpeg_bundled}")
+                os.environ["PATH"] = str(ffmpeg_bundled) + os.pathsep + os.environ.get("PATH", "")
+            else:
+                logger.info(f"No bundled FFmpeg found, using system FFmpeg")
 
             # Validate audio file
             audio_file = Path(self.audio_path).resolve()
@@ -94,6 +109,9 @@ class TranscriptionWorker(QThread):
             self.progress.emit(40)
             try:
                 logger.info(f"Transcribing: {audio_file.name}")
+                logger.info(f"Audio file absolute path: {audio_file.resolve()}")
+                logger.info(f"Audio file exists: {audio_file.exists()}")
+                logger.info(f"Audio file size: {audio_file.stat().st_size} bytes")
                 self.progress.emit(42)
                 result = model.transcribe(str(audio_file), batch_size=16)
                 self.progress.emit(48)
@@ -106,7 +124,7 @@ class TranscriptionWorker(QThread):
                     end = segment.get('end', 0)
                     logger.info(f"  Segment {i} [{start:.2f}s - {end:.2f}s]: {text}")
             except Exception as e:
-                logger.error(f"Transcription failed: {e}")
+                logger.error(f"Transcription failed: {e}", exc_info=True)
                 self.error.emit(f"Transcription failed: {str(e)}")
                 return
 
