@@ -10,3 +10,4 @@ pyi_rth_*
 __pycache__/
 *.pyc
 .claude/
+log.txt

@@ -81,27 +81,34 @@ core/
 - [x] Chunk editing: users can modify text in cards before generation
 - [x] Smart word mapping: handles insertions/deletions via SequenceMatcher
 - [x] Timestamp preservation: maps edited words back to original timings with proportional split
+- [x] **Replacement/insertion split timing:** Multiple edits to same original split time proportionally (replacements + insertions both supported)
+- [x] Chunk reconstruction refactored to `core/chunks.py` (consolidate editing logic)
 - [x] Error handling (bad file, WhisperX not installed, failed transcription)
 - [x] Auto GPU detection (CUDA/CPU) with detailed logging
 - [x] File validation (format, size, existence)
 - [x] Cross-PC compatibility: bundled FFmpeg with automatic PATH detection
 - [x] Tested: transcription ~30s on RTX 3060 Ti, works on PCs without FFmpeg
 
-### Phase 4 — Polish & Logging (Next)
+### Phase 4 — Polish, Logging & Optimization
+- [ ] **Sparse Keyframing Optimization**
+  - [ ] Switch from every-frame to value-change-only keyframing
+  - [ ] Generate keyframes only when animation values change (not every frame)
+  - [ ] Same visual output, ~99% fewer keyframes (massive file size reduction)
+  - [ ] Apply to both text and animation keyframe generation in `subtitle_gen.py`
 - [ ] Splash screen: show on startup (before main window loads)
 - [ ] Particle effects: subtle floating green dots in background
 - [ ] Settings panel: fps, max-chars, pause-threshold, model selector
 - [ ] Output path picker
 - [ ] "Open folder" button after generation
-- [ ] **Logging Refactor — Industry Standard**
-  - [ ] Remove debug/verbose logging cluttering output
-  - [ ] Standardize format: `%(asctime)s - %(levelname)s - %(module)s - %(message)s`
-  - [ ] Core logging levels: `INFO` (milestones), `ERROR` (failures), no DEBUG spam
-  - [ ] `core/transcription.py`: keep model loading, GPU detection, errors only
-  - [ ] `ui/main_window.py`: keep file selection, generation status, errors only
-  - [ ] Remove: cache directory enumeration, individual segment logs, progress spam
-  - [ ] Add: single-line summary for transcription start/complete
-  - [ ] No file logging (temp only, cleared on restart)
+- [x] **Logging Refactor — Industry Standard** ✅ Complete
+  - [x] Remove debug/verbose logging cluttering output
+  - [x] Standardize format: `%(asctime)s - %(levelname)s - %(module)s - %(message)s`
+  - [x] Core logging levels: `INFO` (milestones), `ERROR` (failures), no DEBUG spam
+  - [x] `core/transcription.py`: keep model loading, GPU detection, errors only
+  - [x] `ui/main_window.py`: keep file selection, generation status, errors only
+  - [x] Remove: cache directory enumeration, individual segment logs, progress spam
+  - [x] Add: single-line summary for transcription start/complete
+  - [x] No file logging (temp only, cleared on restart)
 
 ### Phase 5 — Packaging & Installer ✅ In Progress
 **System Requirements:**
