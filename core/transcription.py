@@ -6,13 +6,14 @@ import os
 import sys
 from pathlib import Path
 from PyQt6.QtCore import QThread, pyqtSignal
-from core.chunks import load_whisper_json
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(module)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
-
-# Enable whisperx logging too
-logging.getLogger('whisperx').setLevel(logging.INFO)
+debug_logger = logging.getLogger(f"{__name__}.debug")
+logging.getLogger('whisperx').setLevel(logging.WARNING)
 
 
 class TranscriptionWorker(QThread):
@@ -30,26 +31,18 @@ class TranscriptionWorker(QThread):
     def run(self):
         """Run transcription using whisperx library directly."""
         try:
-            logger.info("=" * 60)
-            logger.info("Starting transcription worker")
             self.progress.emit(0)
 
             # Ensure bundled FFmpeg is in PATH (for PyInstaller exe)
-            # In PyInstaller one-dir mode, executables are in _internal folder
             ffmpeg_bundled = Path(sys.executable).parent / "_internal" / "ffmpeg" / "bin"
             if not ffmpeg_bundled.exists():
-                # Fallback for development or system FFmpeg
                 ffmpeg_bundled = Path(sys.executable).parent / "ffmpeg" / "bin"
 
             if ffmpeg_bundled.exists():
-                logger.info(f"Found bundled FFmpeg at: {ffmpeg_bundled}")
                 os.environ["PATH"] = str(ffmpeg_bundled) + os.pathsep + os.environ.get("PATH", "")
-            else:
-                logger.info(f"No bundled FFmpeg found, using system FFmpeg")
 
             # Validate audio file
             audio_file = Path(self.audio_path).resolve()
-            logger.info(f"Transcribing: {audio_file}")
 
             if not audio_file.exists():
                 self.error.emit(f"File not found: {self.audio_path}")
@@ -72,9 +65,9 @@ class TranscriptionWorker(QThread):
                 device = "cuda" if torch.cuda.is_available() else "cpu"
                 if device == "cuda":
                     gpu_name = torch.cuda.get_device_name(0)
-                    logger.info(f"GPU DETECTED: {gpu_name}")
+                    logger.info(f"GPU detected: {gpu_name}")
                 else:
-                    logger.info("No GPU detected, using CPU")
+                    logger.info("Using CPU for transcription")
             except Exception as e:
                 logger.warning(f"Could not detect GPU: {e}, using CPU")
                 device = "cpu"
@@ -85,9 +78,7 @@ class TranscriptionWorker(QThread):
             output_dir = Path(tempfile.gettempdir()) / "SubtitleGen_transcriptions"
             output_dir.mkdir(exist_ok=True, parents=True)
 
-            logger.info(f"Model: {self.model}")
-            logger.info(f"Device: {device}")
-            logger.info("Loading WhisperX model...")
+            logger.info(f"Starting transcription - Model: {self.model}, Device: {device}")
             self.progress.emit(25)
 
             # Import whisperx library
@@ -95,49 +86,41 @@ class TranscriptionWorker(QThread):
 
             # Load transcription model
             try:
-                logger.info(f"Loading {self.model} model from cache or downloading...")
                 self.progress.emit(30)
+                debug_logger.debug(f"Loading WhisperX {self.model} model on {device}...")
                 model = whisperx.load_model(self.model, device=device)
                 self.progress.emit(35)
-                logger.info("Model loaded successfully")
+                debug_logger.debug(f"Model loaded successfully")
             except Exception as e:
                 logger.error(f"Failed to load model: {e}")
                 self.error.emit(f"Failed to load model: {str(e)}")
                 return
 
-            logger.info("Performing transcription...")
             self.progress.emit(40)
             try:
-                logger.info(f"Transcribing: {audio_file.name}")
-                logger.info(f"Audio file absolute path: {audio_file.resolve()}")
-                logger.info(f"Audio file exists: {audio_file.exists()}")
-                logger.info(f"Audio file size: {audio_file.stat().st_size} bytes")
                 self.progress.emit(42)
+                debug_logger.debug(f"Transcribing audio: {audio_file.name}")
                 result = model.transcribe(str(audio_file), batch_size=16)
                 self.progress.emit(48)
-                logger.info(f"Transcription complete. Detected language: {result.get('language', 'unknown')}")
+                language = result.get('language', 'unknown')
                 segments = result.get('segments', [])
-                logger.info(f"Found {len(segments)} segments")
-                for i, segment in enumerate(segments, 1):
-                    text = segment.get('text', '').strip()
-                    start = segment.get('start', 0)
-                    end = segment.get('end', 0)
-                    logger.info(f"  Segment {i} [{start:.2f}s - {end:.2f}s]: {text}")
+                debug_logger.debug(f"Transcription complete: {len(segments)} segments detected")
+                debug_logger.debug(f"Sample segments: {[seg.get('text', '')[:40] for seg in segments[:3]]}")
+                logger.info(f"Transcription complete - Language: {language}, Segments: {len(segments)}")
             except Exception as e:
-                logger.error(f"Transcription failed: {e}", exc_info=True)
+                logger.error(f"Transcription failed: {e}")
                 self.error.emit(f"Transcription failed: {str(e)}")
                 return
 
             self.progress.emit(50)
 
-            logger.info("Loading alignment model...")
-            self.progress.emit(55)
             try:
-                logger.info(f"Loading alignment model for language: {result.get('language', 'unknown')}")
+                self.progress.emit(55)
+                debug_logger.debug(f"Loading alignment model for language: {result.get('language', 'unknown')}")
                 self.progress.emit(58)
                 model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
                 self.progress.emit(62)
-                logger.info("Alignment model loaded")
+                debug_logger.debug(f"Alignment model loaded")
             except Exception as e:
                 logger.error(f"Failed to load alignment model: {e}")
                 self.error.emit(f"Failed to load alignment model: {str(e)}")
@@ -145,23 +128,18 @@ class TranscriptionWorker(QThread):
 
             self.progress.emit(65)
 
-            logger.info("Performing alignment...")
-            self.progress.emit(68)
             try:
-                logger.info("Aligning segments with audio...")
+                self.progress.emit(68)
+                debug_logger.debug(f"Aligning {len(segments)} segments to audio...")
                 result = whisperx.align(result["segments"], model_a, metadata, str(audio_file), device, return_char_alignments=True)
                 self.progress.emit(78)
-                logger.info("Alignment complete")
-
-                # Log aligned words
                 segments = result.get('segments', [])
                 total_words = sum(len(seg.get('words', [])) for seg in segments)
-                logger.info(f"Total words aligned: {total_words}")
-                for i, segment in enumerate(segments, 1):
-                    words = segment.get('words', [])
-                    if words:
-                        word_list = ' '.join(w.get('word', '') for w in words)
-                        logger.info(f"  Segment {i} words: {word_list}")
+                debug_logger.debug(f"Alignment complete: {total_words} words aligned across {len(segments)} segments")
+                if total_words > 0:
+                    words_per_seg = total_words / len(segments)
+                    debug_logger.debug(f"Average: {words_per_seg:.1f} words/segment")
+                logger.info(f"Alignment complete - Words: {total_words}")
             except Exception as e:
                 logger.error(f"Alignment failed: {e}")
                 self.error.emit(f"Alignment failed: {str(e)}")
@@ -169,14 +147,12 @@ class TranscriptionWorker(QThread):
 
             self.progress.emit(80)
 
-            logger.info("Saving transcription to JSON...")
             try:
-                # Save result to JSON file
                 json_file = output_dir / f"{audio_file.stem}.json"
-                logger.info(f"Writing results to: {json_file}")
+                debug_logger.debug(f"Writing transcription JSON to: {json_file}")
                 with open(json_file, 'w', encoding='utf-8') as f:
                     json.dump(result, f, indent=2, ensure_ascii=False)
-                logger.info("JSON file saved successfully")
+                debug_logger.debug(f"JSON file size: {json_file.stat().st_size} bytes")
             except Exception as e:
                 logger.error(f"Failed to save JSON: {e}")
                 self.error.emit(f"Failed to save JSON: {str(e)}")
@@ -184,14 +160,13 @@ class TranscriptionWorker(QThread):
 
             self.progress.emit(90)
 
-            # Verify JSON was created
             if not json_file.exists():
                 self.error.emit("No JSON output from WhisperX")
                 return
 
             self.progress.emit(100)
-            logger.info(f"Transcription complete: {json_file}")
-            logger.info("=" * 60)
+            debug_logger.debug(f"Transcription workflow complete")
+            logger.info(f"Transcription saved: {json_file}")
             self.finished.emit(str(json_file))
 
         except Exception as e:

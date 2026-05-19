@@ -1,3 +1,4 @@
+import logging
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar,
     QScrollArea, QWidget, QTextEdit, QHBoxLayout
@@ -5,6 +6,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPainter, QFont
 from ui.animations import CRTAnimatedMixin, TypingAnimator
+
+debug_logger = logging.getLogger(f"{__name__}.debug")
 
 
 class ChunkCard(QGroupBox, CRTAnimatedMixin):
@@ -151,13 +154,25 @@ class Step2Widget(QGroupBox):
         """Get the currently edited chunks and track which were actually edited."""
         edited = []
         edited_flags = []
+        debug_logger.debug(f"Detecting edits in {len(self._chunks)} chunks")
+
         for idx, (timestamp, text_edit) in enumerate(self._chunks):
             current_text = text_edit.toPlainText()
             original_text = self._original_texts[idx][1] if idx < len(self._original_texts) else ""
             was_edited = current_text != original_text
 
+            if was_edited:
+                debug_logger.debug(f"  Chunk {idx} [EDITED]:")
+                debug_logger.debug(f"    Original: {original_text[:80]}...")
+                debug_logger.debug(f"    Current:  {current_text[:80]}...")
+            else:
+                debug_logger.debug(f"  Chunk {idx} [UNEDITED]")
+
             edited.append((timestamp, current_text))
             edited_flags.append(was_edited)
+
+        edit_count = sum(edited_flags)
+        debug_logger.debug(f"Edit detection complete: {edit_count}/{len(edited_flags)} chunks were edited")
 
         # Store flags for later use in main_window
         self._edited_flags = edited_flags

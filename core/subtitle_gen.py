@@ -4,10 +4,13 @@ WhisperX → DaVinci Resolve Fusion comp automation.
 Takes WhisperX JSON (word-level timestamps) and generates a single subtitle comp.
 """
 import argparse
+import logging
 from pathlib import Path
 from typing import List
 from core.models import Word
 from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts
+
+debug_logger = logging.getLogger(f"{__name__}.debug")
 
 
 def load_template() -> str:
@@ -20,6 +23,8 @@ def load_template() -> str:
 def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english: bool, pause_threshold: float = 0.9) -> str:
     """Generate BezierSpline keyframes with text values for all chunks."""
     keyframes_lines = []
+    text_type = "English" if is_english else "Alien"
+    debug_logger.debug(f"Generating {text_type} text keyframes for {len(chunks)} chunks")
 
     for i, chunk in enumerate(chunks):
         all_words = []
@@ -33,23 +38,28 @@ def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english
         text = text_variant.english if is_english else text_variant.alien
 
         escaped_text = text.replace('"', '\\"')
+        debug_logger.debug(f"  Chunk {i}: frame {start_frame}, text: {text[:50]}..." if len(text) > 50 else f"  Chunk {i}: frame {start_frame}, text: {text}")
 
         if i == 0 and len(chunks) > 1:
             next_frame = round(chunks[i + 1][0][0].start * fps)
             rh_frame = start_frame + (next_frame - start_frame) // 3
             handles = f"{i}, RH = " + "{ " + f"{rh_frame}, {i}.333333333333333" + " }"
+            debug_logger.debug(f"    First chunk: RH frame at {rh_frame}")
         elif i == len(chunks) - 1 and i > 0:
             prev_frame = round(chunks[i - 1][0][0].start * fps)
             lh_frame = prev_frame + (start_frame - prev_frame) // 3
             handles = "LH = " + "{ " + f"{lh_frame}, {i - 1}.666666666666667" + " }" + f", {i}"
+            debug_logger.debug(f"    Last chunk: LH frame at {lh_frame}")
         elif len(chunks) > 1:
             prev_frame = round(chunks[i - 1][0][0].start * fps)
             next_frame = round(chunks[i + 1][0][0].start * fps)
             lh_frame = prev_frame + (start_frame - prev_frame) // 3
             rh_frame = start_frame + (next_frame - start_frame) // 3
             handles = "LH = " + "{ " + f"{lh_frame}, {i - 1}.666666666666667" + " }" + f", {i}, RH = " + "{ " + f"{rh_frame}, {i}.333333333333333" + " }"
+            debug_logger.debug(f"    Middle chunk: LH at {lh_frame}, RH at {rh_frame}")
         else:
             handles = str(i)
+            debug_logger.debug(f"    Single chunk")
 
         frame_line = (
             f"\t\t\t\t[{start_frame}] = " + "{ " + handles + ", Flags = { Linear = true, LockedY = true }, Value = Text {\n"
@@ -66,18 +76,36 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
     """Generate animation keyframes - each chunk animates 0->1, with reset at next chunk."""
     keyframes = {}
     reset_frames = []
+    debug_logger.debug(f"Generating animation keyframes for {len(chunks)} chunks at {fps} fps, frame_offset={frame_offset}")
 
     for chunk_idx, chunk in enumerate(chunks):
         all_words = []
         for line in chunk:
             all_words.extend(line)
 
+        # Edge case checks
+        if not all_words:
+            debug_logger.debug(f"WARN: Chunk {chunk_idx} is empty, skipping")
+            continue
+
         start_time = all_words[0].start
         end_time = all_words[-1].end
+        duration = end_time - start_time
+
+        # Check for zero-duration chunks
+        if duration <= 0:
+            debug_logger.debug(f"WARN: Chunk {chunk_idx} has zero/negative duration ({start_time:.3f}s → {end_time:.3f}s)")
+
+        # Check for zero-duration words
+        zero_duration_words = [w.text for w in all_words if w.end - w.start <= 0]
+        if zero_duration_words:
+            debug_logger.debug(f"WARN: Chunk {chunk_idx} has {len(zero_duration_words)} zero-duration words: {zero_duration_words}")
 
         text_variant = chunk_to_texts(chunk, pause_threshold)
         english_text = text_variant.english
         total_len_eng = len(english_text.replace("\\n", "\n"))
+
+        debug_logger.debug(f"Chunk {chunk_idx}: {len(all_words)} words, {start_time:.3f}s → {end_time:.3f}s, text_len={total_len_eng}")
 
         word_char_positions = []
         word_end_positions = []
@@ -91,7 +119,9 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
 
         start_frame = round(start_time * fps) - frame_offset
         final_frame = round(end_time * fps) - frame_offset
+        debug_logger.debug(f"  Frame range: {start_frame} → {final_frame} ({final_frame - start_frame + 1} frames)")
 
+        frame_samples = []
         previous_progress = 0.0
         for frame in range(start_frame, final_frame + 1):
             frame_time = (frame - start_frame) / fps + start_time
@@ -115,12 +145,16 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
                     word_end_char = word_start_char + len(word.text)
                     char_progress = (word_start_char + (word_end_char - word_start_char) * word_progress) / total_len_eng
                     progress = min(1.0, char_progress)
+                    frame_samples.append((frame, word.text, progress))
                     break
                 else:
                     progress = min(1.0, word_end_positions[i] / total_len_eng)
 
             keyframes[frame] = progress
             previous_progress = progress
+
+        if frame_samples:
+            debug_logger.debug(f"  Sample keyframes: {frame_samples[:3]}... (total {len(keyframes)} frames)")
 
         keyframes[final_frame] = 1.0
 
@@ -132,14 +166,20 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
             next_start_time = next_words[0].start
             next_start_frame = round(next_start_time * fps)
 
-            for hold_frame in range(final_frame, next_start_frame):
-                keyframes[hold_frame] = 1.0
+            hold_count = next_start_frame - final_frame
+            if hold_count > 0:
+                debug_logger.debug(f"  Hold at 1.0 for {hold_count} frames ({final_frame} → {next_start_frame})")
+                for hold_frame in range(final_frame, next_start_frame):
+                    keyframes[hold_frame] = 1.0
 
             if next_start_frame != final_frame:
                 reset_frames.append(next_start_frame)
+                debug_logger.debug(f"  Reset to 0.0 at frame {next_start_frame}")
 
     for reset_frame in reset_frames:
         keyframes[reset_frame] = 0.0
+
+    debug_logger.debug(f"Final animation keyframes: {len(keyframes)} total frames with {len(reset_frames)} resets")
 
     lines = []
     for frame in sorted(keyframes.keys()):
@@ -157,13 +197,18 @@ def replace_keyframes_block(content: str, spline_name: str, new_keyframes: str) 
     idx = content.find(search_str)
 
     if idx < 0:
+        debug_logger.debug(f"WARN: Spline '{spline_name}' not found in template - keyframes may not be replaced!")
         return content
+
+    debug_logger.debug(f"Found spline '{spline_name}' at position {idx}")
 
     keyframes_start = content.find('KeyFrames = {', idx)
     if keyframes_start < 0:
+        debug_logger.debug(f"WARN: KeyFrames block not found for '{spline_name}' - replacement failed!")
         return content
 
     keyframes_start += len('KeyFrames = ')
+    debug_logger.debug(f"  KeyFrames block starts at {keyframes_start}")
 
     brace_count = 0
     pos = keyframes_start
@@ -177,15 +222,26 @@ def replace_keyframes_block(content: str, spline_name: str, new_keyframes: str) 
         pos += 1
 
     keyframes_end = pos + 1
+    old_keyframes_size = keyframes_end - keyframes_start
+    new_keyframes_size = len(new_keyframes)
+    debug_logger.debug(f"  Replaced {old_keyframes_size} bytes with {new_keyframes_size} bytes")
 
     return content[:keyframes_start] + new_keyframes + content[keyframes_end:]
 
 
 def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9) -> str:
     """Generate a single comp with keyframed text for all chunks."""
-    content = load_template()
+    debug_logger.debug(f"Starting comp generation: {len(chunks)} chunks, {fps} fps")
+
+    try:
+        content = load_template()
+        debug_logger.debug(f"Template loaded: {len(content)} bytes")
+    except Exception as e:
+        debug_logger.debug(f"ERROR: Failed to load template: {e}")
+        return ""
 
     if not chunks:
+        debug_logger.debug("WARN: No chunks provided, returning empty template")
         return content
 
     all_words = []
@@ -196,9 +252,12 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
     if all_words:
         end_time = all_words[-1].end
         total_frames = round(end_time * fps)
+        debug_logger.debug(f"Content duration: {end_time:.3f}s = {total_frames} frames")
     else:
         total_frames = 333
+        debug_logger.debug("WARN: No words found, using default frame range")
 
+    debug_logger.debug(f"Updating render range to: 0 → {total_frames}")
     content = content.replace(
         'RenderRange = { 0, 333 }',
         f'RenderRange = {{ 0, {total_frames} }}'
@@ -208,6 +267,7 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
         f'GlobalRange = {{ 0, {total_frames} }}'
     )
 
+    debug_logger.debug("Generating text keyframes (English and Alien)...")
     alien_keyframes = generate_text_keyframes(chunks, fps, False, pause_threshold)
     english_keyframes = generate_text_keyframes(chunks, fps, True, pause_threshold)
 
@@ -239,6 +299,7 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
     if tools_idx > 0:
         content = content[:tools_idx] + alien_spline + english_spline + content[tools_idx:]
 
+    debug_logger.debug("Generating animation keyframes (English and Alien)...")
     alien_anim_keyframes = generate_animation_keyframes(chunks, fps, pause_threshold, frame_offset=0)
     english_anim_keyframes = generate_animation_keyframes(chunks, fps, pause_threshold, frame_offset=0)
 
@@ -258,11 +319,13 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
 \t\t\t\t\t[{final_frame}] = {{ 0.0, LH = {{ {final_frame}, 0.0 }}, Flags = {{ Linear = true }} }}
 \t\t\t\t}}"""
 
+    debug_logger.debug("Replacing keyframe blocks in template...")
     content = replace_keyframes_block(content, 'TemplateWriteOnStart', alien_anim_keyframes)
     content = replace_keyframes_block(content, 'TemplateWriteOnEnd', const_one_keyframes)
     content = replace_keyframes_block(content, 'Template_1WriteOnStart', const_zero_keyframes)
     content = replace_keyframes_block(content, 'Template_1WriteOnEnd', english_anim_keyframes)
 
+    debug_logger.debug("Comp generation complete")
     return content
 
 
