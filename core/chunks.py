@@ -1,8 +1,9 @@
 """Subtitle chunk grouping and processing."""
 import json
 import logging
+from difflib import SequenceMatcher
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 from core.models import Word, TextVariant
 
 debug_logger = logging.getLogger(f"{__name__}.debug")
@@ -141,3 +142,212 @@ def chunk_to_texts(chunk: List[List[Word]], pause_threshold: float = 0.9) -> Tex
     alien_text = "\\n".join(alien_lines)
 
     return TextVariant(english=english_text, alien=alien_text)
+
+
+def _map_edited_words_to_original(original_words: List[str], edited_words: List[str]):
+    """Map edited words to original words using sequence matching.
+
+    When multiple edits map to the same original, timing is split proportionally.
+    This enables: replacements (1 word → 2) and insertions (new word splits with adjacent).
+    Edge case: truly orphan insertions fall back to copying adjacent timing.
+
+    Returns (mapping dict, set of inserted word indices)."""
+    debug_logger.debug(f"Word mapping: original={original_words} → edited={edited_words}")
+
+    if not original_words:
+        debug_logger.debug(f"No original words, mapping all {len(edited_words)} edited words to None")
+        return {i: None for i in range(len(edited_words))}, set()
+
+    # Use SequenceMatcher to find matching blocks
+    matcher = SequenceMatcher(None, original_words, edited_words)
+    matching_blocks = matcher.get_matching_blocks()
+    debug_logger.debug(f"SequenceMatcher blocks: {matching_blocks}")
+
+    # Build a mapping of edited word index to original word index
+    mapping = {}
+    used_original_indices = set()
+    inserted_indices = set()  # Track which edited words are inserted (no original correspondence)
+
+    for block in matching_blocks[:-1]:  # Skip the final end marker
+        orig_start, edit_start, size = block
+        debug_logger.debug(f"  Matching block: orig[{orig_start}:{orig_start+size}] ↔ edit[{edit_start}:{edit_start+size}]")
+        # Map matched words
+        for i in range(size):
+            mapping[edit_start + i] = orig_start + i
+            used_original_indices.add(orig_start + i)
+
+    # Find unmatched original indices and edited positions
+    unmatched_orig_indices = [i for i in range(len(original_words)) if i not in used_original_indices]
+    unmatched_edit_indices = [i for i in range(len(edited_words)) if i not in mapping]
+
+    debug_logger.debug(f"  Unmatched original indices: {unmatched_orig_indices}")
+    debug_logger.debug(f"  Unmatched edited indices: {unmatched_edit_indices}")
+
+    # Map unmatched edited words to unmatched original words in position order
+    for edit_idx, orig_idx in zip(unmatched_edit_indices, unmatched_orig_indices):
+        mapping[edit_idx] = orig_idx
+        debug_logger.debug(f"    Mapping unmatched edit[{edit_idx}] → orig[{orig_idx}]")
+
+    # Handle extra unmatched edits: map them to adjacent originals so timing can split with those words
+    # This enables: replacements (1 word → 2) and insertions (new word → splits with adjacent)
+    if len(unmatched_edit_indices) > len(unmatched_orig_indices):
+        extra_edits = unmatched_edit_indices[len(unmatched_orig_indices):]
+        for edit_idx in extra_edits:
+            found = False
+            # Try backwards for adjacent word's original
+            for check_idx in range(edit_idx - 1, -1, -1):
+                if check_idx in mapping:
+                    mapping[edit_idx] = mapping[check_idx]
+                    debug_logger.debug(f"    Mapping edit[{edit_idx}] → orig[{mapping[edit_idx]}] (will split with preceding edit[{check_idx}])")
+                    found = True
+                    break
+            if not found:
+                # Try forwards for adjacent word's original
+                for check_idx in range(edit_idx + 1, len(edited_words)):
+                    if check_idx in mapping:
+                        mapping[edit_idx] = mapping[check_idx]
+                        debug_logger.debug(f"    Mapping edit[{edit_idx}] → orig[{mapping[edit_idx]}] (will split with following edit[{check_idx}])")
+                        found = True
+                        break
+            if not found:
+                # Fallback: map to first original
+                mapping[edit_idx] = 0
+                debug_logger.debug(f"    Mapping edit[{edit_idx}] → orig[0] (fallback)")
+
+    # Detect which originals have multiple edits mapping to them
+    # Multiple edits to same original triggers proportional split timing
+    orig_edit_count = {}
+    for edit_idx, orig_idx in mapping.items():
+        orig_edit_count[orig_idx] = orig_edit_count.get(orig_idx, 0) + 1
+
+    # Edge case: mark as inserted only if original has single edit (fallback for orphan words)
+    # In practice, most edits will have multiple companions, triggering split instead
+    for edit_idx in list(inserted_indices):
+        orig_idx = mapping.get(edit_idx)
+        if orig_idx is not None and orig_edit_count.get(orig_idx, 0) > 1:
+            inserted_indices.discard(edit_idx)
+        elif orig_idx is not None:
+            debug_logger.debug(f"    Edit[{edit_idx}] → orig[{orig_idx}] marked as inserted (fallback)")
+
+    debug_logger.debug(f"Final word mapping: {mapping}, inserted: {inserted_indices}")
+    return mapping, inserted_indices
+
+
+def rebuild_chunks_with_edits(original_chunks: List[List[List[Word]]], edited_chunks: List[Tuple[str, str]], edited_flags: List[bool]) -> List[List[List[Word]]]:
+    """Rebuild chunks with edited text but original timing, handling word mapping and proportional splits."""
+    rebuilt_chunks = []
+    debug_logger.debug(f"Starting chunk reconstruction from {len(edited_chunks)} chunks")
+
+    # Edge case: check for empty edits
+    empty_chunks = [i for i, (_, text) in enumerate(edited_chunks) if not text.strip()]
+    if empty_chunks:
+        debug_logger.debug(f"WARN: {len(empty_chunks)} empty chunks: {empty_chunks}")
+
+    for chunk_idx, (timestamp_str, edited_text) in enumerate(edited_chunks):
+        # If chunk wasn't edited, use the original chunk structure as-is
+        if chunk_idx < len(edited_flags) and not edited_flags[chunk_idx]:
+            debug_logger.debug(f"Chunk {chunk_idx}: UNEDITED, using original structure")
+            if chunk_idx < len(original_chunks):
+                rebuilt_chunks.append(original_chunks[chunk_idx])
+            continue
+
+        debug_logger.debug(f"Chunk {chunk_idx}: EDITED, reconstructing with new text")
+
+        # Chunk was edited, so reconstruct it with new text and timing
+        if chunk_idx < len(original_chunks):
+            original_chunk = original_chunks[chunk_idx]
+        else:
+            original_chunk = []
+            debug_logger.debug(f"  No original chunk at index {chunk_idx}, starting from scratch")
+
+        chunk_lines = []
+        # Split by newlines to preserve line structure
+        text_lines = edited_text.split('\n')
+        debug_logger.debug(f"  Edited text has {len(text_lines)} line(s)")
+
+        for line_idx, text_line in enumerate(text_lines):
+            edited_words = text_line.split()
+            debug_logger.debug(f"  Line {line_idx}: {len(edited_words)} edited words: {edited_words}")
+
+            # Get original words for this specific line
+            if line_idx < len(original_chunk):
+                original_words_list = original_chunk[line_idx]
+            else:
+                original_words_list = []
+
+            # Map edited words to original words using sequence matching
+            original_texts = [w.text for w in original_words_list] if original_words_list else []
+            debug_logger.debug(f"    Original line {line_idx}: {original_texts}")
+            word_mapping, inserted_indices = _map_edited_words_to_original(original_texts, edited_words)
+
+            line_words = []
+            current_line_chars = 0
+
+            # Track which original words have been used for split timing
+            split_words = {}
+
+            # Map edited text back to original words
+            for edit_idx, word_text in enumerate(edited_words):
+                word_len = len(word_text)
+                space_len = 1 if line_words else 0
+
+                # Break line if exceeds 20 chars
+                if line_words and current_line_chars + space_len + word_len > 20:
+                    debug_logger.debug(f"      Line break at word {edit_idx} (total chars would be {current_line_chars + space_len + word_len})")
+                    chunk_lines.append(line_words)
+                    line_words = []
+                    current_line_chars = 0
+
+                # Get the original word this edited word maps to
+                orig_idx = word_mapping.get(edit_idx)
+                debug_logger.debug(f"      Word {edit_idx}: '{word_text}' maps to original[{orig_idx}]")
+
+                if orig_idx is not None and orig_idx < len(original_words_list):
+                    original_word = original_words_list[orig_idx]
+
+                    # Check if this original word needs to be split among multiple edited words
+                    # Only count non-inserted words for split timing
+                    matching_edited_indices = [i for i, o in word_mapping.items() if o == orig_idx and i not in inserted_indices]
+
+                    if len(matching_edited_indices) > 1:
+                        # This original word is being split among multiple edited words
+                        if orig_idx not in split_words:
+                            # First time encountering this split: calculate split timing
+                            duration = original_word.end - original_word.start
+                            num_parts = len(matching_edited_indices)
+                            split_duration = duration / num_parts
+                            split_words[orig_idx] = split_duration
+                            debug_logger.debug(f"        SPLIT: Original[{orig_idx}] (duration={duration:.3f}s) split into {num_parts} parts ({split_duration:.3f}s each)")
+
+                        position = matching_edited_indices.index(edit_idx)
+                        start_time = original_word.start + (split_words[orig_idx] * position)
+                        end_time = original_word.start + (split_words[orig_idx] * (position + 1))
+                        debug_logger.debug(f"        Part {position+1}/{len(matching_edited_indices)}: {start_time:.3f}s → {end_time:.3f}s")
+                        edited_word = Word(
+                            text=word_text,
+                            start=start_time,
+                            end=end_time
+                        )
+                    else:
+                        # This edited word maps directly to one original word
+                        debug_logger.debug(f"        Direct map: {original_word.start:.3f}s → {original_word.end:.3f}s")
+                        edited_word = Word(
+                            text=word_text,
+                            start=original_word.start,
+                            end=original_word.end
+                        )
+                else:
+                    debug_logger.debug(f"      Skipping word {edit_idx}: no mapping found")
+                    continue
+
+                line_words.append(edited_word)
+                current_line_chars += space_len + word_len
+
+            if line_words:
+                chunk_lines.append(line_words)
+
+        if chunk_lines:
+            rebuilt_chunks.append(chunk_lines)
+
+    debug_logger.debug(f"Chunk reconstruction complete: {len(rebuilt_chunks)} rebuilt chunks")
+    return rebuilt_chunks
