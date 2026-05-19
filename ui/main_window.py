@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
 
         # Build a mapping of edited word index to original word index
         mapping = {}
-        last_original_idx = len(original_words) - 1
+        used_original_indices = set()
 
         for block in matching_blocks[:-1]:  # Skip the final end marker
             orig_start, edit_start, size = block
@@ -150,17 +150,27 @@ class MainWindow(QMainWindow):
             # Map matched words
             for i in range(size):
                 mapping[edit_start + i] = orig_start + i
-                last_original_idx = max(last_original_idx, orig_start + i)
+                used_original_indices.add(orig_start + i)
 
-        # Map all unmapped edited words to the last original word
-        unmapped_count = 0
-        for i in range(len(edited_words)):
-            if i not in mapping:
-                mapping[i] = last_original_idx
-                unmapped_count += 1
+        # Find unmatched original indices and edited positions
+        unmatched_orig_indices = [i for i in range(len(original_words)) if i not in used_original_indices]
+        unmatched_edit_indices = [i for i in range(len(edited_words)) if i not in mapping]
 
-        if unmapped_count > 0:
-            debug_logger.debug(f"  Mapped {unmapped_count} unmatched edited words to last original word (idx={last_original_idx})")
+        debug_logger.debug(f"  Unmatched original indices: {unmatched_orig_indices}")
+        debug_logger.debug(f"  Unmatched edited indices: {unmatched_edit_indices}")
+
+        # Map unmatched edited words to unmatched original words in position order
+        for edit_idx, orig_idx in zip(unmatched_edit_indices, unmatched_orig_indices):
+            mapping[edit_idx] = orig_idx
+            debug_logger.debug(f"    Mapping unmatched edit[{edit_idx}] → orig[{orig_idx}]")
+
+        # If there are more unmatched edited words than original, map remaining to last unmatched original
+        if len(unmatched_edit_indices) > len(unmatched_orig_indices):
+            fallback_orig = unmatched_orig_indices[-1] if unmatched_orig_indices else len(original_words) - 1
+            extra_edits = unmatched_edit_indices[len(unmatched_orig_indices):]
+            for edit_idx in extra_edits:
+                mapping[edit_idx] = fallback_orig
+                debug_logger.debug(f"    Mapping extra edit[{edit_idx}] → orig[{fallback_orig}] (fallback)")
 
         debug_logger.debug(f"Final word mapping: {mapping}")
         return mapping
