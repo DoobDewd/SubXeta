@@ -121,40 +121,41 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
         final_frame = round(end_time * fps) - frame_offset
         debug_logger.debug(f"  Frame range: {start_frame} → {final_frame} ({final_frame - start_frame + 1} frames)")
 
-        frame_samples = []
-        previous_progress = 0.0
-        for frame in range(start_frame, final_frame + 1):
-            frame_time = (frame - start_frame) / fps + start_time
-            progress = previous_progress
+        # Sparse keyframing: generate keyframes only when characters are revealed
+        char_keyframe_count = 0
+        for char_idx in range(total_len_eng):
+            progress = (char_idx + 1) / total_len_eng
+            progress = min(1.0, progress)
 
-            for i, word in enumerate(all_words):
-                word_start = word.start
-                word_end = word.end
-
-                if frame_time < word_start:
+            # Find which word contains this character
+            word_idx = None
+            char_in_word = None
+            for i in range(len(all_words)):
+                if word_char_positions[i] <= char_idx < word_end_positions[i]:
+                    word_idx = i
+                    char_in_word = char_idx - word_char_positions[i]
                     break
-                elif frame_time <= word_end:
-                    word_duration = word_end - word_start
-                    if word_duration > 0:
-                        word_progress = (frame_time - word_start) / word_duration
-                        word_progress = min(1.0, max(0.0, word_progress))
-                    else:
-                        word_progress = 1.0
 
-                    word_start_char = word_char_positions[i]
-                    word_end_char = word_start_char + len(word.text)
-                    char_progress = (word_start_char + (word_end_char - word_start_char) * word_progress) / total_len_eng
-                    progress = min(1.0, char_progress)
-                    frame_samples.append((frame, word.text, progress))
-                    break
-                else:
-                    progress = min(1.0, word_end_positions[i] / total_len_eng)
+            if word_idx is None:
+                # Character is likely in spacing between words
+                continue
 
-            keyframes[frame] = progress
-            previous_progress = progress
+            word = all_words[word_idx]
+            word_duration = word.end - word.start
+            if word_duration <= 0:
+                continue
 
-        if frame_samples:
-            debug_logger.debug(f"  Sample keyframes: {frame_samples[:3]}... (total {len(keyframes)} frames)")
+            # Calculate reveal time for this character within the word
+            char_fraction = char_in_word / len(word.text)
+            reveal_time = word.start + char_fraction * word_duration
+            frame = round(reveal_time * fps) - frame_offset
+
+            # Only add keyframe if this frame hasn't been added yet
+            if frame not in keyframes:
+                keyframes[frame] = progress
+                char_keyframe_count += 1
+
+        debug_logger.debug(f"  Sparse keyframes: {char_keyframe_count} character-based keyframes (vs {final_frame - start_frame + 1} frames)")
 
         keyframes[final_frame] = 1.0
 
@@ -166,11 +167,10 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
             next_start_time = next_words[0].start
             next_start_frame = round(next_start_time * fps)
 
-            hold_count = next_start_frame - final_frame
-            if hold_count > 0:
-                debug_logger.debug(f"  Hold at 1.0 for {hold_count} frames ({final_frame} → {next_start_frame})")
-                for hold_frame in range(final_frame, next_start_frame):
-                    keyframes[hold_frame] = 1.0
+            # Sparse hold: just two boundary keyframes instead of one per frame
+            if next_start_frame > final_frame:
+                keyframes[next_start_frame - 1] = 1.0
+                debug_logger.debug(f"  Hold at 1.0 until frame {next_start_frame - 1}")
 
             if next_start_frame != final_frame:
                 reset_frames.append(next_start_frame)
