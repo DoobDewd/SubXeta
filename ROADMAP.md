@@ -99,7 +99,7 @@ core/
 - [ ] Splash screen: show on startup (before main window loads)
 - [ ] Particle effects: subtle floating green dots in background
 - [ ] Settings panel: fps, max-chars, pause-threshold, model selector
-- [ ] Output path picker
+- [x] Output path picker — SaveFileDialog lets user choose location and filename
 - [ ] "Open folder" button after generation
 - [x] **Logging Refactor — Industry Standard** ✅ Complete
   - [x] Remove debug/verbose logging cluttering output
