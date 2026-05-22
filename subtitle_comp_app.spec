@@ -12,6 +12,8 @@ a = Analysis(
     datas=[
         ('ui', 'ui'),
         ('core', 'core'),
+        ('splash.png', '.'),
+        ('icon.ico', '.'),
         ('Montserrat to Zeta Reticuli Template.comp', '.'),
         ('venv/Lib/site-packages/torchcodec-0.7.0.dist-info', 'torchcodec-0.7.0.dist-info'),
     ] + collect_data_files('whisperx') + collect_data_files('transformers') + collect_data_files('torchcodec') + collect_data_files('pyannote'),
@@ -68,7 +70,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon='icon.ico',
 )
 
 coll = COLLECT(

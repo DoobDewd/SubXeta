@@ -1,5 +1,7 @@
 import logging
+from pathlib import Path
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog
+from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 
 from ui.styles import get_stylesheet
@@ -19,9 +21,14 @@ debug_logger = logging.getLogger(f"{__name__}.debug")
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Subtitle Comp App")
+        self.setWindowTitle("SubXeta")
         self.setGeometry(100, 100, 1200, 800)
         self.setFixedSize(1200, 800)
+
+        # Load window icon
+        icon_path = Path(__file__).parent.parent / 'icon.ico'
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
 
         self._transcription_worker = None
         self._current_json_path = None
