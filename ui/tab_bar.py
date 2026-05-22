@@ -42,7 +42,22 @@ class TabBar(QWidget):
             layout.addWidget(label)
 
         layout.addStretch()
+
+        # Settings tab (far right)
+        settings_label = QLabel("Settings")
+        settings_label.setCursor(Qt.CursorShape.PointingHandCursor)
+        settings_label.setContentsMargins(0, 0, 0, 0)
+        settings_label.setMaximumHeight(28)
+        settings_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        settings_label.step = 3
+        settings_label.full_text = "Settings"
+        settings_label.mousePressEvent = lambda e: self.on_tab_click(3)
+        settings_label.setStyleSheet("color: #777777; background-color: transparent;")
+        self.labels.append(settings_label)
+        layout.addWidget(settings_label)
+
         self.setLayout(layout)
+        settings_label.setVisible(True)
 
     def showEvent(self, event):
         """Initialize and animate Step 1 text in on first show only."""
