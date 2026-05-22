@@ -4,6 +4,7 @@ from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 
 from ui.styles import get_stylesheet
 from ui.tab_bar import TabBar
+from ui.settings_widget import SettingsWidget
 from ui.steps.step1_transcribe import Step1Widget
 from ui.steps.step2_review import Step2Widget
 from core.transcription import TranscriptionWorker
@@ -25,6 +26,8 @@ class MainWindow(QMainWindow):
         self._transcription_worker = None
         self._current_json_path = None
         self._original_chunks = None
+        self._settings = {"model": "large", "force_cpu": False}
+        self._step2_typing_played = False
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -73,6 +76,14 @@ class MainWindow(QMainWindow):
         self.step2.generation_started.connect(self._on_generation_started)
         layout.addWidget(self.step2)
 
+        self.settings = SettingsWidget()
+        self.settings_effect = QGraphicsOpacityEffect()
+        self.settings_effect.setOpacity(0.0)
+        self.settings.setGraphicsEffect(self.settings_effect)
+        self.settings.setVisible(False)
+        self.settings.settings_changed.connect(self._on_settings_changed)
+        layout.addWidget(self.settings)
+
         layout.addStretch()
         scroll_widget.setLayout(layout)
         scroll.setWidget(scroll_widget)
@@ -83,7 +94,9 @@ class MainWindow(QMainWindow):
         self.step1.transcribe_btn.setEnabled(False)
         self.step1.progress_bar.setValue(0)
 
-        self._transcription_worker = TranscriptionWorker(file_path, model="large")
+        model = self._settings.get("model", "large")
+        force_cpu = self._settings.get("force_cpu", False)
+        self._transcription_worker = TranscriptionWorker(file_path, model=model, force_cpu=force_cpu)
         self._transcription_worker.progress.connect(self.step1.progress_bar.setValue)
         self._transcription_worker.finished.connect(self._on_transcription_finished)
         self._transcription_worker.error.connect(self._on_transcription_error)
@@ -94,6 +107,8 @@ class MainWindow(QMainWindow):
         self._current_json_path = json_path
         self.step1.stop_shimmer()
         self.step1.progress_bar.setVisible(False)
+        self.step1.progress_label.setVisible(False)
+        self._step2_typing_played = False
 
         try:
             words = load_whisper_json(json_path)
@@ -124,6 +139,7 @@ class MainWindow(QMainWindow):
         self.step1.stop_shimmer()
         self.step1.transcribe_btn.setEnabled(True)
         self.step1.progress_bar.setVisible(False)
+        self.step1.progress_label.setVisible(False)
 
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
@@ -170,33 +186,60 @@ class MainWindow(QMainWindow):
                 self.step2.generate_btn.setEnabled(True)
                 self.step2.result_label.setText("Cancelled")
 
-            # Delete temp JSON file after comp generation is complete
-            try:
-                Path(self._current_json_path).unlink()
-                logger.info("Cleaned up temporary JSON file")
-            except Exception as e:
-                logger.warning(f"Could not delete temp JSON: {e}")
-
         except Exception as e:
             self.step2.progress_bar.setVisible(False)
             self.step2.generate_btn.setEnabled(True)
             self.step2.result_label.setText(f"Error: {str(e)}")
 
+    def _on_settings_changed(self, settings):
+        """Handle settings change."""
+        self._settings = settings
+        logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}")
+
+    def closeEvent(self, event):
+        """Clean up temporary JSON file when closing."""
+        if self._current_json_path:
+            try:
+                Path(self._current_json_path).unlink()
+                logger.info("Cleaned up temporary JSON file")
+            except Exception as e:
+                logger.warning(f"Could not delete temp JSON: {e}")
+        event.accept()
+
     def _show_step(self, step):
         self.tab_bar.set_active(step, animate=True)
 
-        outgoing = self.step1 if step == 2 else self.step2
-        incoming = self.step2 if step == 2 else self.step1
-        out_effect = self.step1_effect if step == 2 else self.step2_effect
-        in_effect = self.step2_effect if step == 2 else self.step1_effect
+        # Map step to widget and effect
+        widgets = {1: self.step1, 2: self.step2, 3: self.settings}
+        effects = {1: self.step1_effect, 2: self.step2_effect, 3: self.settings_effect}
 
-        if not outgoing.isVisible():
+        incoming = widgets[step]
+        in_effect = effects[step]
+
+        # Find currently visible widget
+        outgoing = None
+        out_effect = None
+        for s, w in widgets.items():
+            if w.isVisible():
+                outgoing = w
+                out_effect = effects[s]
+                break
+
+        # If no widget is currently visible, just show the incoming one
+        if outgoing is None:
             incoming.setVisible(True)
             in_effect.setOpacity(1.0)
             if step == 2:
                 self.step2.restart_typing()
+            elif step == 3:
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"])
             return
 
+        # If the incoming widget is already visible, don't animate
+        if incoming is outgoing:
+            return
+
+        # Fade out current, fade in new
         fade_out = QPropertyAnimation(out_effect, b"opacity")
         fade_out.setDuration(150)
         fade_out.setStartValue(1.0)
@@ -213,8 +256,11 @@ class MainWindow(QMainWindow):
             fade_in.setEasingCurve(QEasingCurve.Type.InCubic)
             fade_in.start()
             self._fade_in_anim = fade_in
-            if step == 2:
+            if step == 2 and not self._step2_typing_played:
                 self.step2.restart_typing()
+                self._step2_typing_played = True
+            elif step == 3:
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"])
 
         fade_out.finished.connect(on_fade_out_done)
         self._fade_out_anim = fade_out

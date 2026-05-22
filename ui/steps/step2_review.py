@@ -95,6 +95,7 @@ class Step2Widget(QGroupBox):
 
         self._chunks = []
         self._original_texts = []
+        self._full_chunk_texts = []
         typing_targets = []
         for timestamp, text in chunks:
             card, text_edit = self._create_chunk_card(timestamp, text)
@@ -102,6 +103,7 @@ class Step2Widget(QGroupBox):
             typing_targets.append((text_edit, text))
             self._chunks.append((timestamp, text_edit))
             self._original_texts.append((timestamp, text))
+            self._full_chunk_texts.append(text)
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
@@ -158,7 +160,11 @@ class Step2Widget(QGroupBox):
 
         for idx, (timestamp, text_edit) in enumerate(self._chunks):
             current_text = text_edit.toPlainText()
-            original_text = self._original_texts[idx][1] if idx < len(self._original_texts) else ""
+            original_text = self._full_chunk_texts[idx] if idx < len(self._full_chunk_texts) else ""
+
+            if not current_text:
+                current_text = original_text
+
             was_edited = current_text != original_text
 
             if was_edited:

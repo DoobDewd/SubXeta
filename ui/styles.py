@@ -87,7 +87,6 @@ def get_stylesheet():
         border: 1px solid #00ff88;
         border-radius: 3px;
         padding: 5px 5px 5px 8px;
-        appearance: none;
     }
 
     QComboBox:hover {
@@ -131,7 +130,7 @@ def get_stylesheet():
         background-color: #2a2a2a;
         border: 1px solid #00ff88;
         border-radius: 3px;
-        text-align: center;
+        color: transparent;
         height: 20px;
     }
 

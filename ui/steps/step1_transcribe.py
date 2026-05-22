@@ -90,7 +90,14 @@ class Step1Widget(QGroupBox):
 
         self.progress_bar = ShimmerProgressBar()
         self.progress_bar.setVisible(False)
+        self.progress_bar.valueChanged.connect(self._update_progress_label)
         layout.addWidget(self.progress_bar)
+
+        self.progress_label = QLabel("0%")
+        self.progress_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold;")
+        self.progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.progress_label.setVisible(False)
+        layout.addWidget(self.progress_label)
 
         self.setLayout(layout)
 
@@ -99,8 +106,13 @@ class Step1Widget(QGroupBox):
 
     def _on_transcribe_clicked(self):
         self.progress_bar.setVisible(True)
+        self.progress_label.setVisible(True)
         self.progress_bar.start_shimmer()
         self.transcription_started.emit(self.audio_input.text())
+
+    def _update_progress_label(self, value):
+        """Update the progress percentage label."""
+        self.progress_label.setText(f"{value}%")
 
     def stop_shimmer(self):
         """Call this when transcription completes."""
