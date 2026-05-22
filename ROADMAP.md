@@ -96,10 +96,25 @@ core/
   - [x] Same visual output, ~50% fewer animation keyframes (1 keyframe per character)
   - [x] Simplify hold phase: 2 boundary keyframes instead of per-frame hold loop
   - [x] Testing verified: 1329 → 633 animation keyframes on 55s video
+- [x] **Settings Panel** ✅ Complete (partial)
+  - [x] Transcription model selector (base, small, medium, large)
+  - [x] Processing mode selector (GPU, CPU with force_cpu option)
+  - [x] Settings persist per session, apply immediately to next transcription
+  - [ ] Future: fps, max-chars, pause-threshold settings (lower priority)
+- [x] **Progress Bar Improvements** ✅ Complete
+  - [x] Workflow-mapped checkpoints (0%, 10%, 20%, 35%, 50%, 90%, 95%, 98%, 100%)
+  - [x] Smooth animation (250ms, OutCubic easing) between progress updates
+  - [x] Brighter shimmer effect (alpha 125) for better visibility
+  - [x] Fixed rapid-completion blinking by spreading final phases
+- [x] **Chunk Generation Bug Fix** ✅ Complete
+  - [x] Fixed: Generate Comp clicked before typing animation completion resulted in fewer chunks
+  - [x] Solution: Store full chunk texts separately as fallback when widgets empty
+- [x] **JSON Cleanup** ✅ Complete
+  - [x] Moved from after comp generation to app closeEvent
+  - [x] Temp JSON files now persist for session, clean up on exit
+- [x] Output path picker — SaveFileDialog lets user choose location and filename
 - [ ] Splash screen: show on startup (before main window loads)
 - [ ] Particle effects: subtle floating green dots in background
-- [ ] Settings panel: fps, max-chars, pause-threshold, model selector
-- [x] Output path picker — SaveFileDialog lets user choose location and filename
 - [ ] "Open folder" button after generation
 - [x] **Logging Refactor — Industry Standard** ✅ Complete
   - [x] Remove debug/verbose logging cluttering output
