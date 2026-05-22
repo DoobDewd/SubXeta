@@ -23,10 +23,11 @@ class TranscriptionWorker(QThread):
     finished = pyqtSignal(str)
     error = pyqtSignal(str)
 
-    def __init__(self, audio_path: str, model: str = "large"):
+    def __init__(self, audio_path: str, model: str = "large", force_cpu: bool = False):
         super().__init__()
         self.audio_path = audio_path
         self.model = model
+        self.force_cpu = force_cpu
 
     def run(self):
         """Run transcription using whisperx library directly."""
@@ -62,12 +63,16 @@ class TranscriptionWorker(QThread):
             # Detect device
             try:
                 import torch
-                device = "cuda" if torch.cuda.is_available() else "cpu"
-                if device == "cuda":
-                    gpu_name = torch.cuda.get_device_name(0)
-                    logger.info(f"GPU detected: {gpu_name}")
+                if self.force_cpu:
+                    device = "cpu"
+                    logger.info("Forcing CPU mode per user settings")
                 else:
-                    logger.info("Using CPU for transcription")
+                    device = "cuda" if torch.cuda.is_available() else "cpu"
+                    if device == "cuda":
+                        gpu_name = torch.cuda.get_device_name(0)
+                        logger.info(f"GPU detected: {gpu_name}")
+                    else:
+                        logger.info("Using CPU for transcription")
             except Exception as e:
                 logger.warning(f"Could not detect GPU: {e}, using CPU")
                 device = "cpu"
