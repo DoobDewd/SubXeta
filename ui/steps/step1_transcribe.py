@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar, QHBoxLayout
-from PyQt6.QtCore import pyqtSignal, QTimer, QRect, Qt
+from PyQt6.QtCore import pyqtSignal, QTimer, QRect, Qt, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont, QPainter, QColor, QLinearGradient, QPen
 from ui.widgets import DragDropArea
 
@@ -44,7 +44,7 @@ class ShimmerProgressBar(QProgressBar):
                 shimmer_rect = QRect(shimmer_left, rect.y(), shimmer_right - shimmer_left, rect.height())
                 gradient = QLinearGradient(shimmer_rect.left(), 0, shimmer_rect.right(), 0)
                 gradient.setColorAt(0, QColor(0, 255, 136, 0))
-                gradient.setColorAt(0.5, QColor(255, 255, 255, 100))
+                gradient.setColorAt(0.5, QColor(255, 255, 255, 125))
                 gradient.setColorAt(1, QColor(0, 255, 136, 0))
 
                 painter.fillRect(shimmer_rect, gradient)
@@ -91,6 +91,7 @@ class Step1Widget(QGroupBox):
         self.progress_bar = ShimmerProgressBar()
         self.progress_bar.setVisible(False)
         self.progress_bar.valueChanged.connect(self._update_progress_label)
+        self._progress_anim = None
         layout.addWidget(self.progress_bar)
 
         self.progress_label = QLabel("0%")
@@ -113,6 +114,22 @@ class Step1Widget(QGroupBox):
     def _update_progress_label(self, value):
         """Update the progress percentage label."""
         self.progress_label.setText(f"{value}%")
+
+    def set_progress_smoothly(self, target_value):
+        """Smoothly animate progress bar to target value."""
+        current_value = self.progress_bar.value()
+        if current_value == target_value:
+            return
+
+        if self._progress_anim and self._progress_anim.state() == QPropertyAnimation.State.Running:
+            self._progress_anim.stop()
+
+        self._progress_anim = QPropertyAnimation(self.progress_bar, b"value")
+        self._progress_anim.setDuration(250)
+        self._progress_anim.setStartValue(current_value)
+        self._progress_anim.setEndValue(target_value)
+        self._progress_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._progress_anim.start()
 
     def stop_shimmer(self):
         """Call this when transcription completes."""

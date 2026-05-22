@@ -4,6 +4,7 @@ import logging
 import tempfile
 import os
 import sys
+import time
 from pathlib import Path
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -58,7 +59,7 @@ class TranscriptionWorker(QThread):
                 self.error.emit("Audio file is empty")
                 return
 
-            self.progress.emit(15)
+            self.progress.emit(10)
 
             # Detect device
             try:
@@ -84,29 +85,24 @@ class TranscriptionWorker(QThread):
             output_dir.mkdir(exist_ok=True, parents=True)
 
             logger.info(f"Starting transcription - Model: {self.model}, Device: {device}")
-            self.progress.emit(25)
 
             # Import whisperx library
             import whisperx
 
             # Load transcription model
             try:
-                self.progress.emit(30)
                 debug_logger.debug(f"Loading WhisperX {self.model} model on {device}...")
                 model = whisperx.load_model(self.model, device=device)
-                self.progress.emit(35)
                 debug_logger.debug(f"Model loaded successfully")
             except Exception as e:
                 logger.error(f"Failed to load model: {e}")
                 self.error.emit(f"Failed to load model: {str(e)}")
                 return
 
-            self.progress.emit(40)
+            self.progress.emit(35)
             try:
-                self.progress.emit(42)
                 debug_logger.debug(f"Transcribing audio: {audio_file.name}")
                 result = model.transcribe(str(audio_file), batch_size=16)
-                self.progress.emit(48)
                 language = result.get('language', 'unknown')
                 segments = result.get('segments', [])
                 debug_logger.debug(f"Transcription complete: {len(segments)} segments detected")
@@ -120,24 +116,19 @@ class TranscriptionWorker(QThread):
             self.progress.emit(50)
 
             try:
-                self.progress.emit(55)
                 debug_logger.debug(f"Loading alignment model for language: {result.get('language', 'unknown')}")
-                self.progress.emit(58)
                 model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
-                self.progress.emit(62)
                 debug_logger.debug(f"Alignment model loaded")
             except Exception as e:
                 logger.error(f"Failed to load alignment model: {e}")
                 self.error.emit(f"Failed to load alignment model: {str(e)}")
                 return
 
-            self.progress.emit(65)
+            self.progress.emit(90)
 
             try:
-                self.progress.emit(68)
                 debug_logger.debug(f"Aligning {len(segments)} segments to audio...")
                 result = whisperx.align(result["segments"], model_a, metadata, str(audio_file), device, return_char_alignments=True)
-                self.progress.emit(78)
                 segments = result.get('segments', [])
                 total_words = sum(len(seg.get('words', [])) for seg in segments)
                 debug_logger.debug(f"Alignment complete: {total_words} words aligned across {len(segments)} segments")
@@ -150,7 +141,7 @@ class TranscriptionWorker(QThread):
                 self.error.emit(f"Alignment failed: {str(e)}")
                 return
 
-            self.progress.emit(80)
+            self.progress.emit(95)
 
             try:
                 json_file = output_dir / f"{audio_file.stem}.json"
@@ -158,12 +149,11 @@ class TranscriptionWorker(QThread):
                 with open(json_file, 'w', encoding='utf-8') as f:
                     json.dump(result, f, indent=2, ensure_ascii=False)
                 debug_logger.debug(f"JSON file size: {json_file.stat().st_size} bytes")
+                self.progress.emit(98)
             except Exception as e:
                 logger.error(f"Failed to save JSON: {e}")
                 self.error.emit(f"Failed to save JSON: {str(e)}")
                 return
-
-            self.progress.emit(90)
 
             if not json_file.exists():
                 self.error.emit("No JSON output from WhisperX")

@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         model = self._settings.get("model", "large")
         force_cpu = self._settings.get("force_cpu", False)
         self._transcription_worker = TranscriptionWorker(file_path, model=model, force_cpu=force_cpu)
-        self._transcription_worker.progress.connect(self.step1.progress_bar.setValue)
+        self._transcription_worker.progress.connect(self.step1.set_progress_smoothly)
         self._transcription_worker.finished.connect(self._on_transcription_finished)
         self._transcription_worker.error.connect(self._on_transcription_error)
         self._transcription_worker.start()
