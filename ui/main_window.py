@@ -143,6 +143,7 @@ class MainWindow(QMainWindow):
 
     def _on_transcription_error(self, error_msg):
         """Handle transcription error."""
+        logger.error(f"Transcription error: {error_msg}")
         self.step1.stop_shimmer()
         self.step1.transcribe_btn.setEnabled(True)
         self.step1.progress_bar.setVisible(False)
@@ -150,6 +151,9 @@ class MainWindow(QMainWindow):
 
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
+        # Stop typing animation and populate all text immediately
+        self.step2.stop_animation_and_populate()
+
         try:
             if not self._current_json_path:
                 self.step2.result_label.setText("Error: No transcription data")
