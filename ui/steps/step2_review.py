@@ -112,6 +112,13 @@ class Step2Widget(QGroupBox):
     def restart_typing(self):
         self._typing_animator.restart()
 
+    def stop_animation_and_populate(self):
+        """Stop typing animation and instantly populate all chunk text."""
+        self._typing_animator.stop()
+        for i, (timestamp, text_edit) in enumerate(self._chunks):
+            if i < len(self._full_chunk_texts):
+                text_edit.setPlainText(self._full_chunk_texts[i])
+
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
         card.setStyleSheet("""
