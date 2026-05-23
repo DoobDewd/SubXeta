@@ -113,7 +113,12 @@ core/
   - [x] Moved from after comp generation to app closeEvent
   - [x] Temp JSON files now persist for session, clean up on exit
 - [x] Output path picker — SaveFileDialog lets user choose location and filename
-- [ ] Splash screen: show on startup (before main window loads)
+- [x] **Splash screen: show on startup (before main window loads)** ✅ Complete
+- [x] **Console disabled fix** ✅ Complete
+  - [x] Fixed app hanging when running PyInstaller exe without console window
+  - [x] Added NullWriter to safely redirect stdout/stderr when None
+  - [x] WhisperX and all dependencies now work correctly with console disabled
+  - [x] Transcription completes and properly transitions to step 2
 - [ ] Particle effects: subtle floating green dots in background
 - [ ] "Open folder" button after generation
 - [x] **Logging Refactor — Industry Standard** ✅ Complete
@@ -126,7 +131,7 @@ core/
   - [x] Add: single-line summary for transcription start/complete
   - [x] No file logging (temp only, cleared on restart)
 
-### Phase 5 — Packaging & Installer ✅ In Progress
+### Phase 5 — Packaging & Installer ✅ Complete
 **System Requirements:**
 - Windows 10/11
 - 10 GB free disk space (for models on first run)
@@ -147,15 +152,13 @@ core/
 - [x] Exe built and tested on multiple PCs
 - [x] Cross-PC compatibility verified (FFmpeg auto-detection works)
 - [x] Cache logging integrated for uninstall documentation
+- [x] **Console-disabled fix:** Exe runs without console window (NullWriter prevents crashes from stdout/stderr being None)
+- [x] Exe fully functional: transcription → chunk review → comp generation all work headless
 
-**Next Steps (for Inno Setup installer):**
-1. Create `.iss` script for Windows installer with:
-   - Optional cache cleanup on uninstall checkbox
-   - Desktop shortcut + Start Menu entry
-   - Information about NVIDIA driver for GPU mode (optional)
-2. Package installer (~400MB exe, expands to ~2GB on install)
-3. Test on clean Windows VM
-4. Document first-run cache download (~8.4 GB)
+**Optional Enhancements:**
+1. (Optional) Code-sign exe to eliminate SmartScreen warnings on first run
+2. (Optional) Test on clean Windows VM to verify fresh install experience
+3. (Optional) GitHub Releases distribution (for better SmartScreen reputation)
 
 **Build Process:**
 ```bash
@@ -170,12 +173,13 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 **Pre-Release Validation Checklist:**
 
 **GUI & Navigation**
-- [ ] App launches without errors
-- [ ] Startup time < 5 seconds (development), < 15 seconds (exe)
-- [ ] Tab navigation works (Step 1 → Step 2 → Step 1)
-- [ ] Fade transitions smooth
-- [ ] Step 2 disabled until transcription complete
-- [ ] Text typing animation plays correctly
+- [x] App launches without errors
+- [x] Startup time < 5 seconds (development), < 15 seconds (exe)
+- [x] Tab navigation works (Step 1 → Step 2 → Step 1)
+- [x] Fade transitions smooth
+- [x] Step 2 disabled until transcription complete
+- [x] Text typing animation plays correctly
+- [x] **Console disabled:** App works correctly when exe run without console window (transcription completes, transitions to step 2)
 
 **File Import**
 - [ ] Drag & drop audio file works
