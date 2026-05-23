@@ -136,7 +136,11 @@ class MainWindow(QMainWindow):
 
             self.step2.set_status("Review and edit chunks as needed, then click Generate Comp")
             self.step2.populate_chunks(chunk_data)
-            self.tab_bar.enable_step(2, on_complete=lambda: self._show_step(2))
+            # Enable step 2 if first time, otherwise just switch to it
+            if 2 in self.tab_bar.disabled_steps:
+                self.tab_bar.enable_step(2, on_complete=lambda: self._show_step(2))
+            else:
+                self._show_step(2)
 
         except Exception as e:
             self._on_transcription_error(f"Failed to process transcription: {str(e)}")

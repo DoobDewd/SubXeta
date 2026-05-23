@@ -89,14 +89,29 @@ class TranscriptionWorker(QThread):
             # Import whisperx library
             import whisperx
 
-            # Load transcription model
-            try:
-                debug_logger.debug(f"Loading WhisperX {self.model} model on {device}...")
-                model = whisperx.load_model(self.model, device=device)
-                debug_logger.debug(f"Model loaded successfully")
-            except Exception as e:
-                logger.error(f"Failed to load model: {e}")
-                self.error.emit(f"Failed to load model: {str(e)}")
+            # Load transcription model (with automatic retry on lock/permission errors)
+            model = None
+            for attempt in range(2):
+                try:
+                    debug_logger.debug(f"Loading WhisperX {self.model} model on {device}..." + (f" (attempt {attempt + 1}/2)" if attempt > 0 else ""))
+                    model = whisperx.load_model(self.model, device=device)
+                    debug_logger.debug(f"Model loaded successfully")
+                    break
+                except (OSError, PermissionError) as e:
+                    if attempt == 0 and ("WinError 1314" in str(e) or "required privilege" in str(e) or "lock" in str(e).lower()):
+                        debug_logger.debug(f"Cache lock/permission issue, retrying immediately...")
+                        continue
+                    logger.error(f"Failed to load model: {e}")
+                    self.error.emit(f"Failed to load model: {str(e)}")
+                    return
+                except Exception as e:
+                    logger.error(f"Failed to load model: {e}")
+                    self.error.emit(f"Failed to load model: {str(e)}")
+                    return
+
+            if model is None:
+                logger.error("Failed to load model after retries")
+                self.error.emit("Failed to load model after retries")
                 return
 
             self.progress.emit(35)

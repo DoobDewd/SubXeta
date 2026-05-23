@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
+import subprocess
 import sys
+
+# Suppress console window popups on Windows (WhisperX/FFmpeg subprocess calls)
+# Only apply in PyInstaller exe mode, not in dev
+if sys.platform == "win32" and getattr(sys, 'frozen', False):
+    subprocess.CREATE_NO_WINDOW = 0x08000000
+    original_popen = subprocess.Popen
+
+    def patched_popen(*args, **kwargs):
+        if "creationflags" not in kwargs:
+            kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+        return original_popen(*args, **kwargs)
+
+    subprocess.Popen = patched_popen
+
 import logging
 import os
 from pathlib import Path

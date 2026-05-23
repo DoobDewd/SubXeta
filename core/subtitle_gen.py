@@ -361,12 +361,12 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
     english_keyframes = generate_text_keyframes(chunks, fps, True, pause_threshold)
 
     content = content.replace(
-        'StyledText = Input { Value = "bob lazar is", },',
+        'StyledText = Input { Value = "this is alien text", },',
         'StyledText = Input { SourceOp = "TemplateStyledText", Source = "Value", },'
     )
 
     content = content.replace(
-        'StyledText = Input { Value = "bob lazar is", },',
+        'StyledText = Input { Value = "this is english text", },',
         'StyledText = Input { SourceOp = "Template_1StyledText", Source = "Value", },'
     )
 
