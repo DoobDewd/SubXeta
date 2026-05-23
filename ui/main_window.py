@@ -11,7 +11,8 @@ from ui.steps.step1_transcribe import Step1Widget
 from ui.steps.step2_review import Step2Widget
 from core.transcription import TranscriptionWorker
 from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts, rebuild_chunks_with_edits
-from core.subtitle_gen import generate_single_comp
+from core.subtitle_gen_alien import generate_single_comp
+from core.settings import load_settings, save_settings
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
         self._transcription_worker = None
         self._current_json_path = None
         self._original_chunks = None
-        self._settings = {"model": "large", "force_cpu": False}
+        self._settings = load_settings()
         self._step2_typing_played = False
 
         main_widget = QWidget()
@@ -175,7 +176,8 @@ class MainWindow(QMainWindow):
 
             # Generate comp
             debug_logger.debug(f"Generating comp from {len(rebuilt_chunks)} chunks")
-            comp_content = generate_single_comp(rebuilt_chunks, fps=24, pause_threshold=0.3)
+            template = self._settings.get("template", "Montserrat to Zeta Reticuli Template.comp")
+            comp_content = generate_single_comp(rebuilt_chunks, fps=24, pause_threshold=0.3, template_name=template)
             debug_logger.debug(f"Comp generated: {len(comp_content)} bytes")
 
             # Save comp file with "Save As" dialog
@@ -209,6 +211,7 @@ class MainWindow(QMainWindow):
     def _on_settings_changed(self, settings):
         """Handle settings change."""
         self._settings = settings
+        save_settings(settings)
         logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}")
 
     def closeEvent(self, event):
@@ -247,7 +250,7 @@ class MainWindow(QMainWindow):
             if step == 2:
                 self.step2.restart_typing()
             elif step == 3:
-                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"])
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Montserrat to Zeta Reticuli Template.comp"))
             return
 
         # If the incoming widget is already visible, don't animate
@@ -275,7 +278,7 @@ class MainWindow(QMainWindow):
                 self.step2.restart_typing()
                 self._step2_typing_played = True
             elif step == 3:
-                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"])
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Montserrat to Zeta Reticuli Template.comp"))
 
         fade_out.finished.connect(on_fade_out_done)
         self._fade_out_anim = fade_out
