@@ -170,6 +170,31 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 # Output in: dist\SubtitleGen\
 ```
 
+### Phase 6 — Future: Template Extensibility (Planned)
+
+**Overview:** Support for additional animation template types beyond the alien-to-English reveal.
+
+**Architecture:** Each unique animation type requires its own subtitle generation module:
+- **`core/subtitle_gen_alien.py`** — Alien-to-English translation reveal (current)
+- **`core/subtitle_gen_[type].py`** — Future: Each distinct animation type (e.g., fade, typewriter, highlight, dissolve) gets dedicated generator
+
+**Why Separate Modules:**
+- Different animation types have fundamentally different keyframe generation logic
+- Timing calculations specific to each animation style
+- Node names and transform parameters vary per template type
+- Clean separation of concerns
+
+**Adding New Template Types:**
+1. Create new template file(s) in `templates/My Animation Type.comp`
+2. Create `core/subtitle_gen_my_animation.py` with:
+   - `generate_single_comp()` function (matches existing signature)
+   - Template-specific keyframe logic
+   - Animation timing calculations
+3. Update UI settings to allow selecting the template type
+4. Automatically discovers template .comp files in `templates/` folder (no spec updates needed)
+
+---
+
 **Pre-Release Validation Checklist:**
 
 **GUI & Navigation**
