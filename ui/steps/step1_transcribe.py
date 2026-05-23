@@ -57,6 +57,10 @@ class Step1Widget(QGroupBox):
     def __init__(self):
         super().__init__("Step 1 • Transcribe Audio")
         self._build_ui()
+        self._ellipsis_timer = QTimer()
+        self._ellipsis_timer.timeout.connect(self._update_ellipsis)
+        self._ellipsis_count = 0
+        self._current_stage_name = ""
 
     def _build_ui(self):
         layout = QVBoxLayout()
@@ -90,12 +94,11 @@ class Step1Widget(QGroupBox):
 
         self.progress_bar = ShimmerProgressBar()
         self.progress_bar.setVisible(False)
-        self.progress_bar.valueChanged.connect(self._update_progress_label)
         self._progress_anim = None
         layout.addWidget(self.progress_bar)
 
         self.progress_label = QLabel("0%")
-        self.progress_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold;")
+        self.progress_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold; font-family: monospace;")
         self.progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progress_label.setVisible(False)
         layout.addWidget(self.progress_label)
@@ -115,6 +118,30 @@ class Step1Widget(QGroupBox):
         """Update the progress percentage label."""
         self.progress_label.setText(f"{value}%")
 
+    def set_progress_with_stage(self, stage_name: str, percentage: int):
+        """Update progress bar with stage name and percentage (0-100 per stage)."""
+        # Check if this is an indeterminate stage (no real progress tracking)
+        is_indeterminate = stage_name == "Transcribing audio"
+
+        if is_indeterminate:
+            # For indeterminate stages, show animated ellipsis and full progress bar
+            self._current_stage_name = stage_name
+            if percentage == 0:
+                # Starting indeterminate stage
+                self._ellipsis_count = 0
+                self._ellipsis_timer.start(300)  # Update ellipsis every 300ms
+                self.set_progress_smoothly(100)
+            elif percentage == 100:
+                # Completing indeterminate stage
+                self._ellipsis_timer.stop()
+                self.progress_label.setText(f"{stage_name}... Complete")
+        else:
+            # For determinate stages, show normal progress with percentage
+            self._ellipsis_timer.stop()
+            self._current_stage_name = ""
+            self.progress_label.setText(f"{stage_name}... {percentage}%")
+            self.set_progress_smoothly(percentage)
+
     def set_progress_smoothly(self, target_value):
         """Smoothly animate progress bar to target value."""
         current_value = self.progress_bar.value()
@@ -131,6 +158,15 @@ class Step1Widget(QGroupBox):
         self._progress_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
         self._progress_anim.start()
 
+    def _update_ellipsis(self):
+        """Animate ellipsis (. → .. → ...) for indeterminate progress."""
+        self._ellipsis_count = (self._ellipsis_count + 1) % 4
+        dots = "." * self._ellipsis_count if self._ellipsis_count > 0 else "."
+        # Pad with spaces to keep text width constant (no shifting)
+        padded_dots = dots.ljust(3)
+        self.progress_label.setText(f"{self._current_stage_name}{padded_dots}")
+
     def stop_shimmer(self):
         """Call this when transcription completes."""
+        self._ellipsis_timer.stop()
         self.progress_bar.stop_shimmer()
