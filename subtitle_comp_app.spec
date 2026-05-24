@@ -7,6 +7,7 @@ a = Analysis(
     workpath='build',
     distpath='dist',
     binaries=[
+        # Update this path to your FFmpeg installation directory
         ('C:\\Program Files\\FFmpeg\\ffmpeg-n7.1-latest-win64-lgpl-shared-7.1\\bin', 'ffmpeg/bin'),
     ],
     datas=[

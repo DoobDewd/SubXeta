@@ -332,3 +332,9 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 4. **Model sharing:** Note that `~/.cache/huggingface/` and `~/.cache/torch/` are shared by other ML applications — only delete if user confirms
 
 **Development note:** Cache logging is built into `core/transcription.py` — runs automatically and reports all cache paths/sizes on startup for documentation purposes.
+
+---
+
+## Known Issues / To-Do
+
+- [ ] Fix template filename typo: rename `Monsterrat to Galictico.comp` → `Montserrat to Galictico.comp`

@@ -1,13 +1,14 @@
 """Settings persistence for SubXeta."""
 import json
+import platform
 from pathlib import Path
 
 
 def get_config_dir() -> Path:
     """Get the config directory for the current OS."""
-    if Path.home().name == "tomwt":  # Windows
+    if platform.system() == "Windows":
         config_dir = Path.home() / "AppData" / "Roaming" / "SubXeta"
-    else:  # Linux/macOS fallback
+    else:  # Linux/macOS
         config_dir = Path.home() / ".config" / "SubXeta"
 
     config_dir.mkdir(parents=True, exist_ok=True)
