@@ -218,6 +218,8 @@ class SettingsWidget(QGroupBox):
         self.device_buttons[device].setChecked(True)
         if template in self.template_buttons:
             self.template_buttons[template].setChecked(True)
+        elif "Zeta Reticuli Template.comp" in self.template_buttons:
+            self.template_buttons["Zeta Reticuli Template.comp"].setChecked(True)
 
         for btn in self.model_buttons.values():
             btn.blockSignals(False)

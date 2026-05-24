@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
         """Handle settings change."""
         self._settings = settings
         save_settings(settings)
-        logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}")
+        logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}, template={settings['template']}")
 
     def closeEvent(self, event):
         """Clean up temporary JSON file when closing."""
