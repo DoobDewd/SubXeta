@@ -283,7 +283,7 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 - UI connects signals to progress bar and step navigation
 
 ### Template System
-- Template: `Montserrat to Zeta Reticuli Template.comp`
+- Template: `Zeta Reticuli Template.comp` (and `Galactico Template.comp` as alternative)
 - Node names must match exactly: `Template`, `Template_1`, `TemplateWriteOnStart`, `TemplateWriteOnEnd`, `Template_1WriteOnStart`, `Template_1WriteOnEnd`
 - **Resolution-responsive positioning:** TextPlus node centers use dynamic expressions:
   - Alien (Template): `{ 0.5, 0.5 - 0.0212 * self.Width / self.Height }`
@@ -337,4 +337,4 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 
 ## Known Issues / To-Do
 
-- [ ] Fix template filename typo: rename `Monsterrat to Galictico.comp` → `Montserrat to Galictico.comp`
+- [x] Fix template filename typo: renamed `Monsterrat to Galictico.comp` → `Galactico Template.comp` and `Montserrat to Zeta Reticuli Template.comp` → `Zeta Reticuli Template.comp`
