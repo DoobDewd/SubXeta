@@ -100,8 +100,8 @@ class SettingsWidget(QGroupBox):
 
         # Display names for templates
         template_display_names = {
-            "Montserrat to Zeta Reticuli Template.comp": "Zeta Reticuli",
-            "Monsterrat to Galictico.comp": "Galactico"
+            "Zeta Reticuli Template.comp": "Zeta Reticuli",
+            "Galactico Template.comp": "Galactico"
         }
 
         # Slightly wider style for template buttons
@@ -187,7 +187,7 @@ class SettingsWidget(QGroupBox):
         """Emit current settings."""
         selected_model = next((m for m, btn in self.model_buttons.items() if btn.isChecked()), "large")
         selected_device = next((d for d, btn in self.device_buttons.items() if btn.isChecked()), "GPU")
-        selected_template = next((t for t, btn in self.template_buttons.items() if btn.isChecked()), "Montserrat to Zeta Reticuli Template.comp")
+        selected_template = next((t for t, btn in self.template_buttons.items() if btn.isChecked()), "Zeta Reticuli Template.comp")
         settings = {
             "model": selected_model,
             "force_cpu": selected_device == "CPU",
@@ -195,7 +195,7 @@ class SettingsWidget(QGroupBox):
         }
         self.settings_changed.emit(settings)
 
-    def set_settings(self, model: str, force_cpu: bool, template: str = "Montserrat to Zeta Reticuli Template.comp"):
+    def set_settings(self, model: str, force_cpu: bool, template: str = "Zeta Reticuli Template.comp"):
         """Update UI to reflect settings (blocks signals to avoid recursion)."""
         for btn in self.model_buttons.values():
             btn.blockSignals(True)

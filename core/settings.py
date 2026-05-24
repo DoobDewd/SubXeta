@@ -21,7 +21,7 @@ def load_settings() -> dict:
     defaults = {
         "model": "large",
         "force_cpu": False,
-        "template": "Montserrat to Zeta Reticuli Template.comp"
+        "template": "Zeta Reticuli Template.comp"
     }
 
     if not config_file.exists():

@@ -21,7 +21,7 @@ def get_available_templates() -> List[str]:
     return sorted([f.name for f in templates_dir.glob("*.comp")])
 
 
-def load_template(template_name: str = "Montserrat to Zeta Reticuli Template.comp") -> str:
+def load_template(template_name: str = "Zeta Reticuli Template.comp") -> str:
     """Load the Fusion comp template from templates folder."""
     template_path = Path(__file__).parent.parent / "templates" / template_name
     with open(template_path) as f:
@@ -326,7 +326,7 @@ def replace_keyframes_block(content: str, spline_name: str, new_keyframes: str) 
     return content[:keyframes_start] + new_keyframes + content[keyframes_end:]
 
 
-def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9, template_name: str = "Montserrat to Zeta Reticuli Template.comp") -> str:
+def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9, template_name: str = "Zeta Reticuli Template.comp") -> str:
     """Generate a single comp with keyframed text for all chunks."""
     debug_logger.debug(f"Starting comp generation: {len(chunks)} chunks, {fps} fps, template: {template_name}")
 

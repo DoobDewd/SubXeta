@@ -207,71 +207,71 @@ python -m PyInstaller subtitle_comp_app.spec --noconfirm
 - [x] **Console disabled:** App works correctly when exe run without console window (transcription completes, transitions to step 2)
 
 **File Import**
-- [ ] Drag & drop audio file works
-- [ ] Click-to-browse file picker works
-- [ ] Accepts MP4, MOV, MP3, WAV formats
-- [ ] Rejects unsupported formats with error
-- [ ] Rejects non-existent files with error
-- [ ] Validates file size > 0 bytes
+- [x] Drag & drop audio file works
+- [x] Click-to-browse file picker works
+- [x] Accepts MP4, MOV, MP3, WAV formats
+- [x] Rejects unsupported formats with error
+- [x] Rejects non-existent files with error
+- [x] Validates file size > 0 bytes
 
 **Transcription**
-- [ ] Progress bar advances smoothly
-- [ ] Model loads (GPU or CPU detected correctly)
-- [ ] Transcription completes for 1 min video in < 2 min (GPU) / < 5 min (CPU)
-- [ ] JSON output created in temp directory
-- [ ] Detected language shown in logs
-- [ ] Word-level alignment completes without errors
+- [x] Progress bar advances smoothly
+- [x] Model loads (GPU or CPU detected correctly)
+- [x] Transcription completes for 1 min video in < 2 min (GPU) / < 5 min (CPU)
+- [x] JSON output created in temp directory
+- [x] Detected language shown in logs
+- [x] Word-level alignment completes without errors
 
 **Chunk Review & Editing**
-- [ ] Chunks populated with correct text
-- [ ] Multi-line text displays correctly (\\n converted to actual newlines)
-- [ ] Editable text fields accept input
-- [ ] Original chunks unedited preserve timing
-- [ ] Edited chunks reconstruct with proper word mapping
-- [ ] Special characters (quotes, apostrophes) handled correctly
-- [ ] Adding words to chunk splits timing proportionally
-- [ ] Removing words from chunk merges timing correctly
+- [x] Chunks populated with correct text
+- [x] Multi-line text displays correctly (\\n converted to actual newlines)
+- [x] Editable text fields accept input
+- [x] Original chunks unedited preserve timing
+- [x] Edited chunks reconstruct with proper word mapping
+- [x] Special characters (quotes, apostrophes) handled correctly
+- [x] Adding words to chunk splits timing proportionally
+- [x] Removing words from chunk merges timing correctly
 
 **Comp Generation**
-- [ ] Generate button enabled only after transcription
-- [ ] Comp generation completes without errors
-- [ ] Generated .comp file valid (can import to DaVinci Resolve)
-- [ ] Alien text keyframes at correct times
-- [ ] English text keyframes at correct times
-- [ ] Text overlaps correctly in template (check horizontal & vertical resolutions)
-- [ ] Render range updated to match audio duration
-- [ ] Success message displays with filename
+- [x] Generate button enabled only after transcription
+- [x] Comp generation completes without errors
+- [x] Generated .comp file valid (can import to DaVinci Resolve)
+- [x] Alien text keyframes at correct times
+- [x] English text keyframes at correct times
+- [x] Text overlaps correctly in template (check horizontal & vertical resolutions)
+- [x] Render range updated to match audio duration
+- [x] Success message displays with filename
 
 **Cross-Platform Testing**
-- [ ] Runs on Windows 10 (tested)
-- [ ] Runs on Windows 11 (tested)
-- [ ] Works without NVIDIA GPU (CPU mode)
-- [ ] Works with NVIDIA GPU (if CUDA driver present)
-- [ ] FFmpeg bundled version found and used (no system FFmpeg required)
+- [x] Runs on Windows 10 (tested)
+- [x] Runs on Windows 11 (tested)
+- [x] Works without NVIDIA GPU (CPU mode)
+- [x] Works with NVIDIA GPU (if CUDA driver present - RTX 3060 Ti verified)
+- [x] FFmpeg bundled version found and used (no system FFmpeg required)
 
 **Cache Management**
-- [ ] Models downloaded to `~/.cache/huggingface/` (~5GB)
-- [ ] PyTorch cache created in `~/.cache/torch/` (~360MB)
-- [ ] Whisper cache in `~/.cache/whisper/` (~3GB)
-- [ ] Temp JSON files auto-deleted after comp generation
-- [ ] Cache paths logged at startup
+- [x] Models downloaded to `~/.cache/huggingface/` (~5GB)
+- [x] PyTorch cache created in `~/.cache/torch/` (~360MB)
+- [x] Whisper cache in `~/.cache/whisper/` (~3GB)
+- [x] Temp JSON files auto-deleted after comp generation
+- [x] Cache paths logged at startup
 
 **Error Handling**
-- [ ] Transcription failure shows user-friendly error
-- [ ] Model loading failure shows user-friendly error
-- [ ] File not found shows user-friendly error
-- [ ] Comp generation failure shows user-friendly error
-- [ ] App doesn't crash on edge cases
-- [ ] Invalid chunk text handled gracefully
+- [x] Transcription failure shows user-friendly error
+- [x] Model loading failure shows user-friendly error
+- [x] File not found shows user-friendly error
+- [x] Comp generation failure shows user-friendly error
+- [x] App doesn't crash on edge cases
+- [x] Invalid chunk text handled gracefully
 
 **Installer Testing** (After Inno Setup)
-- [ ] Installer downloads/installs cleanly
-- [ ] Desktop shortcut created and works
-- [ ] Start Menu entry created
-- [ ] App launches from Start Menu
-- [ ] Uninstall removes app folder
-- [ ] Optional: uninstall prompt to delete cache offers checkbox
-- [ ] Uninstall removes shortcuts
+- [x] Installer downloads/installs cleanly (1.98 GB, under GitHub 2GB limit)
+- [x] Desktop shortcut created and works
+- [x] Start Menu entry created
+- [x] App launches from Start Menu
+- [x] Uninstall removes app folder
+- [x] Optional: uninstall prompt to delete cache offers checkbox
+- [x] Uninstall removes shortcuts
 
 ---
 
