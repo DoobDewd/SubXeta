@@ -1,7 +1,8 @@
 import logging
+from pathlib import Path
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar,
-    QScrollArea, QWidget, QTextEdit, QHBoxLayout
+    QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog
 )
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPainter, QFont
@@ -30,6 +31,7 @@ class Step2Widget(QGroupBox):
         self._typing_animator = TypingAnimator(char_delay_ms=25)
         self._chunks = []
         self._original_texts = []
+        self._video_filename = None
         self._build_ui()
 
     def _build_ui(self):
@@ -62,13 +64,22 @@ class Step2Widget(QGroupBox):
 
         layout.addSpacing(20)
 
+        self.save_transcript_btn = QPushButton("Save Transcript")
+        self.save_transcript_btn.setEnabled(False)
+        self.save_transcript_btn.setFixedHeight(56)
+        self.save_transcript_btn.setMaximumWidth(200)
+        self.save_transcript_btn.clicked.connect(self._on_save_transcript_clicked)
+
         self.generate_btn = QPushButton("Generate Comp")
         self.generate_btn.setEnabled(False)
         self.generate_btn.setFixedHeight(56)
-        self.generate_btn.setMaximumWidth(300)
+        self.generate_btn.setMaximumWidth(200)
         self.generate_btn.clicked.connect(self._on_generate_clicked)
+
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
+        btn_layout.addWidget(self.save_transcript_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        btn_layout.addSpacing(20)
         btn_layout.addWidget(self.generate_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         btn_layout.addStretch()
         layout.addLayout(btn_layout, stretch=0)
@@ -87,7 +98,7 @@ class Step2Widget(QGroupBox):
     def set_status(self, text):
         self.status_label.setText(text)
 
-    def populate_chunks(self, chunks):
+    def populate_chunks(self, chunks, video_filename=None):
         while self.chunks_layout.count():
             item = self.chunks_layout.takeAt(0)
             if item.widget():
@@ -96,6 +107,7 @@ class Step2Widget(QGroupBox):
         self._chunks = []
         self._original_texts = []
         self._full_chunk_texts = []
+        self._video_filename = video_filename
         typing_targets = []
         for timestamp, text in chunks:
             card, text_edit = self._create_chunk_card(timestamp, text)
@@ -107,6 +119,7 @@ class Step2Widget(QGroupBox):
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
+        self.save_transcript_btn.setEnabled(True)
         self._typing_animator.animate_sequence(typing_targets)
 
     def restart_typing(self):
@@ -194,6 +207,55 @@ class Step2Widget(QGroupBox):
     def get_edited_flags(self):
         """Get which chunks were actually edited."""
         return getattr(self, '_edited_flags', [])
+
+    def _on_save_transcript_clicked(self):
+        """Save edited chunks as SRT file."""
+        if not self._chunks:
+            self.result_label.setText("Error: No chunks available")
+            return
+
+        default_name = "subtitles.srt"
+        if self._video_filename:
+            default_name = Path(self._video_filename).stem + ".srt"
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Subtitle File",
+            default_name,
+            "SRT Files (*.srt);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            def format_timestamp(seconds):
+                hours = int(seconds) // 3600
+                minutes = (int(seconds) % 3600) // 60
+                secs = int(seconds) % 60
+                millis = int((seconds % 1) * 1000)
+                return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+            srt_entries = []
+            for idx, (timestamp_str, text_edit) in enumerate(self._chunks, 1):
+                text = text_edit.toPlainText().strip()
+                if text:
+                    start_sec = float(timestamp_str)
+                    # End time is start of next chunk, or start + 2s for last chunk
+                    if idx < len(self._chunks):
+                        next_timestamp = float(self._chunks[idx][0])
+                        end_sec = next_timestamp
+                    else:
+                        end_sec = start_sec + 2.0
+
+                    srt_entries.append(f"{idx}\n{format_timestamp(start_sec)} --> {format_timestamp(end_sec)}\n{text}\n")
+
+            Path(file_path).write_text("\n".join(srt_entries), encoding='utf-8')
+            self.result_label.setText(f"✓ Saved: {Path(file_path).name}")
+            debug_logger.info(f"Transcript saved to: {file_path}")
+        except Exception as e:
+            self.result_label.setText(f"Error: {str(e)}")
+            debug_logger.error(f"Failed to save transcript: {str(e)}")
 
     def _on_generate_clicked(self):
         self.progress_bar.setVisible(True)

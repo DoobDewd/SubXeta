@@ -34,6 +34,7 @@ class MainWindow(QMainWindow):
         self._transcription_worker = None
         self._current_json_path = None
         self._original_chunks = None
+        self._current_video_path = None
         self._settings = load_settings()
         self._step2_typing_played = False
 
@@ -101,6 +102,7 @@ class MainWindow(QMainWindow):
         """Start transcription worker when button is clicked."""
         self.step1.transcribe_btn.setEnabled(False)
         self.step1.progress_bar.setValue(0)
+        self._current_video_path = file_path
 
         model = self._settings.get("model", "large")
         force_cpu = self._settings.get("force_cpu", False)
@@ -136,7 +138,7 @@ class MainWindow(QMainWindow):
                 chunk_data.append((timestamp, text))
 
             self.step2.set_status("Review and edit chunks as needed, then click Generate Comp")
-            self.step2.populate_chunks(chunk_data)
+            self.step2.populate_chunks(chunk_data, self._current_video_path)
             # Enable step 2 if first time, otherwise just switch to it
             if 2 in self.tab_bar.disabled_steps:
                 self.tab_bar.enable_step(2, on_complete=lambda: self._show_step(2))
