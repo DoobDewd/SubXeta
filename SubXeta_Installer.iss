@@ -59,8 +59,9 @@ begin
   begin
     UserProfile := GetEnv('USERPROFILE');
 
-    // Always remove settings
+    // Always remove settings and logs
     DelTree(UserProfile + '\AppData\Roaming\SubXeta', True, True, True);
+    DelTree(UserProfile + '\.SubXeta', True, True, True);
 
     if DeleteCache then
     begin
