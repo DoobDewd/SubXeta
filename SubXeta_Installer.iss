@@ -6,10 +6,10 @@ DefaultDirName={autopf}\SubXeta
 DefaultGroupName=SubXeta
 OutputDir=dist
 OutputBaseFilename=SubXeta_Installer
-VersionInfoVersion=1.1.1.1
+VersionInfoVersion=1.2.0
 VersionInfoCompany=DoobDewd
 VersionInfoProductName=SubXeta
-VersionInfoProductVersion=1.1.1.1
+VersionInfoProductVersion=1.2.0
 Compression=lzma2/ultra64
 SolidCompression=yes
 LZMANumBlockThreads=4
@@ -57,9 +57,13 @@ var
 begin
   if CurUninstallStep = usPostUninstall then
   begin
+    UserProfile := GetEnv('USERPROFILE');
+
+    // Always remove settings
+    DelTree(UserProfile + '\AppData\Roaming\SubXeta', True, True, True);
+
     if DeleteCache then
     begin
-      UserProfile := GetEnv('USERPROFILE');
       DelTree(UserProfile + '\.cache\huggingface', True, True, True);
       DelTree(UserProfile + '\.cache\whisper', True, True, True);
       DelTree(UserProfile + '\.cache\torch', True, True, True);
