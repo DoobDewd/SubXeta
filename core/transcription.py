@@ -158,7 +158,7 @@ class TranscriptionWorker(QThread):
             self.progress.emit(TranscriptionStage.PREPARING.value, 40)
 
             # Output directory (use temp folder to avoid clutter)
-            output_dir = Path(tempfile.gettempdir()) / "SubtitleGen_transcriptions"
+            output_dir = Path(tempfile.gettempdir()) / "SubXeta_transcriptions"
             output_dir.mkdir(exist_ok=True, parents=True)
 
             self.progress.emit(TranscriptionStage.PREPARING.value, 55)
