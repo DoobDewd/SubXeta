@@ -21,7 +21,8 @@ def load_settings() -> dict:
     defaults = {
         "model": "large",
         "force_cpu": False,
-        "template": "Zeta Reticuli Template.comp"
+        "template": "Zeta Reticuli Template.comp",
+        "fps": 24
     }
 
     if not config_file.exists():

@@ -179,7 +179,8 @@ class MainWindow(QMainWindow):
             # Generate comp
             debug_logger.debug(f"Generating comp from {len(rebuilt_chunks)} chunks")
             template = self._settings.get("template", "Zeta Reticuli Template.comp")
-            comp_content = generate_single_comp(rebuilt_chunks, fps=24, pause_threshold=0.3, template_name=template)
+            fps = self._settings.get("fps", 24)
+            comp_content = generate_single_comp(rebuilt_chunks, fps=fps, pause_threshold=0.3, template_name=template)
             debug_logger.debug(f"Comp generated: {len(comp_content)} bytes")
 
             # Save comp file with "Save As" dialog
@@ -252,7 +253,7 @@ class MainWindow(QMainWindow):
             if step == 2:
                 self.step2.restart_typing()
             elif step == 3:
-                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Zeta Reticuli Template.comp"))
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Zeta Reticuli Template.comp"), self._settings.get("fps", 24))
             return
 
         # If the incoming widget is already visible, don't animate
@@ -280,7 +281,7 @@ class MainWindow(QMainWindow):
                 self.step2.restart_typing()
                 self._step2_typing_played = True
             elif step == 3:
-                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Zeta Reticuli Template.comp"))
+                self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Zeta Reticuli Template.comp"), self._settings.get("fps", 24))
 
         fade_out.finished.connect(on_fade_out_done)
         self._fade_out_anim = fade_out

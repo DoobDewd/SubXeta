@@ -118,6 +118,33 @@ class SettingsWidget(QGroupBox):
         template_layout.addStretch()
         layout.addLayout(template_layout)
 
+        # FPS selection label
+        fps_label = QLabel("Project Frame Rate:")
+        fps_label.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        layout.addWidget(fps_label)
+
+        # FPS buttons
+        fps_layout = QHBoxLayout()
+        fps_layout.setContentsMargins(0, 0, 0, 0)
+        fps_layout.setSpacing(12)
+
+        self.fps_buttons = {}
+        fps_values = [24, 30, 50, 60]
+
+        fps_button_style = button_style.replace("min-width: 65px;", "min-width: 60px;")
+
+        for fps in fps_values:
+            fps_str = str(int(fps)) if fps == int(fps) else str(fps)
+            btn = QPushButton(fps_str)
+            btn.setCheckable(True)
+            btn.setStyleSheet(fps_button_style)
+            self.fps_buttons[fps] = btn
+            fps_layout.addWidget(btn)
+
+        self.fps_buttons[24].setChecked(True)
+        fps_layout.addStretch()
+        layout.addLayout(fps_layout)
+
         layout.addStretch()
         self.setLayout(layout)
 
@@ -128,6 +155,8 @@ class SettingsWidget(QGroupBox):
             btn.clicked.connect(self._on_device_changed)
         for btn in self.template_buttons.values():
             btn.clicked.connect(self._on_template_changed)
+        for btn in self.fps_buttons.values():
+            btn.clicked.connect(self._on_fps_changed)
 
     def _on_model_changed(self):
         """Handle model selection (mutually exclusive)."""
@@ -183,25 +212,47 @@ class SettingsWidget(QGroupBox):
                 btn.blockSignals(False)
         self._emit_settings()
 
+    def _on_fps_changed(self):
+        """Handle FPS selection (mutually exclusive)."""
+        sender = self.sender()
+        if not sender.isChecked():
+            # Prevent deselection - force it back to checked
+            sender.blockSignals(True)
+            sender.setChecked(True)
+            sender.blockSignals(False)
+            return
+
+        # Uncheck all other buttons
+        for btn in self.fps_buttons.values():
+            if btn is not sender:
+                btn.blockSignals(True)
+                btn.setChecked(False)
+                btn.blockSignals(False)
+        self._emit_settings()
+
     def _emit_settings(self):
         """Emit current settings."""
         selected_model = next((m for m, btn in self.model_buttons.items() if btn.isChecked()), "large")
         selected_device = next((d for d, btn in self.device_buttons.items() if btn.isChecked()), "GPU")
         selected_template = next((t for t, btn in self.template_buttons.items() if btn.isChecked()), "Zeta Reticuli Template.comp")
+        selected_fps = next((f for f, btn in self.fps_buttons.items() if btn.isChecked()), 24)
         settings = {
             "model": selected_model,
             "force_cpu": selected_device == "CPU",
-            "template": selected_template
+            "template": selected_template,
+            "fps": selected_fps
         }
         self.settings_changed.emit(settings)
 
-    def set_settings(self, model: str, force_cpu: bool, template: str = "Zeta Reticuli Template.comp"):
+    def set_settings(self, model: str, force_cpu: bool, template: str = "Zeta Reticuli Template.comp", fps: float = 24):
         """Update UI to reflect settings (blocks signals to avoid recursion)."""
         for btn in self.model_buttons.values():
             btn.blockSignals(True)
         for btn in self.device_buttons.values():
             btn.blockSignals(True)
         for btn in self.template_buttons.values():
+            btn.blockSignals(True)
+        for btn in self.fps_buttons.values():
             btn.blockSignals(True)
 
         # Uncheck all buttons before checking the selected one
@@ -210,6 +261,8 @@ class SettingsWidget(QGroupBox):
         for btn in self.device_buttons.values():
             btn.setChecked(False)
         for btn in self.template_buttons.values():
+            btn.setChecked(False)
+        for btn in self.fps_buttons.values():
             btn.setChecked(False)
 
         # Check the selected buttons
@@ -220,10 +273,16 @@ class SettingsWidget(QGroupBox):
             self.template_buttons[template].setChecked(True)
         elif "Zeta Reticuli Template.comp" in self.template_buttons:
             self.template_buttons["Zeta Reticuli Template.comp"].setChecked(True)
+        if fps in self.fps_buttons:
+            self.fps_buttons[fps].setChecked(True)
+        else:
+            self.fps_buttons[24].setChecked(True)
 
         for btn in self.model_buttons.values():
             btn.blockSignals(False)
         for btn in self.device_buttons.values():
             btn.blockSignals(False)
         for btn in self.template_buttons.values():
+            btn.blockSignals(False)
+        for btn in self.fps_buttons.values():
             btn.blockSignals(False)
