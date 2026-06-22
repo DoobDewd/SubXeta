@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 from PyQt6.QtWidgets import (
-    QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar,
+    QGroupBox, QVBoxLayout, QLabel, QPushButton,
     QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog,
     QDialog, QDoubleSpinBox, QMessageBox
 )

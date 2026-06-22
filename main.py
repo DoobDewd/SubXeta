@@ -16,7 +16,6 @@ if sys.platform == "win32" and getattr(sys, 'frozen', False):
     subprocess.Popen = patched_popen
 
 import logging
-import os
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow

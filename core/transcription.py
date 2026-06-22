@@ -299,7 +299,3 @@ class TranscriptionWorker(QThread):
         except Exception as e:
             logger.error(f"Transcription error: {e}", exc_info=True)
             self.error.emit(f"Transcription error: {str(e)}")
-
-    def stop(self):
-        """Request worker to stop."""
-        pass

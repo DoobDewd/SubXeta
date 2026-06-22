@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar, QHBoxLayout
 from PyQt6.QtCore import pyqtSignal, QTimer, QRect, Qt, QPropertyAnimation, QEasingCurve
-from PyQt6.QtGui import QFont, QPainter, QColor, QLinearGradient, QPen
+from PyQt6.QtGui import QFont, QPainter, QColor, QLinearGradient
 from ui.widgets import DragDropArea
 from ui import theme
 

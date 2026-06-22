@@ -15,7 +15,6 @@ from core.transcription import TranscriptionWorker
 from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts, assemble_final_chunks
 from core.subtitle_gen_alien import generate_single_comp
 from core.settings import load_settings, save_settings
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 debug_logger = logging.getLogger(f"{__name__}.debug")

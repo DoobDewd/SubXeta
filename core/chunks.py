@@ -2,7 +2,6 @@
 import json
 import logging
 from difflib import SequenceMatcher
-from pathlib import Path
 from typing import List, Tuple
 from core.models import Word, TextVariant
 

@@ -3,12 +3,11 @@
 WhisperX → DaVinci Resolve Fusion comp automation.
 Takes WhisperX JSON (word-level timestamps) and generates a single subtitle comp.
 """
-import argparse
 import logging
 from pathlib import Path
 from typing import List
 from core.models import Word
-from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts
+from core.chunks import chunk_to_texts
 
 debug_logger = logging.getLogger(f"{__name__}.debug")
 
@@ -389,37 +388,3 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
 
     debug_logger.debug("Comp generation complete")
     return content
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Generate a Resolve Fusion comp from Whisper JSON with all subtitles")
-    parser.add_argument("--json", required=True, help="Path to Whisper JSON file")
-    parser.add_argument("--fps", type=int, default=24, help="Frame rate")
-    parser.add_argument("--output", default="subs/subtitles.comp", help="Output comp file")
-    parser.add_argument("--max-chars", type=int, default=30, help="Max characters per line")
-    parser.add_argument("--pause-threshold", type=float, default=0.3, help="Pause threshold in seconds")
-
-    args = parser.parse_args()
-
-    json_path = Path(args.json)
-
-    if not json_path.exists():
-        print(f"Error: JSON file not found: {json_path}")
-        return
-
-    words = load_whisper_json(str(json_path))
-    if not words:
-        print("Error: No words found in JSON file")
-        return
-
-    chunks = group_into_chunks(words, args.max_chars, args.pause_threshold)
-    comp_content = generate_single_comp(chunks, args.fps, args.pause_threshold)
-
-    output_path = Path(args.output)
-    output_path.parent.mkdir(exist_ok=True, parents=True)
-    output_path.write_text(comp_content)
-    print(f"Generated {output_path}")
-
-
-if __name__ == "__main__":
-    main()

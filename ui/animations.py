@@ -1,6 +1,6 @@
 """Reusable animation utilities."""
 from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QColor
 import random
 
 from ui import theme

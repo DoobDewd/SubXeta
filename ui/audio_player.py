@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget, QLineEdit
 )
-from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, QEvent, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QFont, QPainter, QColor, QPen
 from ui import theme
@@ -555,13 +555,6 @@ class AudioPlayerWidget(QGroupBox):
         """Emit signal to add chunk with In/Out times."""
         if self.slider.in_marker < self.slider.out_marker:
             self.add_chunk_requested.emit(self.slider.in_marker / 1000, self.slider.out_marker / 1000)
-
-    def stop(self):
-        """Stop playback and cleanup."""
-        self._player.stop()
-        self.timer.stop()
-        self.play_btn.setEnabled(False if not self._current_file else True)
-        self.pause_btn.setEnabled(False)
 
     def _on_set_in_point(self, value=None):
         """Set In point to current playhead position."""
