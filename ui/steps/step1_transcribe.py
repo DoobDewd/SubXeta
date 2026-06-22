@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgre
 from PyQt6.QtCore import pyqtSignal, QTimer, QRect, Qt, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont, QPainter, QColor, QLinearGradient, QPen
 from ui.widgets import DragDropArea
+from ui import theme
 
 
 class ShimmerProgressBar(QProgressBar):
@@ -43,9 +44,9 @@ class ShimmerProgressBar(QProgressBar):
             if shimmer_left < shimmer_right:
                 shimmer_rect = QRect(shimmer_left, rect.y(), shimmer_right - shimmer_left, rect.height())
                 gradient = QLinearGradient(shimmer_rect.left(), 0, shimmer_rect.right(), 0)
-                gradient.setColorAt(0, QColor(0, 255, 136, 0))
+                gradient.setColorAt(0, QColor(*theme.GREEN_RGB, 0))
                 gradient.setColorAt(0.5, QColor(255, 255, 255, 125))
-                gradient.setColorAt(1, QColor(0, 255, 136, 0))
+                gradient.setColorAt(1, QColor(*theme.GREEN_RGB, 0))
 
                 painter.fillRect(shimmer_rect, gradient)
             painter.end()
@@ -70,7 +71,7 @@ class Step1Widget(QGroupBox):
         desc_font = QFont()
         desc_font.setPointSize(12)
         desc.setFont(desc_font)
-        desc.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        desc.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent;")
         layout.addWidget(desc)
 
         layout.addSpacing(20)
@@ -98,7 +99,7 @@ class Step1Widget(QGroupBox):
         layout.addWidget(self.progress_bar)
 
         self.progress_label = QLabel("0%")
-        self.progress_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold; font-family: monospace;")
+        self.progress_label.setStyleSheet(f"color: {theme.GREEN}; background-color: transparent; font-weight: bold; font-family: monospace;")
         self.progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progress_label.setVisible(False)
         layout.addWidget(self.progress_label)

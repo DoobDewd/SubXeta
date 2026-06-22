@@ -9,6 +9,7 @@ from PyQt6.QtCore import pyqtSignal, Qt, QByteArray, QSize
 from PyQt6.QtGui import QPainter, QFont, QIcon, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
 from ui.animations import CRTAnimatedMixin, TypingAnimator
+from ui import theme
 from core.models import Word
 
 debug_logger = logging.getLogger(f"{__name__}.debug")
@@ -29,7 +30,7 @@ class AddChunkDialog(QDialog):
         layout.setSpacing(12)
 
         start_label = QLabel("Start Time (seconds):")
-        start_label.setStyleSheet("color: #e0e0e0;")
+        start_label.setStyleSheet(f"color: {theme.TEXT};")
         layout.addWidget(start_label)
         self.start_spin = QDoubleSpinBox()
         self.start_spin.setMinimum(0.0)
@@ -39,7 +40,7 @@ class AddChunkDialog(QDialog):
         layout.addWidget(self.start_spin)
 
         end_label = QLabel("End Time (seconds):")
-        end_label.setStyleSheet("color: #e0e0e0;")
+        end_label.setStyleSheet(f"color: {theme.TEXT};")
         layout.addWidget(end_label)
         self.end_spin = QDoubleSpinBox()
         self.end_spin.setMinimum(0.0)
@@ -49,7 +50,7 @@ class AddChunkDialog(QDialog):
         layout.addWidget(self.end_spin)
 
         text_label = QLabel("Text:")
-        text_label.setStyleSheet("color: #e0e0e0;")
+        text_label.setStyleSheet(f"color: {theme.TEXT};")
         layout.addWidget(text_label)
         self.text_edit = QTextEdit()
         self.text_edit.setMinimumHeight(80)
@@ -108,17 +109,17 @@ class Step2Widget(QGroupBox):
         desc_font = QFont()
         desc_font.setPointSize(12)
         desc.setFont(desc_font)
-        desc.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        desc.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent;")
         layout.addWidget(desc)
 
         self.status_label = QLabel("Waiting for transcription...")
-        self.status_label.setStyleSheet("color: #e0e0e0; background-color: transparent; padding: 0px 12px;")
+        self.status_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; padding: 0px 12px;")
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setMinimumHeight(250)
         chunks_widget = QWidget()
-        chunks_widget.setStyleSheet("QWidget { background-color: #191e1c; }")
+        chunks_widget.setStyleSheet(f"QWidget {{ background-color: {theme.PANEL}; }}")
         self.chunks_layout = QVBoxLayout()
         self.chunks_layout.setSpacing(12)
         chunks_widget.setLayout(self.chunks_layout)
@@ -151,7 +152,7 @@ class Step2Widget(QGroupBox):
 
         # Create result_label for code reference, but don't add to layout to save space
         self.result_label = QLabel("")
-        self.result_label.setStyleSheet("background-color: transparent; color: #00ff88; font-weight: bold;")
+        self.result_label.setStyleSheet(f"background-color: transparent; color: {theme.GREEN}; font-weight: bold;")
 
         self.setLayout(layout)
 
@@ -191,13 +192,13 @@ class Step2Widget(QGroupBox):
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
         card.chunk_timestamp = timestamp
-        card.setStyleSheet("""
-            QGroupBox {
-                border: 1px solid #00ff88;
+        card.setStyleSheet(f"""
+            QGroupBox {{
+                border: 1px solid {theme.GREEN};
                 border-radius: 6px;
                 margin: 0px;
                 padding: 12px;
-            }
+            }}
         """)
         layout = QVBoxLayout()
         layout.setSpacing(8)
@@ -208,16 +209,16 @@ class Step2Widget(QGroupBox):
         header_layout.setContentsMargins(0, 0, 0, 0)
 
         timestamp_label = QLabel(timestamp)
-        timestamp_label.setStyleSheet("color: #00ff88; font-weight: 600; font-size: 11px; background-color: transparent;")
+        timestamp_label.setStyleSheet(f"color: {theme.GREEN}; font-weight: 600; font-size: 11px; background-color: transparent;")
         header_layout.addWidget(timestamp_label)
         header_layout.addStretch()
 
         # X icon SVG - clean and symmetrical, with hover variant
-        x_svg = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18M6 6L18 18" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        x_svg = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="{theme.GREEN}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>'''
-        x_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18M6 6L18 18" stroke="#66ffdd" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        x_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="{theme.GREEN_HOVER}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>'''
         x_icon = self._create_icon_from_svg(x_svg)
         x_icon_hover = self._create_icon_from_svg(x_svg_hover)
@@ -255,19 +256,19 @@ class Step2Widget(QGroupBox):
         text_edit = QTextEdit()
         text_edit.setMinimumHeight(60)
         text_edit.setMaximumHeight(100)
-        text_edit.setStyleSheet("""
-            QTextEdit {
-                background-color: #1a1a1a;
-                color: #e0e0e0;
-                border: 1px solid rgba(0, 255, 136, 0.3);
+        text_edit.setStyleSheet(f"""
+            QTextEdit {{
+                background-color: {theme.BG};
+                color: {theme.TEXT};
+                border: 1px solid {theme.green_rgba(0.3)};
                 border-radius: 4px;
                 padding: 8px;
                 font-size: 12px;
-            }
-            QTextEdit:focus {
-                background-color: #1f1f1f;
-                border: 2px solid #00ffaa;
-            }
+            }}
+            QTextEdit:focus {{
+                background-color: {theme.BG_FOCUS};
+                border: 2px solid {theme.GREEN_BRIGHT};
+            }}
         """)
         layout.addWidget(text_edit)
 

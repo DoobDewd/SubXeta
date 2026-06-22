@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QRect, QTimer, pyqtSignal, pyqtProperty
 from PyQt6.QtGui import QFont, QPainter, QColor
 from ui.animations import TypingAnimator
+from ui import theme
 
 
 class TabBar(QWidget):
@@ -12,7 +13,7 @@ class TabBar(QWidget):
     def __init__(self):
         super().__init__()
         self.setFixedHeight(50)
-        self.setStyleSheet("background-color: #1a1a1a;")
+        self.setStyleSheet(f"background-color: {theme.BG};")
 
         layout = QHBoxLayout()
         layout.setContentsMargins(40, 0, 40, 0)
@@ -52,7 +53,7 @@ class TabBar(QWidget):
         settings_label.step = 3
         settings_label.full_text = "Settings"
         settings_label.mousePressEvent = lambda e: self.on_tab_click(3)
-        settings_label.setStyleSheet("color: #777777; background-color: transparent;")
+        settings_label.setStyleSheet(f"color: {theme.TEXT_MUTED}; background-color: transparent;")
         self.labels.append(settings_label)
         layout.addWidget(settings_label)
 
@@ -126,9 +127,9 @@ class TabBar(QWidget):
             label.setFont(font)
 
             if is_disabled:
-                label.setStyleSheet("color: #444444; background-color: transparent;")
+                label.setStyleSheet(f"color: {theme.BORDER}; background-color: transparent;")
             else:
-                label.setStyleSheet(f"color: {'#e0e0e0' if is_active else '#777777'}; background-color: transparent;")
+                label.setStyleSheet(f"color: {theme.TEXT if is_active else theme.TEXT_MUTED}; background-color: transparent;")
 
         self.active_step = step
 
@@ -190,7 +191,7 @@ class TabBar(QWidget):
         painter = QPainter(self)
 
         if self._underline_width > 0:
-            color = QColor("#00ff88")
+            color = QColor(theme.GREEN)
             alpha = max(0, min(255, int(255 * self._underline_opacity)))
             color.setAlpha(alpha)
             underline_rect = QRect(

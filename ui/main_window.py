@@ -5,6 +5,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, Qt, QEvent
 
 from ui.styles import get_stylesheet
+from ui import theme
 from ui.tab_bar import TabBar
 from ui.settings_widget import SettingsWidget
 from ui.steps.step1_transcribe import Step1Widget
@@ -57,7 +58,7 @@ class MainWindow(QMainWindow):
         self.tab_bar.tab_changed.connect(self._show_step)
         nav_layout.addWidget(self.tab_bar)
         nav_container.setLayout(nav_layout)
-        nav_container.setStyleSheet("background-color: #1a1a1a;")
+        nav_container.setStyleSheet(f"background-color: {theme.BG};")
         main_layout.addWidget(nav_container)
 
         main_layout.addWidget(self._create_content_area(), 1)

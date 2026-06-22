@@ -1,6 +1,7 @@
 """Settings widget for model, device, and template selection."""
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from PyQt6.QtCore import pyqtSignal, Qt
+from ui import theme
 from core.subtitle_gen_alien import get_available_templates
 
 
@@ -11,7 +12,7 @@ class SettingsWidget(QGroupBox):
 
     def __init__(self):
         super().__init__("Settings")
-        self.setStyleSheet("color: #00ff88;")
+        self.setStyleSheet(f"color: {theme.GREEN};")
 
         # Main horizontal layout for left (settings) and right (shortcuts) columns
         main_layout = QHBoxLayout()
@@ -25,7 +26,7 @@ class SettingsWidget(QGroupBox):
 
         # Model selector label
         model_label = QLabel("Transcription Model:")
-        model_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        model_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; font-weight: bold;")
         layout.addWidget(model_label)
 
         # Model radio buttons
@@ -34,30 +35,30 @@ class SettingsWidget(QGroupBox):
         model_buttons_layout.setSpacing(12)
 
         self.model_buttons = {}
-        button_style = """
-            QPushButton {
-                color: #777777;
-                background-color: #2a2a2a;
-                border: 1px solid #444444;
+        button_style = f"""
+            QPushButton {{
+                color: {theme.TEXT_MUTED};
+                background-color: {theme.SURFACE};
+                border: 1px solid {theme.BORDER};
                 border-radius: 4px;
                 padding: 4px 8px;
                 font-weight: normal;
                 min-width: 65px;
                 min-height: 24px;
-            }
-            QPushButton:hover {
-                background-color: #333333;
-                border: 1px solid #555555;
-            }
-            QPushButton:pressed {
-                background-color: #1f1f1f;
-            }
-            QPushButton:checked {
-                color: #1a1a1a;
-                background-color: #00ff88;
-                border: 1px solid #00ff88;
+            }}
+            QPushButton:hover {{
+                background-color: {theme.DISABLED_BG};
+                border: 1px solid {theme.BORDER_HOVER};
+            }}
+            QPushButton:pressed {{
+                background-color: {theme.BG_FOCUS};
+            }}
+            QPushButton:checked {{
+                color: {theme.BG};
+                background-color: {theme.GREEN};
+                border: 1px solid {theme.GREEN};
                 font-weight: bold;
-            }
+            }}
         """
         for model in ["base", "small", "medium", "large"]:
             btn = QPushButton(model.capitalize())
@@ -71,7 +72,7 @@ class SettingsWidget(QGroupBox):
 
         # Device selection label
         device_label = QLabel("Processing Mode:")
-        device_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        device_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; font-weight: bold;")
         layout.addWidget(device_label)
 
         # Device checkboxes
@@ -93,7 +94,7 @@ class SettingsWidget(QGroupBox):
 
         # Template selection label
         template_label = QLabel("Subtitle Template:")
-        template_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        template_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; font-weight: bold;")
         layout.addWidget(template_label)
 
         # Template buttons
@@ -126,7 +127,7 @@ class SettingsWidget(QGroupBox):
 
         # FPS selection label
         fps_label = QLabel("Project Frame Rate:")
-        fps_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        fps_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; font-weight: bold;")
         layout.addWidget(fps_label)
 
         # FPS buttons
@@ -165,7 +166,7 @@ class SettingsWidget(QGroupBox):
         shortcuts_layout.setSpacing(16)
 
         shortcuts_title = QLabel("Hotkeys:")
-        shortcuts_title.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        shortcuts_title.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; font-weight: bold;")
         shortcuts_layout.addWidget(shortcuts_title)
 
         shortcuts = [
@@ -184,7 +185,7 @@ class SettingsWidget(QGroupBox):
             shortcut_container.setSpacing(12)
 
             action_label = QLabel(action)
-            action_label.setStyleSheet("color: #b0b0b0; background-color: transparent; font-size: 14px;")
+            action_label.setStyleSheet(f"color: {theme.TEXT_DIM}; background-color: transparent; font-size: 14px;")
             action_label.setWordWrap(True)
             shortcut_container.addWidget(action_label)
 
@@ -203,8 +204,8 @@ class SettingsWidget(QGroupBox):
                     font_size = "9px"
                 key_label.setStyleSheet(f"""
                     QLabel {{
-                        color: #1a1a1a;
-                        background-color: #00ff88;
+                        color: {theme.BG};
+                        background-color: {theme.GREEN};
                         font-weight: bold;
                         font-size: {font_size};
                         font-family: monospace;
@@ -215,18 +216,18 @@ class SettingsWidget(QGroupBox):
                         max-width: 24px;
                         max-height: 24px;
                         text-align: center;
-                        border-top: 1px solid #00ffaa;
-                        border-left: 1px solid #00ffaa;
-                        border-bottom: 2px solid #006644;
-                        border-right: 2px solid #006644;
+                        border-top: 1px solid {theme.GREEN_BRIGHT};
+                        border-left: 1px solid {theme.GREEN_BRIGHT};
+                        border-bottom: 2px solid {theme.GREEN_SHADOW};
+                        border-right: 2px solid {theme.GREEN_SHADOW};
                     }}
                 """)
             else:
                 # Wider keys for Space
-                key_label.setStyleSheet("""
-                    QLabel {
-                        color: #1a1a1a;
-                        background-color: #00ff88;
+                key_label.setStyleSheet(f"""
+                    QLabel {{
+                        color: {theme.BG};
+                        background-color: {theme.GREEN};
                         font-weight: bold;
                         font-size: 11px;
                         font-family: monospace;
@@ -236,11 +237,11 @@ class SettingsWidget(QGroupBox):
                         min-height: 24px;
                         max-height: 24px;
                         text-align: center;
-                        border-top: 1px solid #00ffaa;
-                        border-left: 1px solid #00ffaa;
-                        border-bottom: 2px solid #006644;
-                        border-right: 2px solid #006644;
-                    }
+                        border-top: 1px solid {theme.GREEN_BRIGHT};
+                        border-left: 1px solid {theme.GREEN_BRIGHT};
+                        border-bottom: 2px solid {theme.GREEN_SHADOW};
+                        border-right: 2px solid {theme.GREEN_SHADOW};
+                    }}
                 """)
 
             key_label.setAlignment(Qt.AlignmentFlag.AlignCenter)

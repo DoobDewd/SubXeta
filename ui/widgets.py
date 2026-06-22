@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFileDialog
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QPainter
 from ui.animations import CRTAnimatedMixin
+from ui import theme
 
 
 class DragDropArea(QWidget, CRTAnimatedMixin):
@@ -31,9 +32,9 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
         self.setMinimumHeight(140)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-    _STYLE_DEFAULT  = "QLabel { border: 2px dashed #00ff88; border-radius: 5px; padding: 40px; color: #00ff88; background-color: transparent; }"
-    _STYLE_HOVER    = "QLabel { border: 2px solid #00ff88;  border-radius: 5px; padding: 40px; color: #00ff88; background-color: transparent; }"
-    _STYLE_DRAGGING = "QLabel { border: 2px dashed #ff00ff; border-radius: 5px; padding: 40px; color: #ff00ff; background-color: transparent; }"
+    _STYLE_DEFAULT  = f"QLabel {{ border: 2px dashed {theme.GREEN}; border-radius: 5px; padding: 40px; color: {theme.GREEN}; background-color: transparent; }}"
+    _STYLE_HOVER    = f"QLabel {{ border: 2px solid {theme.GREEN};  border-radius: 5px; padding: 40px; color: {theme.GREEN}; background-color: transparent; }}"
+    _STYLE_DRAGGING = f"QLabel {{ border: 2px dashed {theme.MAGENTA}; border-radius: 5px; padding: 40px; color: {theme.MAGENTA}; background-color: transparent; }}"
 
     def _tick_crt_effect(self):
         self._crt_effect.tick()

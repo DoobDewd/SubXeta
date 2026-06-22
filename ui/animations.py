@@ -3,6 +3,8 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QPainter, QColor
 import random
 
+from ui import theme
+
 
 class CRTEffect:
     """Reusable CRT scanline animation effect."""
@@ -49,7 +51,7 @@ class CRTEffect:
             alpha = int(scanline_val * 35)
             alpha = int(alpha * (0.85 + flicker_val * 0.15))
 
-            color = QColor(0, 255, 136, alpha)
+            color = QColor(*theme.GREEN_RGB, alpha)
             painter.setPen(color)
             painter.drawLine(rect.x(), rect.y() + y, rect.x() + w, rect.y() + y)
 
@@ -57,7 +59,7 @@ class CRTEffect:
         if self._sweep_active:
             sweep_y = int(self._sweep_progress * h)
             if 0 <= sweep_y < h:
-                sweep_color = QColor(0, 255, 136, 120)
+                sweep_color = QColor(*theme.GREEN_RGB, 120)
                 painter.setPen(sweep_color)
                 painter.drawLine(rect.x(), rect.y() + sweep_y, rect.x() + w, rect.y() + sweep_y)
 

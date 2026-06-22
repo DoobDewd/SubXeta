@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import QSplashScreen
 from PyQt6.QtGui import QPixmap, QFont, QColor, QPainter
 from PyQt6.QtCore import Qt, QRect
 
+from ui import theme
+
 
 def show_splash_with_spinner(app, duration=2.0):
     """Show splash screen with animated spinner at bottom left.
@@ -40,7 +42,7 @@ def show_splash_with_spinner(app, duration=2.0):
     font.setPointSize(20)
     font.setBold(True)
 
-    color = QColor(0, 255, 136)
+    color = QColor(*theme.GREEN_RGB)
     spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
     start = time.time()
@@ -53,7 +55,7 @@ def show_splash_with_spinner(app, duration=2.0):
         # Draw glow effect (multiple offset passes with transparency)
         for offset in range(4, 0, -1):
             alpha = int(80 * (1 - offset / 4))
-            glow = QColor(0, 255, 136, alpha)
+            glow = QColor(*theme.GREEN_RGB, alpha)
             painter.setPen(glow)
             painter.drawText(
                 QRect(20 + offset, frame_pixmap.height() - 40 + offset, 100, 40),

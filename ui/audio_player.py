@@ -8,6 +8,7 @@ from PyQt6.QtCore import Qt, QTimer, QUrl, QByteArray, QSize, QEvent, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QFont, QIcon, QPixmap, QPainter, QColor, QPen
 from PyQt6.QtSvg import QSvgRenderer
+from ui import theme
 
 logger = logging.getLogger(__name__)
 debug_logger = logging.getLogger(f"{__name__}.debug")
@@ -63,10 +64,10 @@ class CustomSlider(QSlider):
             range_rect_y = self.height() // 4
             range_rect_height = self.height() // 2
             painter.fillRect(int(in_x), range_rect_y, int(out_x - in_x), range_rect_height,
-                           QColor(0, 255, 136, 50))  # Green with alpha
+                           QColor(*theme.GREEN_RGB, 50))  # Green with alpha
 
             # Draw In marker line (theme green) on the slider
-            pen = QPen(QColor(0, 255, 136))
+            pen = QPen(QColor(*theme.GREEN_RGB))
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawLine(int(in_x), 0, int(in_x), self.height())
@@ -155,7 +156,8 @@ class InOutKnobControl(QWidget):
 
         knob_radius = 8
         knob_y = self.height() // 2
-        theme_green = QColor(0, 255, 136)  # #00ff88
+        theme_green = QColor(*theme.GREEN_RGB)
+        knob_border = QColor(*theme.GREEN_KNOB_BORDER_RGB)
         line_height = 8  # Short line above knob
 
         if self.max_value > 0:
@@ -168,7 +170,7 @@ class InOutKnobControl(QWidget):
             painter.drawLine(in_x, knob_y - knob_radius - line_height, in_x, knob_y - knob_radius)
             # Draw knob
             painter.setBrush(theme_green)
-            painter.setPen(QColor(0, 200, 100))  # Darker green for border
+            painter.setPen(knob_border)  # Darker green for border
             painter.drawEllipse(in_x - knob_radius, knob_y - knob_radius,
                               knob_radius * 2, knob_radius * 2)
 
@@ -181,7 +183,7 @@ class InOutKnobControl(QWidget):
             painter.drawLine(out_x, knob_y - knob_radius - line_height, out_x, knob_y - knob_radius)
             # Draw knob
             painter.setBrush(theme_green)
-            painter.setPen(QColor(0, 200, 100))  # Darker green for border
+            painter.setPen(knob_border)  # Darker green for border
             painter.drawEllipse(out_x - knob_radius, knob_y - knob_radius,
                               knob_radius * 2, knob_radius * 2)
 
@@ -234,13 +236,13 @@ class AudioPlayerWidget(QGroupBox):
         title_font = QFont()
         title_font.setPointSize(11)
         title.setFont(title_font)
-        title.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        title.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent;")
         layout.addWidget(title)
 
         # Timeline display
         timeline_layout = QHBoxLayout()
         self.time_label = QLabel("00:00.000")
-        self.time_label.setStyleSheet("color: #00ff88; font-weight: bold; font-size: 14px; background-color: transparent;")
+        self.time_label.setStyleSheet(f"color: {theme.GREEN}; font-weight: bold; font-size: 14px; background-color: transparent;")
         self.time_label.setMinimumWidth(100)
         timeline_layout.addWidget(self.time_label)
         timeline_layout.addStretch()
@@ -271,46 +273,46 @@ class AudioPlayerWidget(QGroupBox):
         inout_display_layout.setContentsMargins(0, 0, 0, 0)
 
         in_label = QLabel("In:")
-        in_label.setStyleSheet("color: #777777; font-size: 10px; background-color: transparent;")
+        in_label.setStyleSheet(f"color: {theme.TEXT_MUTED}; font-size: 10px; background-color: transparent;")
         inout_display_layout.addWidget(in_label)
 
         self.in_time_label = QLineEdit("0.000")
-        self.in_time_label.setStyleSheet("""
-            QLineEdit {
-                color: #00ff88;
+        self.in_time_label.setStyleSheet(f"""
+            QLineEdit {{
+                color: {theme.GREEN};
                 font-weight: bold;
-                border: 1px solid #00ff88;
+                border: 1px solid {theme.GREEN};
                 padding: 4px 8px;
                 border-radius: 4px;
                 background-color: transparent;
-            }
-            QLineEdit:focus {
-                background-color: #1f1f1f;
-                border: 2px solid #00ffaa;
-            }
+            }}
+            QLineEdit:focus {{
+                background-color: {theme.BG_FOCUS};
+                border: 2px solid {theme.GREEN_BRIGHT};
+            }}
         """)
         self.in_time_label.setMaximumWidth(100)
         self.in_time_label.editingFinished.connect(self._on_in_time_edited)
         inout_display_layout.addWidget(self.in_time_label)
 
         out_label = QLabel("Out:")
-        out_label.setStyleSheet("color: #777777; font-size: 10px; background-color: transparent;")
+        out_label.setStyleSheet(f"color: {theme.TEXT_MUTED}; font-size: 10px; background-color: transparent;")
         inout_display_layout.addWidget(out_label)
 
         self.out_time_label = QLineEdit("0.000")
-        self.out_time_label.setStyleSheet("""
-            QLineEdit {
-                color: #00ff88;
+        self.out_time_label.setStyleSheet(f"""
+            QLineEdit {{
+                color: {theme.GREEN};
                 font-weight: bold;
-                border: 1px solid #00ff88;
+                border: 1px solid {theme.GREEN};
                 padding: 4px 8px;
                 border-radius: 4px;
                 background-color: transparent;
-            }
-            QLineEdit:focus {
-                background-color: #1f1f1f;
-                border: 2px solid #00ffaa;
-            }
+            }}
+            QLineEdit:focus {{
+                background-color: {theme.BG_FOCUS};
+                border: 2px solid {theme.GREEN_BRIGHT};
+            }}
         """)
         self.out_time_label.setMaximumWidth(100)
         self.out_time_label.editingFinished.connect(self._on_out_time_edited)
@@ -324,11 +326,11 @@ class AudioPlayerWidget(QGroupBox):
         controls_layout.setSpacing(12)
 
         # Play button
-        play_svg = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 5v14l11-7z" fill="#00ff88"/>
+        play_svg = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z" fill="{theme.GREEN}"/>
         </svg>'''
-        play_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 5v14l11-7z" fill="#66ffdd"/>
+        play_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
         play_icon = self._create_icon_from_svg(play_svg)
         play_icon_hover = self._create_icon_from_svg(play_svg_hover)
@@ -371,13 +373,13 @@ class AudioPlayerWidget(QGroupBox):
         controls_layout.addWidget(self.play_btn)
 
         # Pause button
-        pause_svg = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="4" width="3" height="16" fill="#00ff88"/>
-            <rect x="15" y="4" width="3" height="16" fill="#00ff88"/>
+        pause_svg = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="4" width="3" height="16" fill="{theme.GREEN}"/>
+            <rect x="15" y="4" width="3" height="16" fill="{theme.GREEN}"/>
         </svg>'''
-        pause_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="4" width="3" height="16" fill="#66ffdd"/>
-            <rect x="15" y="4" width="3" height="16" fill="#66ffdd"/>
+        pause_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
+            <rect x="15" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
         pause_icon = self._create_icon_from_svg(pause_svg)
         pause_icon_hover = self._create_icon_from_svg(pause_svg_hover)
