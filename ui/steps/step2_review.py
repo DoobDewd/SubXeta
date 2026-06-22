@@ -95,6 +95,7 @@ class Step2Widget(QGroupBox):
         self._video_filename = None
         self._transcribed_original_texts = []  # Original transcribed chunks (never modified)
         self._manually_added_chunks = []
+        self._deleted_chunk_timestamps = set()  # Track deleted chunks
         self._build_ui()
 
     def _build_ui(self):
@@ -200,6 +201,7 @@ class Step2Widget(QGroupBox):
 
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
+        card.chunk_timestamp = timestamp
         card.setStyleSheet("""
             QGroupBox {
                 border: 1px solid #00ff88;
@@ -212,9 +214,35 @@ class Step2Widget(QGroupBox):
         layout.setSpacing(8)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(8)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+
         timestamp_label = QLabel(timestamp)
         timestamp_label.setStyleSheet("color: #00ff88; font-weight: 600; font-size: 11px; background-color: transparent;")
-        layout.addWidget(timestamp_label)
+        header_layout.addWidget(timestamp_label)
+        header_layout.addStretch()
+
+        delete_btn = QPushButton("✕")
+        delete_btn.setMaximumWidth(24)
+        delete_btn.setMaximumHeight(24)
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #ff4444;
+                border: 1px solid #ff4444;
+                border-radius: 3px;
+                font-weight: bold;
+                padding: 2px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 68, 68, 0.2);
+            }
+        """)
+        delete_btn.clicked.connect(lambda: self._delete_chunk(timestamp))
+        header_layout.addWidget(delete_btn)
+
+        layout.addLayout(header_layout)
 
         text_edit = QTextEdit()
         text_edit.setMinimumHeight(60)
@@ -237,6 +265,27 @@ class Step2Widget(QGroupBox):
 
         card.setLayout(layout)
         return card, text_edit
+
+    def _delete_chunk(self, timestamp):
+        """Delete a chunk by removing from display and internal lists."""
+        # Track as deleted
+        self._deleted_chunk_timestamps.add(timestamp)
+
+        # Find and remove from all tracking lists by timestamp
+        self._chunks = [(ts, edit) for ts, edit in self._chunks if ts != timestamp]
+        self._original_texts = [(ts, text) for ts, text in self._original_texts if ts != timestamp]
+        self._transcribed_original_texts = [(ts, text) for ts, text in self._transcribed_original_texts if ts != timestamp]
+
+        # Rebuild _full_chunk_texts to match filtered _original_texts
+        self._full_chunk_texts = [text for ts, text in self._original_texts]
+
+        # Remove from layout widget
+        for i in range(self.chunks_layout.count()):
+            widget = self.chunks_layout.itemAt(i).widget()
+            if widget and hasattr(widget, 'chunk_timestamp') and widget.chunk_timestamp == timestamp:
+                self.chunks_layout.removeWidget(widget)
+                widget.deleteLater()
+                break
 
     def get_edited_chunks(self):
         """Get the currently edited chunks and track which were actually edited."""
@@ -286,6 +335,10 @@ class Step2Widget(QGroupBox):
     def get_manually_added_chunks(self):
         """Get manually added chunks as List[List[List[Word]]]."""
         return self._manually_added_chunks
+
+    def get_deleted_chunk_timestamps(self):
+        """Get set of timestamps for chunks that were deleted."""
+        return self._deleted_chunk_timestamps
 
     def get_manual_chunk_timestamps(self):
         """Get timestamps of manually added chunks for identification."""

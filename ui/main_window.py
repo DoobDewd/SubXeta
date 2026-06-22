@@ -216,21 +216,27 @@ class MainWindow(QMainWindow):
             edited_chunks_all = self.step2.get_edited_chunks()
             edited_flags_all = self.step2.get_edited_flags()
             manual_timestamps = self.step2.get_manual_chunk_timestamps()
+            deleted_timestamps = self.step2.get_deleted_chunk_timestamps()
 
-            # Extract ONLY original chunks - skip manual chunks
+            # Extract ONLY original chunks - skip manual chunks and deleted chunks
             edited_chunks = []
             edited_flags = []
             for i, (ts, text) in enumerate(edited_chunks_all):
                 ts_float = float(ts)
                 is_manual = any(abs(ts_float - mt) < 0.001 for mt in manual_timestamps)
-                if not is_manual:
+                is_deleted = ts in deleted_timestamps
+                if not is_manual and not is_deleted:
                     edited_chunks.append((ts, text))
                     edited_flags.append(edited_flags_all[i])
 
-            debug_logger.debug(f"Passing to rebuild: {len(edited_chunks)} edited chunks (excluded {len(manual_timestamps)} manual)")
+            debug_logger.debug(f"Passing to rebuild: {len(edited_chunks)} edited chunks (excluded {len(manual_timestamps)} manual, {len(deleted_timestamps)} deleted)")
 
-            # Rebuild with ONLY original chunks
-            rebuilt_original_chunks = rebuild_chunks_with_edits(self._original_chunks, edited_chunks, edited_flags)
+            # Filter _original_chunks to remove deleted ones before rebuilding
+            filtered_original_chunks = [chunk for chunk in self._original_chunks
+                                       if not any(abs(chunk[0][0].start - float(ts)) < 0.001 for ts in deleted_timestamps)]
+
+            # Rebuild with ONLY original non-deleted chunks
+            rebuilt_original_chunks = rebuild_chunks_with_edits(filtered_original_chunks, edited_chunks, edited_flags)
 
             # Now merge the rebuilt original chunks with manually added chunks, sorted by time
             manually_added = self.step2.get_manually_added_chunks()
