@@ -4,11 +4,11 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget, QLineEdit
 )
-from PyQt6.QtCore import Qt, QTimer, QUrl, QByteArray, QSize, QEvent, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, QEvent, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtGui import QFont, QIcon, QPixmap, QPainter, QColor, QPen
-from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtGui import QFont, QPainter, QColor, QPen
 from ui import theme
+from ui.icons import icon_from_svg
 
 logger = logging.getLogger(__name__)
 debug_logger = logging.getLogger(f"{__name__}.debug")
@@ -332,8 +332,8 @@ class AudioPlayerWidget(QGroupBox):
         play_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
-        play_icon = self._create_icon_from_svg(play_svg)
-        play_icon_hover = self._create_icon_from_svg(play_svg_hover)
+        play_icon = icon_from_svg(play_svg, 32)
+        play_icon_hover = icon_from_svg(play_svg_hover, 32)
 
         self.play_btn = QPushButton()
         self.play_btn.setIcon(play_icon)
@@ -381,8 +381,8 @@ class AudioPlayerWidget(QGroupBox):
             <rect x="6" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
             <rect x="15" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
-        pause_icon = self._create_icon_from_svg(pause_svg)
-        pause_icon_hover = self._create_icon_from_svg(pause_svg_hover)
+        pause_icon = icon_from_svg(pause_svg, 32)
+        pause_icon_hover = icon_from_svg(pause_svg_hover, 32)
 
         self.pause_btn = QPushButton()
         self.pause_btn.setIcon(pause_icon)
@@ -444,17 +444,6 @@ class AudioPlayerWidget(QGroupBox):
         """Setup timer for UI updates."""
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_time_label)
-
-    def _create_icon_from_svg(self, svg_string):
-        """Create a QIcon from SVG string."""
-        svg_bytes = QByteArray(svg_string.encode('utf-8'))
-        renderer = QSvgRenderer(svg_bytes)
-        pixmap = QPixmap(32, 32)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-        renderer.render(painter)
-        painter.end()
-        return QIcon(pixmap)
 
     def showEvent(self, event):
         """Take focus when shown so keyboard events reach us."""

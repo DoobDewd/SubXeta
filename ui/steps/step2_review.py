@@ -7,11 +7,11 @@ from PyQt6.QtWidgets import (
     QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog,
     QDialog, QDoubleSpinBox, QMessageBox
 )
-from PyQt6.QtCore import pyqtSignal, Qt, QByteArray, QSize
-from PyQt6.QtGui import QPainter, QFont, QIcon, QPixmap
-from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtCore import pyqtSignal, Qt, QSize
+from PyQt6.QtGui import QPainter, QFont
 from ui.animations import CRTAnimatedMixin, TypingAnimator
 from ui import theme
+from ui.icons import icon_from_svg
 from core.models import Word
 
 debug_logger = logging.getLogger(f"{__name__}.debug")
@@ -251,8 +251,8 @@ class Step2Widget(QGroupBox):
         x_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 6L6 18M6 6L18 18" stroke="{theme.GREEN_HOVER}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>'''
-        x_icon = self._create_icon_from_svg(x_svg)
-        x_icon_hover = self._create_icon_from_svg(x_svg_hover)
+        x_icon = icon_from_svg(x_svg)
+        x_icon_hover = icon_from_svg(x_svg_hover)
 
         delete_btn = QPushButton()
         delete_btn.setIcon(x_icon)
@@ -365,17 +365,6 @@ class Step2Widget(QGroupBox):
             if item.is_manual and item.words and item.words[0]:
                 timestamps.append(item.words[0][0].start)
         return timestamps
-
-    def _create_icon_from_svg(self, svg_string):
-        """Create a QIcon from SVG string."""
-        svg_bytes = QByteArray(svg_string.encode('utf-8'))
-        renderer = QSvgRenderer(svg_bytes)
-        pixmap = QPixmap(24, 24)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-        renderer.render(painter)
-        painter.end()
-        return QIcon(pixmap)
 
     def open_add_chunk_dialog(self, start_time=None, end_time=None):
         """Open add chunk dialog with optional pre-filled times."""
