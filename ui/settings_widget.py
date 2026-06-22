@@ -1,6 +1,6 @@
 """Settings widget for model, device, and template selection."""
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
 from core.subtitle_gen_alien import get_available_templates
 
 
@@ -170,13 +170,12 @@ class SettingsWidget(QGroupBox):
 
         shortcuts = [
             ("Space", "Play/Pause"),
-            ("←", "Scrub backward 25ms"),
-            ("→", "Scrub forward 25ms"),
-            ("↑", "Scrub forward 10ms"),
-            ("↓", "Scrub backward 10ms"),
+            ("◀", "Scrub backward 25ms"),
+            ("▶", "Scrub forward 25ms"),
+            ("▲", "Scrub forward 10ms"),
+            ("▼", "Scrub backward 10ms"),
             ("I", "Set In point"),
             ("O", "Set Out point"),
-            ("Right-click", "Set In/Out menu"),
         ]
 
         for key, action in shortcuts:
@@ -190,10 +189,66 @@ class SettingsWidget(QGroupBox):
             shortcut_container.addWidget(action_label)
 
             key_label = QLabel(key)
-            key_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold; font-size: 14px; min-width: 65px;")
-            shortcut_container.addWidget(key_label)
 
-            shortcuts_layout.addLayout(shortcut_container)
+            # Square keys for arrows and letters
+            if key in ("◀", "▶", "▲", "▼", "I", "O"):
+                # Arrows get larger font for visibility (up/down slightly smaller)
+                if key in ("◀", "▶"):
+                    font_size = "14px"
+                elif key in ("▲", "▼"):
+                    font_size = "10px"
+                elif key in ("I", "O"):
+                    font_size = "11px"
+                else:
+                    font_size = "9px"
+                key_label.setStyleSheet(f"""
+                    QLabel {{
+                        color: #1a1a1a;
+                        background-color: #00ff88;
+                        font-weight: bold;
+                        font-size: {font_size};
+                        font-family: monospace;
+                        padding: 0px 4px 6px 4px;
+                        border-radius: 2px;
+                        min-width: 24px;
+                        min-height: 24px;
+                        max-width: 24px;
+                        max-height: 24px;
+                        text-align: center;
+                        border-top: 1px solid #00ffaa;
+                        border-left: 1px solid #00ffaa;
+                        border-bottom: 2px solid #006644;
+                        border-right: 2px solid #006644;
+                    }}
+                """)
+            else:
+                # Wider keys for Space
+                key_label.setStyleSheet("""
+                    QLabel {
+                        color: #1a1a1a;
+                        background-color: #00ff88;
+                        font-weight: bold;
+                        font-size: 11px;
+                        font-family: monospace;
+                        padding: 0px 4px 6px 4px;
+                        border-radius: 2px;
+                        min-width: 45px;
+                        min-height: 24px;
+                        max-height: 24px;
+                        text-align: center;
+                        border-top: 1px solid #00ffaa;
+                        border-left: 1px solid #00ffaa;
+                        border-bottom: 2px solid #006644;
+                        border-right: 2px solid #006644;
+                    }
+                """)
+
+            key_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            shortcut_container.addWidget(key_label, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+            shortcut_widget = QWidget()
+            shortcut_widget.setLayout(shortcut_container)
+            shortcuts_layout.addWidget(shortcut_widget, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         shortcuts_layout.addStretch()
 
