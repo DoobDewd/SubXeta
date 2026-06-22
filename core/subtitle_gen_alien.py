@@ -202,10 +202,13 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
     return "{\n" + "\n".join(lines) + "\n\t\t\t\t}"
 
 
-def generate_jpeg_damage_keyframes(chunks: List[List[List[Word]]], fps: int) -> str:
-    """Generate JPEG damage quality keyframes: degrade 68.82→10 at chunk midpoint, reset at each chunk start."""
+def generate_jpeg_damage_keyframes(chunks: List[List[List[Word]]], fps: int,
+                                   start_value: float, mid_value: float, label: str = "") -> str:
+    """Generate JPEG-damage keyframes: start_value at each chunk start, mid_value
+    at its midpoint (degrade then reset at the next chunk). Used for both the
+    quality and resolution splines, which differ only in their two values."""
     keyframes = {}
-    debug_logger.debug(f"Generating JPEG damage quality keyframes for {len(chunks)} chunks")
+    debug_logger.debug(f"Generating JPEG damage {label} keyframes for {len(chunks)} chunks")
 
     for chunk_idx, chunk in enumerate(chunks):
         all_words = []
@@ -221,61 +224,17 @@ def generate_jpeg_damage_keyframes(chunks: List[List[List[Word]]], fps: int) -> 
         duration = end_time - start_time
 
         start_frame = round(start_time * fps)
-        end_frame = round(end_time * fps)
         mid_frame = round((start_time + duration / 2) * fps)
 
-        # Start of chunk: quality at 68.82 (clear, fresh alien text)
-        keyframes[start_frame] = 68.82
-        debug_logger.debug(f"  Chunk {chunk_idx}: frame {start_frame} = 68.82 (start/clear)")
+        # Start of chunk: clear, fresh alien text
+        keyframes[start_frame] = start_value
+        debug_logger.debug(f"  Chunk {chunk_idx}: frame {start_frame} = {start_value} (start/clear)")
 
-        # Midpoint of chunk: quality at 10 (fully degraded, corrupted alien text)
-        keyframes[mid_frame] = 10.0
-        debug_logger.debug(f"  Chunk {chunk_idx}: frame {mid_frame} = 10.0 (midpoint/degraded)")
+        # Midpoint of chunk: degraded/corrupted alien text
+        keyframes[mid_frame] = mid_value
+        debug_logger.debug(f"  Chunk {chunk_idx}: frame {mid_frame} = {mid_value} (midpoint/degraded)")
 
-    debug_logger.debug(f"Final JPEG damage quality keyframes: {len(keyframes)} keyframes")
-
-    # Generate keyframe output
-    lines = []
-    for frame in sorted(keyframes.keys()):
-        val = keyframes[frame]
-        lines.append(
-            f"\t\t\t\t\t[{frame}] = {{ {val:.2f}, RH = {{ {frame}, {val:.2f} }}, "
-            f"Flags = {{ Linear = true }} }},"
-        )
-    return "{\n" + "\n".join(lines) + "\n\t\t\t\t}"
-
-
-def generate_jpeg_damage_resolution_keyframes(chunks: List[List[List[Word]]], fps: int) -> str:
-    """Generate JPEG damage resolution keyframes: increase 1→1.87 at chunk midpoint, reset at each chunk start."""
-    keyframes = {}
-    debug_logger.debug(f"Generating JPEG damage resolution keyframes for {len(chunks)} chunks")
-
-    for chunk_idx, chunk in enumerate(chunks):
-        all_words = []
-        for line in chunk:
-            all_words.extend(line)
-
-        if not all_words:
-            debug_logger.debug(f"WARN: Chunk {chunk_idx} is empty, skipping")
-            continue
-
-        start_time = all_words[0].start
-        end_time = all_words[-1].end
-        duration = end_time - start_time
-
-        start_frame = round(start_time * fps)
-        end_frame = round(end_time * fps)
-        mid_frame = round((start_time + duration / 2) * fps)
-
-        # Start of chunk: resolution at 1 (clear, fresh alien text)
-        keyframes[start_frame] = 1.0
-        debug_logger.debug(f"  Chunk {chunk_idx}: frame {start_frame} = 1.0 (start/clear)")
-
-        # Midpoint of chunk: resolution at 1.87 (high compression, degraded quality)
-        keyframes[mid_frame] = 1.87
-        debug_logger.debug(f"  Chunk {chunk_idx}: frame {mid_frame} = 1.87 (midpoint/degraded)")
-
-    debug_logger.debug(f"Final JPEG damage resolution keyframes: {len(keyframes)} keyframes")
+    debug_logger.debug(f"Final JPEG damage {label} keyframes: {len(keyframes)} keyframes")
 
     # Generate keyframe output
     lines = []
@@ -417,8 +376,8 @@ def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_thresho
 \t\t\t\t}}"""
 
     debug_logger.debug("Generating JPEG damage keyframes (alien text degradation)...")
-    jpeg_damage_quality = generate_jpeg_damage_keyframes(chunks, fps)
-    jpeg_damage_resolution = generate_jpeg_damage_resolution_keyframes(chunks, fps)
+    jpeg_damage_quality = generate_jpeg_damage_keyframes(chunks, fps, 68.82, 10.0, "quality")
+    jpeg_damage_resolution = generate_jpeg_damage_keyframes(chunks, fps, 1.0, 1.87, "resolution")
 
     debug_logger.debug("Replacing keyframe blocks in template...")
     content = replace_keyframes_block(content, 'TemplateWriteOnStart', alien_anim_keyframes)
