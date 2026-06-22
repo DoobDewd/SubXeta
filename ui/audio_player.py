@@ -220,15 +220,6 @@ class AudioPlayerWidget(QGroupBox):
         self._current_file = None
         self._build_ui()
         self._setup_timer()
-        # Install event filter to capture keyboard events globally
-        self.installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        """Capture keyboard events for scrubbing and play/pause."""
-        if event.type() == QEvent.Type.KeyPress:
-            if event.key() in (Qt.Key.Key_Space, Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down):
-                return self.keyPressEvent(event) or False
-        return super().eventFilter(obj, event)
 
     def _build_ui(self):
         # Make widget focusable so it can receive key events
@@ -601,8 +592,9 @@ class AudioPlayerWidget(QGroupBox):
 
     def keyPressEvent(self, event):
         """Handle global keyboard shortcuts for audio control."""
-        if event.key() == Qt.Key.Key_Space and not event.isAutoRepeat():
+        if event.key() == Qt.Key.Key_Space:
             # Space bar: toggle play/pause
+            debug_logger.debug(f"Space pressed, _current_file={self._current_file}, file exists={bool(self._current_file)}")
             if self._current_file:
                 if self._player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
                     self._on_pause_clicked()

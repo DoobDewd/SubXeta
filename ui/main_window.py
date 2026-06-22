@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog, QApplication
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, Qt, QEvent
 
@@ -39,8 +39,8 @@ class MainWindow(QMainWindow):
         self._settings = load_settings()
         self._step2_typing_played = False
 
-        # Install event filter for global keyboard shortcuts
-        self.installEventFilter(self)
+        # Install event filter for global keyboard shortcuts on the application
+        QApplication.instance().installEventFilter(self)
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -293,18 +293,21 @@ class MainWindow(QMainWindow):
         """Capture keyboard events for global audio player control."""
         if event.type() == QEvent.Type.KeyPress:
             key = event.key()
-            if key == Qt.Key.Key_Space:
-                debug_logger.debug(f"eventFilter: Space pressed")
-                if self.audio.isVisible():
+
+            # Don't intercept if focus is on a text input widget
+            from PyQt6.QtWidgets import QLineEdit, QTextEdit
+            focused_widget = QApplication.focusWidget()
+            is_text_input = isinstance(focused_widget, (QLineEdit, QTextEdit))
+
+            # Arrow keys should only be handled if not in a text box
+            if key in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down):
+                if is_text_input:
+                    return False  # Let text input handle it
+
+            if key in (Qt.Key.Key_Space, Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_I, Qt.Key.Key_O):
+                if self.audio.isVisible() and not is_text_input:
                     self.audio.keyPressEvent(event)
                     if event.isAccepted():
-                        return True
-            elif key in (Qt.Key.Key_Left, Qt.Key.Key_Right):
-                debug_logger.debug(f"eventFilter: Arrow key pressed: {key}")
-                if self.audio.isVisible():
-                    self.audio.keyPressEvent(event)
-                    if event.isAccepted():
-                        debug_logger.debug(f"eventFilter: Arrow key accepted by audio player")
                         return True
         return super().eventFilter(obj, event)
 
@@ -391,6 +394,7 @@ class MainWindow(QMainWindow):
             # Fade in audio player if step 2
             if step == 2:
                 self.audio.setVisible(True)
+                self.audio.setFocus()
                 audio_fade_in = QPropertyAnimation(self.audio_effect, b"opacity")
                 audio_fade_in.setDuration(150)
                 audio_fade_in.setStartValue(0.0)
