@@ -29,7 +29,7 @@ def load_whisper_json(json_path: str) -> List[Word]:
     return words
 
 
-def group_into_chunks(words: List[Word], max_chars_per_line: int = 30, pause_threshold: float = 0.9, max_lines_per_chunk: int = 2) -> List[List[List[Word]]]:
+def group_into_chunks(words: List[Word], max_chars_per_line: int = 20, pause_threshold: float = 0.3, max_lines_per_chunk: int = 2) -> List[List[List[Word]]]:
     """Group words into subtitle chunks, breaking at pauses and character width limits."""
     chunks = []
     current_chunk = []
@@ -115,7 +115,7 @@ def group_into_chunks(words: List[Word], max_chars_per_line: int = 30, pause_thr
     return chunks
 
 
-def chunk_to_texts(chunk: List[List[Word]], pause_threshold: float = 0.9) -> TextVariant:
+def chunk_to_texts(chunk: List[List[Word]], pause_threshold: float = 0.3) -> TextVariant:
     """Convert chunk to English and alien text strings, preserving lines and adding pauses."""
     english_lines = []
     alien_lines = []

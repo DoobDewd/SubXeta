@@ -27,7 +27,7 @@ def load_template(template_name: str = "Zeta Reticuli Template.comp") -> str:
         return f.read()
 
 
-def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english: bool, pause_threshold: float = 0.9) -> str:
+def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english: bool, pause_threshold: float = 0.3) -> str:
     """Generate BezierSpline keyframes with text values for all chunks."""
     keyframes_lines = []
     text_type = "English" if is_english else "Alien"
@@ -79,7 +79,7 @@ def generate_text_keyframes(chunks: List[List[List[Word]]], fps: int, is_english
     return "{\n" + ",\n".join(keyframes_lines) + "\n\t\t\t}"
 
 
-def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9, frame_offset: int = 0) -> str:
+def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.3, frame_offset: int = 0) -> str:
     """Generate animation keyframes - each chunk animates 0->1, with reset at next chunk."""
     keyframes = {}
     reset_frames = []
@@ -284,7 +284,7 @@ def replace_keyframes_block(content: str, spline_name: str, new_keyframes: str) 
     return content[:keyframes_start] + new_keyframes + content[keyframes_end:]
 
 
-def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.9, template_name: str = "Zeta Reticuli Template.comp") -> str:
+def generate_single_comp(chunks: List[List[List[Word]]], fps: int, pause_threshold: float = 0.3, template_name: str = "Zeta Reticuli Template.comp") -> str:
     """Generate a single comp with keyframed text for all chunks."""
     debug_logger.debug(f"Starting comp generation: {len(chunks)} chunks, {fps} fps, template: {template_name}")
 
