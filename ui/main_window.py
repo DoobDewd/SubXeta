@@ -2,13 +2,14 @@ import logging
 from pathlib import Path
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QScrollArea, QGraphicsOpacityEffect, QFileDialog
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, Qt, QEvent
 
 from ui.styles import get_stylesheet
 from ui.tab_bar import TabBar
 from ui.settings_widget import SettingsWidget
 from ui.steps.step1_transcribe import Step1Widget
 from ui.steps.step2_review import Step2Widget
+from ui.audio_player import AudioPlayerWidget
 from core.transcription import TranscriptionWorker
 from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts, rebuild_chunks_with_edits
 from core.subtitle_gen_alien import generate_single_comp
@@ -23,8 +24,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SubXeta")
-        self.setGeometry(100, 100, 1200, 800)
-        self.setFixedSize(1200, 800)
+        self.setGeometry(100, 100, 1200, 1000)
+        self.setFixedSize(1200, 1000)
 
         # Load window icon
         icon_path = Path(__file__).parent.parent / 'icon.ico'
@@ -37,6 +38,9 @@ class MainWindow(QMainWindow):
         self._current_video_path = None
         self._settings = load_settings()
         self._step2_typing_played = False
+
+        # Install event filter for global keyboard shortcuts
+        self.installEventFilter(self)
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -76,6 +80,13 @@ class MainWindow(QMainWindow):
         self.step1.setGraphicsEffect(self.step1_effect)
         self.step1.transcription_started.connect(self._on_transcription_started)
         layout.addWidget(self.step1)
+
+        self.audio = AudioPlayerWidget()
+        self.audio_effect = QGraphicsOpacityEffect()
+        self.audio_effect.setOpacity(0.0)
+        self.audio.setGraphicsEffect(self.audio_effect)
+        self.audio.setVisible(False)
+        layout.addWidget(self.audio)
 
         self.step2 = Step2Widget()
         self.step2_effect = QGraphicsOpacityEffect()
@@ -139,6 +150,10 @@ class MainWindow(QMainWindow):
 
             self.step2.set_status("Review and edit chunks as needed, then click Generate Comp")
             self.step2.populate_chunks(chunk_data, self._current_video_path)
+
+            # Load audio into the audio player
+            self.audio.load_audio(self._current_video_path)
+
             # Enable step 2 if first time, otherwise just switch to it
             if 2 in self.tab_bar.disabled_steps:
                 self.tab_bar.enable_step(2, on_complete=lambda: self._show_step(2))
@@ -156,6 +171,31 @@ class MainWindow(QMainWindow):
         self.step1.progress_bar.setVisible(False)
         self.step1.progress_label.setVisible(False)
 
+    def _merge_chunks_by_time(self, original_chunks, manually_added_chunks):
+        """Merge original and manually added chunks, sorted by start time."""
+        chunk_list = []
+
+        debug_logger.debug(f"Merging {len(original_chunks)} original chunks with {len(manually_added_chunks)} manual chunks")
+
+        for i, chunk in enumerate(original_chunks):
+            if chunk and chunk[0]:
+                start_time = chunk[0][0].start
+                chunk_list.append((start_time, 'original', i, chunk))
+                debug_logger.debug(f"  Original chunk {i}: start={start_time:.3f}s")
+
+        for i, chunk in enumerate(manually_added_chunks):
+            if chunk and chunk[0]:
+                start_time = chunk[0][0].start
+                chunk_list.append((start_time, 'manual', i, chunk))
+                debug_logger.debug(f"  Manual chunk {i}: start={start_time:.3f}s")
+
+        chunk_list.sort(key=lambda x: x[0])
+        debug_logger.debug(f"After sorting, first 5 chunks:")
+        for i, (start_time, chunk_type, idx, _) in enumerate(chunk_list[:5]):
+            debug_logger.debug(f"  Position {i}: {chunk_type} chunk {idx} at {start_time:.3f}s")
+
+        return [chunk for _, _, _, chunk in chunk_list]
+
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
         # Stop typing animation and populate all text immediately
@@ -169,12 +209,41 @@ class MainWindow(QMainWindow):
             # Load original words
             words = load_whisper_json(self._current_json_path)
 
-            # Get edited chunk texts and which chunks were actually edited
-            edited_chunks = self.step2.get_edited_chunks()
-            edited_flags = self.step2.get_edited_flags()
+            # Get edited chunks and flags (includes manual chunks)
+            edited_chunks_all = self.step2.get_edited_chunks()
+            edited_flags_all = self.step2.get_edited_flags()
+            manual_timestamps = self.step2.get_manual_chunk_timestamps()
 
-            # Rebuild chunks with edited text but original timing
-            rebuilt_chunks = rebuild_chunks_with_edits(self._original_chunks, edited_chunks, edited_flags)
+            # Extract ONLY original chunks - skip manual chunks
+            edited_chunks = []
+            edited_flags = []
+            for i, (ts, text) in enumerate(edited_chunks_all):
+                ts_float = float(ts)
+                is_manual = any(abs(ts_float - mt) < 0.001 for mt in manual_timestamps)
+                if not is_manual:
+                    edited_chunks.append((ts, text))
+                    edited_flags.append(edited_flags_all[i])
+
+            debug_logger.debug(f"Passing to rebuild: {len(edited_chunks)} edited chunks (excluded {len(manual_timestamps)} manual)")
+
+            # Rebuild with ONLY original chunks
+            rebuilt_original_chunks = rebuild_chunks_with_edits(self._original_chunks, edited_chunks, edited_flags)
+
+            # Now merge the rebuilt original chunks with manually added chunks, sorted by time
+            manually_added = self.step2.get_manually_added_chunks()
+            rebuilt_chunks = self._merge_chunks_by_time(rebuilt_original_chunks, manually_added)
+
+            # Log first few chunks before comp generation
+            debug_logger.debug(f"Final rebuilt_chunks: {len(rebuilt_chunks)} total")
+            for i in range(min(5, len(rebuilt_chunks))):
+                chunk = rebuilt_chunks[i]
+                if chunk and chunk[0] and chunk[0][0]:
+                    start = chunk[0][0].start
+                    all_w = []
+                    for line in chunk:
+                        all_w.extend(line)
+                    text = " ".join([w.text for w in all_w[:3]])
+                    debug_logger.debug(f"  Position {i}: start={start:.3f}s, text={text}")
 
             # Generate comp
             debug_logger.debug(f"Generating comp from {len(rebuilt_chunks)} chunks")
@@ -217,6 +286,25 @@ class MainWindow(QMainWindow):
         save_settings(settings)
         logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}, template={settings['template']}")
 
+    def eventFilter(self, obj, event):
+        """Capture keyboard events for global audio player control."""
+        if event.type() == QEvent.Type.KeyPress:
+            key = event.key()
+            if key == Qt.Key.Key_Space:
+                debug_logger.debug(f"eventFilter: Space pressed")
+                if self.audio.isVisible():
+                    self.audio.keyPressEvent(event)
+                    if event.isAccepted():
+                        return True
+            elif key in (Qt.Key.Key_Left, Qt.Key.Key_Right):
+                debug_logger.debug(f"eventFilter: Arrow key pressed: {key}")
+                if self.audio.isVisible():
+                    self.audio.keyPressEvent(event)
+                    if event.isAccepted():
+                        debug_logger.debug(f"eventFilter: Arrow key accepted by audio player")
+                        return True
+        return super().eventFilter(obj, event)
+
     def closeEvent(self, event):
         """Clean up temporary JSON file when closing."""
         if self._current_json_path:
@@ -229,6 +317,12 @@ class MainWindow(QMainWindow):
 
     def _show_step(self, step):
         self.tab_bar.set_active(step, animate=True)
+
+        # Audio player shows with step 2
+        if step == 2:
+            self.audio.setVisible(True)
+        else:
+            self.audio.setVisible(False)
 
         # Map step to widget and effect
         widgets = {1: self.step1, 2: self.step2, 3: self.settings}
@@ -251,6 +345,8 @@ class MainWindow(QMainWindow):
             incoming.setVisible(True)
             in_effect.setOpacity(1.0)
             if step == 2:
+                self.audio.setVisible(True)
+                self.audio_effect.setOpacity(1.0)
                 self.step2.restart_typing()
             elif step == 3:
                 self.settings.set_settings(self._settings["model"], self._settings["force_cpu"], self._settings.get("template", "Zeta Reticuli Template.comp"), self._settings.get("fps", 24))
@@ -269,6 +365,17 @@ class MainWindow(QMainWindow):
 
         def on_fade_out_done():
             outgoing.setVisible(False)
+            # Fade out audio player if not step 2
+            if step != 2 and self.audio.isVisible():
+                audio_fade_out = QPropertyAnimation(self.audio_effect, b"opacity")
+                audio_fade_out.setDuration(150)
+                audio_fade_out.setStartValue(1.0)
+                audio_fade_out.setEndValue(0.0)
+                audio_fade_out.setEasingCurve(QEasingCurve.Type.OutCubic)
+                audio_fade_out.finished.connect(lambda: self.audio.setVisible(False))
+                audio_fade_out.start()
+                self._audio_fade_out_anim = audio_fade_out
+
             incoming.setVisible(True)
             fade_in = QPropertyAnimation(in_effect, b"opacity")
             fade_in.setDuration(150)
@@ -277,6 +384,18 @@ class MainWindow(QMainWindow):
             fade_in.setEasingCurve(QEasingCurve.Type.InCubic)
             fade_in.start()
             self._fade_in_anim = fade_in
+
+            # Fade in audio player if step 2
+            if step == 2:
+                self.audio.setVisible(True)
+                audio_fade_in = QPropertyAnimation(self.audio_effect, b"opacity")
+                audio_fade_in.setDuration(150)
+                audio_fade_in.setStartValue(0.0)
+                audio_fade_in.setEndValue(1.0)
+                audio_fade_in.setEasingCurve(QEasingCurve.Type.InCubic)
+                audio_fade_in.start()
+                self._audio_fade_in_anim = audio_fade_in
+
             if step == 2 and not self._step2_typing_played:
                 self.step2.restart_typing()
                 self._step2_typing_played = True

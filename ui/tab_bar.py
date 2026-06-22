@@ -29,7 +29,7 @@ class TabBar(QWidget):
         self._first_show = True
 
         for i, text in enumerate(["Transcribe Audio", "Review & Generate"]):
-            label = QLabel("")  # Both start empty for animation
+            label = QLabel("")  # All start empty for animation
             label.setCursor(Qt.CursorShape.PointingHandCursor)
             label.setContentsMargins(0, 0, 0, 0)
             label.setMaximumHeight(28)
@@ -37,7 +37,7 @@ class TabBar(QWidget):
             label.step = i + 1
             label.full_text = text
             label.mousePressEvent = lambda e, s=i+1: self.on_tab_click(s)
-            label.setVisible(i == 0)  # Hide Step 2 initially
+            label.setVisible(i == 0)  # Hide Step 2 and 3 initially
             self.labels.append(label)
             layout.addWidget(label)
 
