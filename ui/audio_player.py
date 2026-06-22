@@ -16,10 +16,30 @@ debug_logger = logging.getLogger(f"{__name__}.debug")
 class CustomSlider(QSlider):
     """Slider that shows In/Out range highlight and playhead line."""
 
+    in_set = pyqtSignal(int)  # Emitted when In is set
+    out_set = pyqtSignal(int)  # Emitted when Out is set
+
     def __init__(self, orientation=Qt.Orientation.Horizontal):
         super().__init__(orientation)
         self.in_marker = 0  # In point position (ms)
         self.out_marker = 0  # Out point position (ms)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def _show_context_menu(self, pos):
+        """Show context menu for setting In/Out."""
+        from PyQt6.QtWidgets import QMenu
+        menu = QMenu(self)
+
+        in_action = menu.addAction("Set In Point")
+        out_action = menu.addAction("Set Out Point")
+
+        action = menu.exec(self.mapToGlobal(pos))
+
+        if action == in_action:
+            self.in_set.emit(self.value())
+        elif action == out_action:
+            self.out_set.emit(self.value())
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right):
@@ -60,8 +80,8 @@ class CustomSlider(QSlider):
         """Convert slider value to pixel position."""
         if self.maximum() == 0:
             return 0
-        range_width = self.width() - 20
-        return 10 + (value / self.maximum()) * range_width
+        # Linear mapping - offset applied in paintEvent
+        return (value / self.maximum()) * (self.width() - 1)
 
 
 class InOutKnobControl(QWidget):
@@ -76,6 +96,7 @@ class InOutKnobControl(QWidget):
         self.out_value = 0
         self.max_value = 0
         self._dragging = None  # 'in' or 'out'
+        self.slider = None  # Reference to slider for width calculations
         self.setFixedHeight(40)
 
     def set_values(self, in_val, out_val, max_val):
@@ -170,18 +191,21 @@ class InOutKnobControl(QWidget):
         """Convert value to pixel position."""
         if self.max_value == 0:
             return 0
-        range_width = self.width() - 20
-        return 10 + (value / self.max_value) * range_width
+        # Use slider's width for consistent positioning
+        width = self.slider.width() if self.slider else self.width()
+        # Linear mapping - offset applied in paintEvent
+        return (value / self.max_value) * (width - 1)
 
     def _get_value_from_pixel(self, pixel_x):
         """Convert pixel position to value."""
         if self.max_value == 0:
             return 0
-        range_width = self.width() - 20
-        if range_width <= 0:
+        # Use slider's width for consistent positioning
+        width = self.slider.width() if self.slider else self.width()
+        if width <= 0:
             return 0
-        pixel_pos = max(10, min(pixel_x, self.width() - 10))
-        return int((pixel_pos - 10) / range_width * self.max_value)
+        pixel_pos = max(0, min(pixel_x, width))
+        return int((pixel_pos / width) * self.max_value)
 
 
 class AudioPlayerWidget(QGroupBox):
@@ -238,10 +262,13 @@ class AudioPlayerWidget(QGroupBox):
         self.slider.setPageStep(25)
         self.slider.sliderMoved.connect(self._on_slider_moved)
         self.slider.valueChanged.connect(self._on_slider_value_changed)
+        self.slider.in_set.connect(self._on_set_in_point)
+        self.slider.out_set.connect(self._on_set_out_point)
         layout.addWidget(self.slider)
 
         # In/Out knob controls with connecting lines
         self.knob_control = InOutKnobControl()
+        self.knob_control.slider = self.slider  # Reference slider for width calculations
         self.knob_control.in_changed.connect(self._on_in_changed)
         self.knob_control.out_changed.connect(self._on_out_changed)
         layout.addWidget(self.knob_control)
@@ -519,6 +546,26 @@ class AudioPlayerWidget(QGroupBox):
         self.play_btn.setEnabled(False if not self._current_file else True)
         self.pause_btn.setEnabled(False)
 
+    def _on_set_in_point(self, value=None):
+        """Set In point to current playhead position."""
+        # Use slider value if no value provided, otherwise use player position
+        pos = self.slider.value() if value is None else value
+        self.slider.in_marker = pos
+        self.knob_control.in_value = pos
+        self._update_in_label()
+        self.slider.update()
+        self.knob_control.update()
+
+    def _on_set_out_point(self, value=None):
+        """Set Out point to current playhead position."""
+        # Use slider value if no value provided, otherwise use player position
+        pos = self.slider.value() if value is None else value
+        self.slider.out_marker = pos
+        self.knob_control.out_value = pos
+        self._update_out_label()
+        self.slider.update()
+        self.knob_control.update()
+
     def keyPressEvent(self, event):
         """Handle global keyboard shortcuts for audio control."""
         if event.key() == Qt.Key.Key_Space and not event.isAutoRepeat():
@@ -528,7 +575,18 @@ class AudioPlayerWidget(QGroupBox):
                     self._on_pause_clicked()
                 else:
                     self._on_play_clicked()
-            return True
+            event.accept()
+            return
+        elif event.key() == Qt.Key.Key_I:
+            # I key: set In point
+            self._on_set_in_point(self._player.position())
+            event.accept()
+            return
+        elif event.key() == Qt.Key.Key_O:
+            # O key: set Out point
+            self._on_set_out_point(self._player.position())
+            event.accept()
+            return
         elif event.key() == Qt.Key.Key_Left:
             # Left arrow: scrub backward by 25ms
             if self._current_file:
@@ -539,7 +597,8 @@ class AudioPlayerWidget(QGroupBox):
                 if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
                     self._player.play()
                     QTimer.singleShot(25, self._player.pause)
-            return True
+            event.accept()
+            return
         elif event.key() == Qt.Key.Key_Right:
             # Right arrow: scrub forward by 25ms
             if self._current_file:
@@ -550,7 +609,8 @@ class AudioPlayerWidget(QGroupBox):
                 if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
                     self._player.play()
                     QTimer.singleShot(25, self._player.pause)
-            return True
+            event.accept()
+            return
         elif event.key() == Qt.Key.Key_Up:
             # Up arrow: scrub forward by 10ms
             if self._current_file:
@@ -561,7 +621,8 @@ class AudioPlayerWidget(QGroupBox):
                 if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
                     self._player.play()
                     QTimer.singleShot(10, self._player.pause)
-            return True
+            event.accept()
+            return
         elif event.key() == Qt.Key.Key_Down:
             # Down arrow: scrub backward by 10ms
             if self._current_file:
@@ -572,5 +633,6 @@ class AudioPlayerWidget(QGroupBox):
                 if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
                     self._player.play()
                     QTimer.singleShot(10, self._player.pause)
-            return True
-        return super().keyPressEvent(event)
+            event.accept()
+            return
+        super().keyPressEvent(event)
