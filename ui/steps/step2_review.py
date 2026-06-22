@@ -109,15 +109,12 @@ class Step2Widget(QGroupBox):
         desc.setStyleSheet("color: #e0e0e0; background-color: transparent;")
         layout.addWidget(desc)
 
-        layout.addSpacing(8)
-
         self.status_label = QLabel("Waiting for transcription...")
         self.status_label.setStyleSheet("color: #e0e0e0; background-color: transparent; padding: 0px 12px;")
-        layout.addWidget(self.status_label)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setMinimumHeight(350)
+        scroll.setMinimumHeight(250)
         chunks_widget = QWidget()
         chunks_widget.setStyleSheet("QWidget { background-color: #191e1c; }")
         self.chunks_layout = QVBoxLayout()
@@ -148,13 +145,12 @@ class Step2Widget(QGroupBox):
         btn_layout.addStretch()
         layout.addLayout(btn_layout, stretch=0)
 
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        layout.addWidget(self.progress_bar)
+        layout.addStretch()
 
+        # Create result_label for code reference, but don't add to layout to save space
         self.result_label = QLabel("")
         self.result_label.setStyleSheet("background-color: transparent; color: #00ff88; font-weight: bold;")
-        layout.addWidget(self.result_label)
+
         self.setLayout(layout)
 
     def set_status(self, text):
@@ -480,7 +476,6 @@ class Step2Widget(QGroupBox):
             debug_logger.error(f"Failed to save transcript: {str(e)}")
 
     def _on_generate_clicked(self):
-        self.progress_bar.setVisible(True)
         self.generate_btn.setEnabled(False)
         self.generation_started.emit()
 
