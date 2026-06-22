@@ -227,19 +227,20 @@ class AudioPlayerWidget(QGroupBox):
 
         layout = QVBoxLayout()
         layout.setSpacing(16)
+        layout.setContentsMargins(0, 12, 0, 0)
 
         # Title
-        title = QLabel("Play audio to find exact timestamps for new chunks")
+        title = QLabel("Play audio to find exact timestamps for new segments")
         title_font = QFont()
         title_font.setPointSize(11)
         title.setFont(title_font)
-        title.setStyleSheet("color: #e0e0e0;")
+        title.setStyleSheet("color: #e0e0e0; background-color: transparent;")
         layout.addWidget(title)
 
         # Timeline display
         timeline_layout = QHBoxLayout()
         self.time_label = QLabel("00:00.000")
-        self.time_label.setStyleSheet("color: #00ff88; font-weight: bold; font-size: 14px;")
+        self.time_label.setStyleSheet("color: #00ff88; font-weight: bold; font-size: 14px; background-color: transparent;")
         self.time_label.setMinimumWidth(100)
         timeline_layout.addWidget(self.time_label)
         timeline_layout.addStretch()
@@ -274,7 +275,20 @@ class AudioPlayerWidget(QGroupBox):
         inout_display_layout.addWidget(in_label)
 
         self.in_time_label = QLineEdit("0.000")
-        self.in_time_label.setStyleSheet("color: #00ff88; font-weight: bold; border: 1px solid #00ff88; padding: 4px 8px; border-radius: 4px; background-color: transparent;")
+        self.in_time_label.setStyleSheet("""
+            QLineEdit {
+                color: #00ff88;
+                font-weight: bold;
+                border: 1px solid #00ff88;
+                padding: 4px 8px;
+                border-radius: 4px;
+                background-color: transparent;
+            }
+            QLineEdit:focus {
+                background-color: #1f1f1f;
+                border: 2px solid #00ffaa;
+            }
+        """)
         self.in_time_label.setMaximumWidth(100)
         self.in_time_label.editingFinished.connect(self._on_in_time_edited)
         inout_display_layout.addWidget(self.in_time_label)
@@ -284,7 +298,20 @@ class AudioPlayerWidget(QGroupBox):
         inout_display_layout.addWidget(out_label)
 
         self.out_time_label = QLineEdit("0.000")
-        self.out_time_label.setStyleSheet("color: #00ff88; font-weight: bold; border: 1px solid #00ff88; padding: 4px 8px; border-radius: 4px; background-color: transparent;")
+        self.out_time_label.setStyleSheet("""
+            QLineEdit {
+                color: #00ff88;
+                font-weight: bold;
+                border: 1px solid #00ff88;
+                padding: 4px 8px;
+                border-radius: 4px;
+                background-color: transparent;
+            }
+            QLineEdit:focus {
+                background-color: #1f1f1f;
+                border: 2px solid #00ffaa;
+            }
+        """)
         self.out_time_label.setMaximumWidth(100)
         self.out_time_label.editingFinished.connect(self._on_out_time_edited)
         inout_display_layout.addWidget(self.out_time_label)
@@ -300,7 +327,11 @@ class AudioPlayerWidget(QGroupBox):
         play_svg = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z" fill="#00ff88"/>
         </svg>'''
+        play_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z" fill="#66ffdd"/>
+        </svg>'''
         play_icon = self._create_icon_from_svg(play_svg)
+        play_icon_hover = self._create_icon_from_svg(play_svg_hover)
 
         self.play_btn = QPushButton()
         self.play_btn.setIcon(play_icon)
@@ -311,21 +342,32 @@ class AudioPlayerWidget(QGroupBox):
         self.play_btn.setEnabled(False)
         self.play_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1a1a1a;
-                border: 1px solid #00ff88;
-                border-radius: 3px;
-            }
-            QPushButton:hover:!disabled {
-                background-color: #2a2a2a;
-                border: 1px solid #00ffaa;
-            }
-            QPushButton:pressed:!disabled {
-                background-color: #0a1a0a;
+                background-color: transparent;
+                border: none;
+                padding: 0px;
             }
             QPushButton:disabled {
-                border: 1px solid #555555;
+                opacity: 0.5;
             }
         """)
+
+        # Store icons and sizes for hover effect
+        self.play_btn._normal_icon = play_icon
+        self.play_btn._hover_icon = play_icon_hover
+        self.play_btn._normal_size = QSize(24, 24)
+        self.play_btn._hover_size = QSize(28, 28)
+
+        def on_play_hover_enter():
+            if self.play_btn.isEnabled():
+                self.play_btn.setIcon(self.play_btn._hover_icon)
+                self.play_btn.setIconSize(self.play_btn._hover_size)
+
+        def on_play_hover_leave():
+            self.play_btn.setIcon(self.play_btn._normal_icon)
+            self.play_btn.setIconSize(self.play_btn._normal_size)
+
+        self.play_btn.enterEvent = lambda e: on_play_hover_enter()
+        self.play_btn.leaveEvent = lambda e: on_play_hover_leave()
         controls_layout.addWidget(self.play_btn)
 
         # Pause button
@@ -333,7 +375,12 @@ class AudioPlayerWidget(QGroupBox):
             <rect x="6" y="4" width="3" height="16" fill="#00ff88"/>
             <rect x="15" y="4" width="3" height="16" fill="#00ff88"/>
         </svg>'''
+        pause_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="4" width="3" height="16" fill="#66ffdd"/>
+            <rect x="15" y="4" width="3" height="16" fill="#66ffdd"/>
+        </svg>'''
         pause_icon = self._create_icon_from_svg(pause_svg)
+        pause_icon_hover = self._create_icon_from_svg(pause_svg_hover)
 
         self.pause_btn = QPushButton()
         self.pause_btn.setIcon(pause_icon)
@@ -344,53 +391,43 @@ class AudioPlayerWidget(QGroupBox):
         self.pause_btn.setEnabled(False)
         self.pause_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1a1a1a;
-                border: 1px solid #00ff88;
-                border-radius: 3px;
-            }
-            QPushButton:hover:!disabled {
-                background-color: #2a2a2a;
-                border: 1px solid #00ffaa;
-            }
-            QPushButton:pressed:!disabled {
-                background-color: #0a1a0a;
+                background-color: transparent;
+                border: none;
+                padding: 0px;
             }
             QPushButton:disabled {
-                border: 1px solid #555555;
+                opacity: 0.5;
             }
         """)
+
+        # Store icons and sizes for hover effect
+        self.pause_btn._normal_icon = pause_icon
+        self.pause_btn._hover_icon = pause_icon_hover
+        self.pause_btn._normal_size = QSize(24, 24)
+        self.pause_btn._hover_size = QSize(28, 28)
+
+        def on_pause_hover_enter():
+            if self.pause_btn.isEnabled():
+                self.pause_btn.setIcon(self.pause_btn._hover_icon)
+                self.pause_btn.setIconSize(self.pause_btn._hover_size)
+
+        def on_pause_hover_leave():
+            self.pause_btn.setIcon(self.pause_btn._normal_icon)
+            self.pause_btn.setIconSize(self.pause_btn._normal_size)
+
+        self.pause_btn.enterEvent = lambda e: on_pause_hover_enter()
+        self.pause_btn.leaveEvent = lambda e: on_pause_hover_leave()
         controls_layout.addWidget(self.pause_btn)
 
         controls_layout.addStretch()
 
         # Add Chunk button
-        self.add_chunk_btn = QPushButton("Add Chunk")
+        self.add_chunk_btn = QPushButton("Add Segment")
         self.add_chunk_btn.setFixedHeight(32)
         self.add_chunk_btn.setFixedWidth(100)
         self.add_chunk_btn.clicked.connect(self._on_add_chunk_clicked)
         self.add_chunk_btn.setEnabled(False)
-        self.add_chunk_btn.setStyleSheet("""
-            QPushButton {
-                color: #1a1a1a;
-                background-color: #00ff88;
-                border: 1px solid #00ff88;
-                border-radius: 3px;
-                padding: 4px;
-                font-weight: bold;
-            }
-            QPushButton:hover:!disabled {
-                background-color: #00ffaa;
-                border: 1px solid #00ffaa;
-            }
-            QPushButton:pressed:!disabled {
-                background-color: #00dd77;
-            }
-            QPushButton:disabled {
-                background-color: #555555;
-                color: #888888;
-                border: 1px solid #555555;
-            }
-        """)
+        self.add_chunk_btn.setStyleSheet("QPushButton { padding: 2px 4px; margin: 0px; }")
         controls_layout.addWidget(self.add_chunk_btn)
 
         layout.addLayout(controls_layout)

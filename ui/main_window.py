@@ -201,9 +201,6 @@ class MainWindow(QMainWindow):
 
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
-        # Stop typing animation and populate all text immediately
-        self.step2.stop_animation_and_populate()
-
         try:
             if not self._current_json_path:
                 self.step2.result_label.setText("Error: No transcription data")
@@ -240,7 +237,26 @@ class MainWindow(QMainWindow):
 
             # Now merge the rebuilt original chunks with manually added chunks, sorted by time
             manually_added = self.step2.get_manually_added_chunks()
-            rebuilt_chunks = self._merge_chunks_by_time(rebuilt_original_chunks, manually_added)
+            manual_timestamps = self.step2.get_manual_chunk_timestamps()
+
+            debug_logger.debug(f"Manual chunks before filter: {len(manually_added)}")
+            debug_logger.debug(f"Manual timestamps: {manual_timestamps}")
+            debug_logger.debug(f"Deleted timestamps: {deleted_timestamps}")
+
+            # Filter out deleted manually added chunks
+            filtered_manually_added = []
+            for i, chunk in enumerate(manually_added):
+                if i < len(manual_timestamps):
+                    ts = manual_timestamps[i]
+                    is_deleted = any(abs(ts - float(dts)) < 0.001 for dts in deleted_timestamps)
+                    if not is_deleted:
+                        filtered_manually_added.append(chunk)
+                    else:
+                        debug_logger.debug(f"Filtering out deleted manual chunk: {ts}")
+
+            debug_logger.debug(f"Manual chunks after filter: {len(filtered_manually_added)}")
+
+            rebuilt_chunks = self._merge_chunks_by_time(rebuilt_original_chunks, filtered_manually_added)
 
             # Log first few chunks before comp generation
             debug_logger.debug(f"Final rebuilt_chunks: {len(rebuilt_chunks)} total")
@@ -293,7 +309,16 @@ class MainWindow(QMainWindow):
         logger.info(f"Settings updated: model={settings['model']}, force_cpu={settings['force_cpu']}, template={settings['template']}")
 
     def eventFilter(self, obj, event):
-        """Capture keyboard events for global audio player control."""
+        """Capture keyboard events for global audio player control and mouse clicks to fill chunks."""
+        if event.type() == QEvent.Type.MouseButtonPress:
+            # Fill all chunks on any click
+            self.step2._typing_animator.stop()
+            for timestamp, text_edit in self.step2._chunks:
+                idx = next((i for i, (ts, _) in enumerate(self.step2._chunks) if ts == timestamp), None)
+                if idx is not None and idx < len(self.step2._full_chunk_texts):
+                    text_edit.setPlainText(self.step2._full_chunk_texts[idx])
+            return False
+
         if event.type() == QEvent.Type.KeyPress:
             key = event.key()
 
@@ -328,9 +353,7 @@ class MainWindow(QMainWindow):
         self.tab_bar.set_active(step, animate=True)
 
         # Audio player shows with step 2
-        if step == 2:
-            self.audio.setVisible(True)
-        else:
+        if step != 2:
             self.audio.setVisible(False)
 
         # Map step to widget and effect

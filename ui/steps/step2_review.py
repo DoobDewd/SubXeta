@@ -5,8 +5,9 @@ from PyQt6.QtWidgets import (
     QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog,
     QDialog, QDoubleSpinBox, QMessageBox
 )
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QPainter, QFont
+from PyQt6.QtCore import pyqtSignal, Qt, QByteArray, QSize
+from PyQt6.QtGui import QPainter, QFont, QIcon, QPixmap
+from PyQt6.QtSvg import QSvgRenderer
 from ui.animations import CRTAnimatedMixin, TypingAnimator
 from core.models import Word
 
@@ -101,7 +102,7 @@ class Step2Widget(QGroupBox):
     def _build_ui(self):
         layout = QVBoxLayout()
         layout.setSpacing(16)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 12, 0, 0)
 
         desc = QLabel("Remember: AI transcription can get some words wrong, make sure to review the subtitles!")
         desc_font = QFont()
@@ -187,18 +188,6 @@ class Step2Widget(QGroupBox):
     def restart_typing(self):
         self._typing_animator.restart()
 
-    def stop_animation_and_populate(self):
-        """Stop typing animation and show all current text (including edits)."""
-        self._typing_animator.stop()
-        # For chunks still animating, populate them with their current text (which includes any edits)
-        for i, (timestamp, text_edit) in enumerate(self._chunks):
-            current_text = text_edit.toPlainText()
-            # If text is empty or still animating, set it to show full content
-            if not current_text or len(current_text) < 1:
-                if i < len(self._full_chunk_texts):
-                    text_edit.setPlainText(self._full_chunk_texts[i])
-            # Otherwise keep the current edited text as-is
-
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
         card.chunk_timestamp = timestamp
@@ -223,22 +212,41 @@ class Step2Widget(QGroupBox):
         header_layout.addWidget(timestamp_label)
         header_layout.addStretch()
 
-        delete_btn = QPushButton("✕")
+        # X icon SVG - clean and symmetrical, with hover variant
+        x_svg = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>'''
+        x_svg_hover = '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="#66ffdd" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>'''
+        x_icon = self._create_icon_from_svg(x_svg)
+        x_icon_hover = self._create_icon_from_svg(x_svg_hover)
+
+        delete_btn = QPushButton()
+        delete_btn.setIcon(x_icon)
+        delete_btn.setIconSize(QSize(18, 18))
         delete_btn.setMaximumWidth(24)
         delete_btn.setMaximumHeight(24)
         delete_btn.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
-                color: #ff4444;
-                border: 1px solid #ff4444;
-                border-radius: 3px;
-                font-weight: bold;
-                padding: 2px;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 68, 68, 0.2);
+                border: none;
+                padding: 0px;
             }
         """)
+
+        # Store icons for hover effect
+        delete_btn._normal_icon = x_icon
+        delete_btn._hover_icon = x_icon_hover
+
+        def on_hover_enter():
+            delete_btn.setIcon(delete_btn._hover_icon)
+
+        def on_hover_leave():
+            delete_btn.setIcon(delete_btn._normal_icon)
+
+        delete_btn.enterEvent = lambda e: on_hover_enter()
+        delete_btn.leaveEvent = lambda e: on_hover_leave()
         delete_btn.clicked.connect(lambda: self._delete_chunk(timestamp))
         header_layout.addWidget(delete_btn)
 
@@ -339,6 +347,17 @@ class Step2Widget(QGroupBox):
     def get_deleted_chunk_timestamps(self):
         """Get set of timestamps for chunks that were deleted."""
         return self._deleted_chunk_timestamps
+
+    def _create_icon_from_svg(self, svg_string):
+        """Create a QIcon from SVG string."""
+        svg_bytes = QByteArray(svg_string.encode('utf-8'))
+        renderer = QSvgRenderer(svg_bytes)
+        pixmap = QPixmap(24, 24)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+        return QIcon(pixmap)
 
     def get_manual_chunk_timestamps(self):
         """Get timestamps of manually added chunks for identification."""

@@ -1,5 +1,5 @@
 """Settings widget for model, device, and template selection."""
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from PyQt6.QtCore import pyqtSignal
 from core.subtitle_gen_alien import get_available_templates
 
@@ -13,13 +13,19 @@ class SettingsWidget(QGroupBox):
         super().__init__("Settings")
         self.setStyleSheet("color: #00ff88;")
 
+        # Main horizontal layout for left (settings) and right (shortcuts) columns
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(40)
+
+        # LEFT COLUMN - Settings
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(24)
 
         # Model selector label
         model_label = QLabel("Transcription Model:")
-        model_label.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        model_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
         layout.addWidget(model_label)
 
         # Model radio buttons
@@ -65,7 +71,7 @@ class SettingsWidget(QGroupBox):
 
         # Device selection label
         device_label = QLabel("Processing Mode:")
-        device_label.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        device_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
         layout.addWidget(device_label)
 
         # Device checkboxes
@@ -87,7 +93,7 @@ class SettingsWidget(QGroupBox):
 
         # Template selection label
         template_label = QLabel("Subtitle Template:")
-        template_label.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        template_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
         layout.addWidget(template_label)
 
         # Template buttons
@@ -120,7 +126,7 @@ class SettingsWidget(QGroupBox):
 
         # FPS selection label
         fps_label = QLabel("Project Frame Rate:")
-        fps_label.setStyleSheet("color: #e0e0e0; background-color: transparent;")
+        fps_label.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
         layout.addWidget(fps_label)
 
         # FPS buttons
@@ -146,7 +152,57 @@ class SettingsWidget(QGroupBox):
         layout.addLayout(fps_layout)
 
         layout.addStretch()
-        self.setLayout(layout)
+
+        # Add left column (settings) to main layout
+        settings_widget = QWidget()
+        settings_widget.setStyleSheet("background-color: transparent;")
+        settings_widget.setLayout(layout)
+        main_layout.addWidget(settings_widget, 1)
+
+        # RIGHT COLUMN - Keyboard Shortcuts
+        shortcuts_layout = QVBoxLayout()
+        shortcuts_layout.setContentsMargins(0, 0, 0, 0)
+        shortcuts_layout.setSpacing(16)
+
+        shortcuts_title = QLabel("Hotkeys:")
+        shortcuts_title.setStyleSheet("color: #e0e0e0; background-color: transparent; font-weight: bold;")
+        shortcuts_layout.addWidget(shortcuts_title)
+
+        shortcuts = [
+            ("Space", "Play/Pause"),
+            ("←", "Scrub backward 25ms"),
+            ("→", "Scrub forward 25ms"),
+            ("↑", "Scrub forward 10ms"),
+            ("↓", "Scrub backward 10ms"),
+            ("I", "Set In point"),
+            ("O", "Set Out point"),
+            ("Right-click", "Set In/Out menu"),
+        ]
+
+        for key, action in shortcuts:
+            shortcut_container = QHBoxLayout()
+            shortcut_container.setContentsMargins(0, 0, 0, 0)
+            shortcut_container.setSpacing(12)
+
+            action_label = QLabel(action)
+            action_label.setStyleSheet("color: #b0b0b0; background-color: transparent; font-size: 14px;")
+            action_label.setWordWrap(True)
+            shortcut_container.addWidget(action_label)
+
+            key_label = QLabel(key)
+            key_label.setStyleSheet("color: #00ff88; background-color: transparent; font-weight: bold; font-size: 14px; min-width: 65px;")
+            shortcut_container.addWidget(key_label)
+
+            shortcuts_layout.addLayout(shortcut_container)
+
+        shortcuts_layout.addStretch()
+
+        shortcuts_widget = QWidget()
+        shortcuts_widget.setStyleSheet("background-color: transparent;")
+        shortcuts_widget.setLayout(shortcuts_layout)
+        main_layout.addWidget(shortcuts_widget, 1)
+
+        self.setLayout(main_layout)
 
         # Connect signals after all widgets are created
         for btn in self.model_buttons.values():
