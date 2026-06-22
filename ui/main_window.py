@@ -269,17 +269,14 @@ class MainWindow(QMainWindow):
                 output_path.write_text(comp_content)
                 file_size = output_path.stat().st_size
                 debug_logger.debug(f"Comp file written: {file_size} bytes")
-                self.step2.progress_bar.setVisible(False)
                 self.step2.generate_btn.setEnabled(True)
                 self.step2.result_label.setText(f"✓ Generated: {output_path.name}")
             else:
                 debug_logger.debug("User cancelled comp save")
-                self.step2.progress_bar.setVisible(False)
                 self.step2.generate_btn.setEnabled(True)
                 self.step2.result_label.setText("Cancelled")
 
         except Exception as e:
-            self.step2.progress_bar.setVisible(False)
             self.step2.generate_btn.setEnabled(True)
             self.step2.result_label.setText(f"Error: {str(e)}")
 
