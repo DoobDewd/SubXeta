@@ -62,6 +62,9 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(self._create_content_area(), 1)
 
+        # Connect audio player to step2 after both are created
+        self.audio.add_chunk_requested.connect(self.step2.open_add_chunk_dialog)
+
         self.setStyleSheet(get_stylesheet())
 
     def _create_content_area(self):

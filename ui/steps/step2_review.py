@@ -14,11 +14,13 @@ debug_logger = logging.getLogger(f"{__name__}.debug")
 
 
 class AddChunkDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, start_time=None, end_time=None):
         super().__init__(parent)
         self.setWindowTitle("Add Chunk")
         self.setModal(True)
         self.setMinimumWidth(400)
+        self._prefilled_start = start_time
+        self._prefilled_end = end_time
         self._build_ui()
 
     def _build_ui(self):
@@ -32,7 +34,7 @@ class AddChunkDialog(QDialog):
         self.start_spin.setMinimum(0.0)
         self.start_spin.setMaximum(9999.99)
         self.start_spin.setDecimals(2)
-        self.start_spin.setValue(0.0)
+        self.start_spin.setValue(self._prefilled_start if self._prefilled_start is not None else 0.0)
         layout.addWidget(self.start_spin)
 
         end_label = QLabel("End Time (seconds):")
@@ -42,7 +44,7 @@ class AddChunkDialog(QDialog):
         self.end_spin.setMinimum(0.0)
         self.end_spin.setMaximum(9999.99)
         self.end_spin.setDecimals(2)
-        self.end_spin.setValue(1.0)
+        self.end_spin.setValue(self._prefilled_end if self._prefilled_end is not None else 1.0)
         layout.addWidget(self.end_spin)
 
         text_label = QLabel("Text:")
@@ -308,7 +310,11 @@ class Step2Widget(QGroupBox):
 
     def _on_add_chunk_clicked(self):
         """Show dialog to add a new chunk manually."""
-        dialog = AddChunkDialog(self)
+        self.open_add_chunk_dialog()
+
+    def open_add_chunk_dialog(self, start_time=None, end_time=None):
+        """Open add chunk dialog with optional pre-filled times."""
+        dialog = AddChunkDialog(self, start_time=start_time, end_time=end_time)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             start_time, end_time, text = dialog.get_chunk_data()
 
@@ -320,70 +326,74 @@ class Step2Widget(QGroupBox):
                 QMessageBox.warning(self, "Error", "Start time must be before end time")
                 return
 
-            # Create Word objects from text with proportional timing
-            words_text = text.split()
-            duration = end_time - start_time
-            word_duration = duration / len(words_text) if words_text else 0
+            self._create_and_add_chunk(start_time, end_time, text)
 
-            chunk_lines = [[]]
-            current_line_chars = 0
-            max_chars_per_line = 20
+    def _create_and_add_chunk(self, start_time, end_time, text):
+        """Create and add a chunk to the display."""
+        # Create Word objects from text with proportional timing
+        words_text = text.split()
+        duration = end_time - start_time
+        word_duration = duration / len(words_text) if words_text else 0
 
-            for i, word_text in enumerate(words_text):
-                word_len = len(word_text)
-                space_len = 1 if chunk_lines[-1] else 0
+        chunk_lines = [[]]
+        current_line_chars = 0
+        max_chars_per_line = 20
 
-                # Break line if exceeds character limit
-                if chunk_lines[-1] and current_line_chars + space_len + word_len > max_chars_per_line:
-                    chunk_lines.append([])
-                    current_line_chars = 0
+        for i, word_text in enumerate(words_text):
+            word_len = len(word_text)
+            space_len = 1 if chunk_lines[-1] else 0
 
-                word_start = start_time + (i * word_duration)
-                word_end = start_time + ((i + 1) * word_duration)
-                word = Word(text=word_text, start=word_start, end=word_end)
-                chunk_lines[-1].append(word)
-                current_line_chars += space_len + word_len
+            # Break line if exceeds character limit
+            if chunk_lines[-1] and current_line_chars + space_len + word_len > max_chars_per_line:
+                chunk_lines.append([])
+                current_line_chars = 0
 
-            self._manually_added_chunks.append(chunk_lines)
-            debug_logger.debug(f"Added manual chunk: {start_time:.3f}s - {end_time:.3f}s, {len(words_text)} words")
+            word_start = start_time + (i * word_duration)
+            word_end = start_time + ((i + 1) * word_duration)
+            word = Word(text=word_text, start=word_start, end=word_end)
+            chunk_lines[-1].append(word)
+            current_line_chars += space_len + word_len
 
-            # Create the new chunk widget
-            text_lines = []
-            for line in chunk_lines:
-                line_text = " ".join([w.text for w in line])
-                text_lines.append(line_text)
-            text = "\n".join(text_lines)
+        self._manually_added_chunks.append(chunk_lines)
+        debug_logger.debug(f"Added manual chunk: {start_time:.3f}s - {end_time:.3f}s, {len(words_text)} words")
 
-            timestamp_str = f"{start_time:.3f}"
-            card, text_edit = self._create_chunk_card(timestamp_str, text)
-            text_edit.setPlainText(text)
+        # Create the new chunk widget
+        text_lines = []
+        for line in chunk_lines:
+            line_text = " ".join([w.text for w in line])
+            text_lines.append(line_text)
+        text = "\n".join(text_lines)
 
-            # Find correct sorted position
-            insert_pos = 0
-            new_time = float(timestamp_str)
-            for i, (ts, _) in enumerate(self._chunks):
-                if float(ts) < new_time:
-                    insert_pos = i + 1
+        timestamp_str = f"{start_time:.3f}"
+        card, text_edit = self._create_chunk_card(timestamp_str, text)
+        text_edit.setPlainText(text)
 
-            # Before inserting, capture current state for debugging
-            debug_logger.debug(f"Before insert: {len(self._chunks)} chunks, inserting at pos {insert_pos}")
-            if insert_pos > 0:
-                prev_ts, prev_edit = self._chunks[insert_pos - 1]
-                debug_logger.debug(f"  Chunk before insert pos: ts={prev_ts}, text={prev_edit.toPlainText()[:40]}")
+        # Find correct sorted position
+        insert_pos = 0
+        new_time = float(timestamp_str)
+        for i, (ts, _) in enumerate(self._chunks):
+            if float(ts) < new_time:
+                insert_pos = i + 1
 
-            # Insert into ALL data structures at the same position
-            self._chunks.insert(insert_pos, (timestamp_str, text_edit))
-            self._original_texts.insert(insert_pos, (timestamp_str, text))
-            self._full_chunk_texts.insert(insert_pos, text)
+        # Before inserting, capture current state for debugging
+        debug_logger.debug(f"Before insert: {len(self._chunks)} chunks, inserting at pos {insert_pos}")
+        if insert_pos > 0:
+            prev_ts, prev_edit = self._chunks[insert_pos - 1]
+            debug_logger.debug(f"  Chunk before insert pos: ts={prev_ts}, text={prev_edit.toPlainText()[:40]}")
 
-            # After insert, check if previous chunk is still intact
-            if insert_pos > 0:
-                check_ts, check_edit = self._chunks[insert_pos - 1]
-                debug_logger.debug(f"After insert: chunk before still has text={check_edit.toPlainText()[:40]}")
+        # Insert into ALL data structures at the same position
+        self._chunks.insert(insert_pos, (timestamp_str, text_edit))
+        self._original_texts.insert(insert_pos, (timestamp_str, text))
+        self._full_chunk_texts.insert(insert_pos, text)
 
-            # Insert into layout at the same position
-            self.chunks_layout.insertWidget(insert_pos, card)
-            debug_logger.debug(f"Inserted chunk at position {insert_pos}")
+        # After insert, check if previous chunk is still intact
+        if insert_pos > 0:
+            check_ts, check_edit = self._chunks[insert_pos - 1]
+            debug_logger.debug(f"After insert: chunk before still has text={check_edit.toPlainText()[:40]}")
+
+        # Insert into layout at the same position
+        self.chunks_layout.insertWidget(insert_pos, card)
+        debug_logger.debug(f"Inserted chunk at position {insert_pos}")
 
     def _refresh_chunk_display(self):
         """Rebuild the chunk display with both original and manually added chunks."""

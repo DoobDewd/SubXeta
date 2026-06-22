@@ -4,9 +4,9 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider
 )
-from PyQt6.QtCore import Qt, QTimer, QUrl, QByteArray, QSize, QEvent
+from PyQt6.QtCore import Qt, QTimer, QUrl, QByteArray, QSize, QEvent, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtGui import QFont, QIcon, QPixmap
+from PyQt6.QtGui import QFont, QIcon, QPixmap, QPainter
 from PyQt6.QtSvg import QSvgRenderer
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,16 @@ debug_logger = logging.getLogger(f"{__name__}.debug")
 
 
 class CustomSlider(QSlider):
-    """Slider that doesn't consume arrow keys so AudioPlayerWidget can handle them."""
+    """Slider with In/Out markers that doesn't consume arrow keys."""
+    markers_changed = pyqtSignal()  # Signal when markers are moved
+
+    def __init__(self, orientation=Qt.Orientation.Horizontal):
+        super().__init__(orientation)
+        self.in_marker = 0  # In point position (ms)
+        self.out_marker = 0  # Out point position (ms)
+        self._dragging_marker = None  # Which marker is being dragged
+        self._marker_width = 20  # Width of marker drag area (increased for easier clicking)
+
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right):
             # Don't handle arrow keys - let parent handle them
@@ -22,14 +31,104 @@ class CustomSlider(QSlider):
         else:
             super().keyPressEvent(event)
 
+    def mousePressEvent(self, event):
+        """Handle clicks on In/Out markers."""
+        if event.button() == Qt.MouseButton.LeftButton:
+            # Check if clicking on In marker (with tolerance)
+            in_marker_x = int(self._value_to_pixel(self.in_marker))
+            dist_to_in = abs(event.pos().x() - in_marker_x)
+            if dist_to_in < self._marker_width:
+                self._dragging_marker = 'in'
+                debug_logger.debug(f"Started dragging In marker at {event.pos().x()}, marker at {in_marker_x}")
+                event.accept()
+                return
+
+            # Check if clicking on Out marker (with tolerance)
+            out_marker_x = int(self._value_to_pixel(self.out_marker))
+            dist_to_out = abs(event.pos().x() - out_marker_x)
+            if dist_to_out < self._marker_width:
+                self._dragging_marker = 'out'
+                debug_logger.debug(f"Started dragging Out marker at {event.pos().x()}, marker at {out_marker_x}")
+                event.accept()
+                return
+
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        """Handle dragging In/Out markers."""
+        if self._dragging_marker:
+            pos = self._get_position_from_mouse(event.pos().x())
+            if self._dragging_marker == 'in':
+                self.in_marker = max(0, min(pos, self.out_marker - 1))
+                debug_logger.debug(f"Dragging In to {self.in_marker}ms")
+            else:  # 'out'
+                self.out_marker = max(self.in_marker + 1, min(pos, self.maximum()))
+                debug_logger.debug(f"Dragging Out to {self.out_marker}ms")
+            self.markers_changed.emit()
+            self.update()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Stop dragging marker."""
+        self._dragging_marker = None
+        super().mouseReleaseEvent(event)
+
+    def paintEvent(self, event):
+        """Draw slider with In/Out markers."""
+        super().paintEvent(event)
+
+        painter = QPainter(self)
+        marker_radius = 6
+
+        # Draw In marker (green circle)
+        in_x = int(self._value_to_pixel(self.in_marker))
+        in_y = self.height() // 2
+        painter.setBrush(Qt.GlobalColor.green)
+        painter.setPen(Qt.GlobalColor.darkGreen)
+        painter.drawEllipse(in_x - marker_radius, in_y - marker_radius, marker_radius * 2, marker_radius * 2)
+
+        # Draw Out marker (red circle)
+        out_x = int(self._value_to_pixel(self.out_marker))
+        out_y = self.height() // 2
+        painter.setBrush(Qt.GlobalColor.red)
+        painter.setPen(Qt.GlobalColor.darkRed)
+        painter.drawEllipse(out_x - marker_radius, out_y - marker_radius, marker_radius * 2, marker_radius * 2)
+
+        painter.end()
+
+    def _value_to_pixel(self, value):
+        """Convert slider value to pixel position."""
+        if self.maximum() == 0:
+            return 0
+        range_width = self.width() - 20  # Leave margin for slider
+        return 10 + (value / self.maximum()) * range_width
+
+    def _get_position_from_mouse(self, mouse_x):
+        """Convert mouse x position to slider value."""
+        if self.maximum() == 0:
+            return 0
+        range_width = self.width() - 20
+        if range_width <= 0:
+            return 0
+        pixel_pos = max(10, min(mouse_x, self.width() - 10))
+        result = int((pixel_pos - 10) / range_width * self.maximum())
+        debug_logger.debug(f"_get_position_from_mouse: mouse_x={mouse_x}, width={self.width()}, range_width={range_width}, pixel_pos={pixel_pos}, max={self.maximum()}, result={result}")
+        return result
+
 
 class AudioPlayerWidget(QGroupBox):
+    # Signal to request adding a chunk with specific times
+    add_chunk_requested = pyqtSignal(float, float)  # (start_time, end_time)
+
     def __init__(self):
         super().__init__("Audio Player")
         self._player = QMediaPlayer()
         self._audio_output = QAudioOutput()
         self._player.setAudioOutput(self._audio_output)
         self._current_file = None
+        self._in_time = 0
+        self._out_time = 0
         self._build_ui()
         self._setup_timer()
         # Install event filter to capture keyboard events globally
@@ -74,6 +173,7 @@ class AudioPlayerWidget(QGroupBox):
         self.slider.setPageStep(25)      # 25ms per scroll wheel click
         self.slider.sliderMoved.connect(self._on_slider_moved)
         self.slider.valueChanged.connect(self._on_slider_value_changed)  # Handle scroll wheel and keyboard
+        self.slider.markers_changed.connect(self._update_marker_labels)
         layout.addWidget(self.slider)
 
         # Controls
@@ -148,6 +248,63 @@ class AudioPlayerWidget(QGroupBox):
         controls_layout.addStretch()
         layout.addLayout(controls_layout)
 
+        # In/Out time display and Add Chunk button
+        inout_layout = QHBoxLayout()
+        inout_layout.setSpacing(12)
+
+        # In point label
+        in_header = QLabel("In:")
+        in_header.setStyleSheet("color: #777777; font-size: 10px;")
+        inout_layout.addWidget(in_header)
+
+        self.in_time_label = QLabel("00:00.000")
+        self.in_time_label.setStyleSheet("color: #00ff88; font-weight: bold;")
+        self.in_time_label.setMinimumWidth(75)
+        inout_layout.addWidget(self.in_time_label)
+
+        # Out point label
+        out_header = QLabel("Out:")
+        out_header.setStyleSheet("color: #777777; font-size: 10px;")
+        inout_layout.addWidget(out_header)
+
+        self.out_time_label = QLabel("00:00.000")
+        self.out_time_label.setStyleSheet("color: #00ff88; font-weight: bold;")
+        self.out_time_label.setMinimumWidth(75)
+        inout_layout.addWidget(self.out_time_label)
+
+        inout_layout.addStretch()
+
+        # Add Chunk button
+        self.add_chunk_btn = QPushButton("Add Chunk")
+        self.add_chunk_btn.setFixedHeight(32)
+        self.add_chunk_btn.setFixedWidth(100)
+        self.add_chunk_btn.clicked.connect(self._on_add_chunk_clicked)
+        self.add_chunk_btn.setEnabled(False)
+        self.add_chunk_btn.setStyleSheet("""
+            QPushButton {
+                color: #1a1a1a;
+                background-color: #00ff88;
+                border: 1px solid #00ff88;
+                border-radius: 3px;
+                padding: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover:!disabled {
+                background-color: #00ffaa;
+                border: 1px solid #00ffaa;
+            }
+            QPushButton:pressed:!disabled {
+                background-color: #00dd77;
+            }
+            QPushButton:disabled {
+                background-color: #555555;
+                color: #888888;
+                border: 1px solid #555555;
+            }
+        """)
+        inout_layout.addWidget(self.add_chunk_btn)
+
+        layout.addLayout(inout_layout)
         layout.addStretch()
         self.setLayout(layout)
 
@@ -187,6 +344,7 @@ class AudioPlayerWidget(QGroupBox):
             self._current_file = str(path)
             self._player.setSource(QUrl.fromLocalFile(self._current_file))
             self.play_btn.setEnabled(True)
+            self.add_chunk_btn.setEnabled(True)
             debug_logger.debug(f"Audio loaded: {self._current_file}")
         else:
             debug_logger.debug(f"Audio file not found: {file_path}")
@@ -234,6 +392,11 @@ class AudioPlayerWidget(QGroupBox):
     def _on_duration_changed(self, duration):
         """Update slider max when duration is known."""
         self.slider.setMaximum(duration)
+        # Set Out marker to end of audio if not already set
+        if self.slider.out_marker == 0:
+            self.slider.out_marker = duration
+            self._update_out_label()
+        self.slider.update()  # Redraw markers
 
     def _update_time_label(self):
         """Update time label with current position."""
@@ -250,6 +413,34 @@ class AudioPlayerWidget(QGroupBox):
         self.timer.stop()
         self.play_btn.setEnabled(False if not self._current_file else True)
         self.pause_btn.setEnabled(False)
+
+    def _update_marker_labels(self):
+        """Update both In and Out time labels."""
+        self._update_in_label()
+        self._update_out_label()
+
+    def _update_in_label(self):
+        """Update In time label from slider marker."""
+        pos_ms = self.slider.in_marker
+        seconds = pos_ms / 1000
+        minutes = int(seconds) // 60
+        secs = int(seconds) % 60
+        millis = int(pos_ms % 1000)
+        self.in_time_label.setText(f"{minutes:02d}:{secs:02d}.{millis:03d}")
+
+    def _update_out_label(self):
+        """Update Out time label from slider marker."""
+        pos_ms = self.slider.out_marker
+        seconds = pos_ms / 1000
+        minutes = int(seconds) // 60
+        secs = int(seconds) % 60
+        millis = int(pos_ms % 1000)
+        self.out_time_label.setText(f"{minutes:02d}:{secs:02d}.{millis:03d}")
+
+    def _on_add_chunk_clicked(self):
+        """Emit signal to add chunk with In/Out times."""
+        if self.slider.in_marker < self.slider.out_marker:
+            self.add_chunk_requested.emit(self.slider.in_marker / 1000, self.slider.out_marker / 1000)
 
     def keyPressEvent(self, event):
         """Handle global keyboard shortcuts for audio control."""
