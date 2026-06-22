@@ -629,6 +629,19 @@ class AudioPlayerWidget(QGroupBox):
         self.slider.update()
         self.knob_control.update()
 
+    def _scrub(self, delta_ms):
+        """Move the playhead by delta_ms (clamped to the clip), with a brief
+        audio snippet for feedback. Snippet length scales with the scrub step."""
+        if not self._current_file:
+            return
+        new_pos = max(0, min(self._player.duration(), self._player.position() + delta_ms))
+        self._player.setPosition(new_pos)
+        self._update_time_label()
+        # Play brief snippet for audio feedback
+        if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+            self._player.play()
+            QTimer.singleShot(abs(delta_ms), self._player.pause)
+
     def keyPressEvent(self, event):
         """Handle global keyboard shortcuts for audio control."""
         if event.key() == Qt.Key.Key_Space:
@@ -652,51 +665,19 @@ class AudioPlayerWidget(QGroupBox):
             event.accept()
             return
         elif event.key() == Qt.Key.Key_Left:
-            # Left arrow: scrub backward by 25ms
-            if self._current_file:
-                new_pos = max(0, self._player.position() - 25)
-                self._player.setPosition(new_pos)
-                self._update_time_label()
-                # Play brief snippet for audio feedback
-                if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
-                    self._player.play()
-                    QTimer.singleShot(25, self._player.pause)
+            self._scrub(-25)  # Left: scrub backward 25ms
             event.accept()
             return
         elif event.key() == Qt.Key.Key_Right:
-            # Right arrow: scrub forward by 25ms
-            if self._current_file:
-                new_pos = min(self._player.duration(), self._player.position() + 25)
-                self._player.setPosition(new_pos)
-                self._update_time_label()
-                # Play brief snippet for audio feedback
-                if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
-                    self._player.play()
-                    QTimer.singleShot(25, self._player.pause)
+            self._scrub(25)  # Right: scrub forward 25ms
             event.accept()
             return
         elif event.key() == Qt.Key.Key_Up:
-            # Up arrow: scrub forward by 10ms
-            if self._current_file:
-                new_pos = min(self._player.duration(), self._player.position() + 10)
-                self._player.setPosition(new_pos)
-                self._update_time_label()
-                # Play brief snippet for audio feedback
-                if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
-                    self._player.play()
-                    QTimer.singleShot(10, self._player.pause)
+            self._scrub(10)  # Up: scrub forward 10ms
             event.accept()
             return
         elif event.key() == Qt.Key.Key_Down:
-            # Down arrow: scrub backward by 10ms
-            if self._current_file:
-                new_pos = max(0, self._player.position() - 10)
-                self._player.setPosition(new_pos)
-                self._update_time_label()
-                # Play brief snippet for audio feedback
-                if self._player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
-                    self._player.play()
-                    QTimer.singleShot(10, self._player.pause)
+            self._scrub(-10)  # Down: scrub backward 10ms
             event.accept()
             return
         super().keyPressEvent(event)
