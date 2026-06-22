@@ -1,5 +1,7 @@
 import logging
+from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Optional
 from PyQt6.QtWidgets import (
     QGroupBox, QVBoxLayout, QLabel, QPushButton, QProgressBar,
     QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog,
@@ -13,6 +15,23 @@ from ui import theme
 from core.models import Word
 
 debug_logger = logging.getLogger(f"{__name__}.debug")
+
+
+@dataclass
+class ChunkItem:
+    """All per-chunk state in one place (replaces the old parallel lists).
+
+    ``original_text`` is the baseline used for edit-detection and click-to-fill.
+    ``words`` holds the ``List[List[Word]]`` structure and is only set for
+    manually added chunks (transcribed chunks keep their word data in
+    MainWindow's ``_original_chunks``).
+    """
+    timestamp: str                       # start time as a string key, e.g. "1.234"
+    original_text: str                   # initial text (edit-detection baseline)
+    text_edit: QTextEdit                 # the editable widget
+    card: QGroupBox                      # the card container widget
+    is_manual: bool = False              # manually added vs transcribed
+    words: Optional[List[List[Word]]] = None  # word structure, manual chunks only
 
 
 class AddChunkDialog(QDialog):
@@ -91,13 +110,10 @@ class Step2Widget(QGroupBox):
     def __init__(self):
         super().__init__("Step 2 • Review & Generate")
         self._typing_animator = TypingAnimator(char_delay_ms=25)
-        self._chunks = []
-        self._original_texts = []
-        self._full_chunk_texts = []
+        self._items: List[ChunkItem] = []          # one entry per displayed chunk
+        self._deleted_chunk_timestamps = set()     # timestamps removed by the user
+        self._edited_flags: List[bool] = []         # set by get_edited_chunks()
         self._video_filename = None
-        self._transcribed_original_texts = []  # Original transcribed chunks (never modified)
-        self._manually_added_chunks = []
-        self._deleted_chunk_timestamps = set()  # Track deleted chunks
         self._build_ui()
 
     def _build_ui(self):
@@ -159,27 +175,30 @@ class Step2Widget(QGroupBox):
     def set_status(self, text):
         self.status_label.setText(text)
 
-    def populate_chunks(self, chunks, video_filename=None):
+    def _clear_cards(self):
+        """Remove every card widget from the scroll layout."""
         while self.chunks_layout.count():
             item = self.chunks_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
-        self._chunks = []
-        self._original_texts = []
-        self._full_chunk_texts = []
-        self._transcribed_original_texts = []  # Save the original transcribed chunks
-        self._manually_added_chunks = []
+    def populate_chunks(self, chunks, video_filename=None):
+        self._clear_cards()
+        self._items = []
         self._video_filename = video_filename
+
         typing_targets = []
         for timestamp, text in chunks:
             card, text_edit = self._create_chunk_card(timestamp, text)
             self.chunks_layout.addWidget(card)
             typing_targets.append((text_edit, text))
-            self._chunks.append((timestamp, text_edit))
-            self._original_texts.append((timestamp, text))
-            self._transcribed_original_texts.append((timestamp, text))  # Store immutable copy
-            self._full_chunk_texts.append(text)
+            self._items.append(ChunkItem(
+                timestamp=timestamp,
+                original_text=text,
+                text_edit=text_edit,
+                card=card,
+                is_manual=False,
+            ))
 
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
@@ -188,6 +207,12 @@ class Step2Widget(QGroupBox):
 
     def restart_typing(self):
         self._typing_animator.restart()
+
+    def fill_all_chunks(self):
+        """Stop the typing animation and immediately show every chunk's full text."""
+        self._typing_animator.stop()
+        for item in self._items:
+            item.text_edit.setPlainText(item.original_text)
 
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
@@ -276,78 +301,64 @@ class Step2Widget(QGroupBox):
         return card, text_edit
 
     def _delete_chunk(self, timestamp):
-        """Delete a chunk by removing from display and internal lists."""
-        # Track as deleted
+        """Delete a chunk: drop its ChunkItem and remove its card from the layout."""
         self._deleted_chunk_timestamps.add(timestamp)
 
-        # Find and remove from all tracking lists by timestamp
-        self._chunks = [(ts, edit) for ts, edit in self._chunks if ts != timestamp]
-        self._original_texts = [(ts, text) for ts, text in self._original_texts if ts != timestamp]
-        self._transcribed_original_texts = [(ts, text) for ts, text in self._transcribed_original_texts if ts != timestamp]
-
-        # Rebuild _full_chunk_texts to match filtered _original_texts
-        self._full_chunk_texts = [text for ts, text in self._original_texts]
-
-        # Remove from layout widget
-        for i in range(self.chunks_layout.count()):
-            widget = self.chunks_layout.itemAt(i).widget()
-            if widget and hasattr(widget, 'chunk_timestamp') and widget.chunk_timestamp == timestamp:
-                self.chunks_layout.removeWidget(widget)
-                widget.deleteLater()
+        for item in self._items:
+            if item.timestamp == timestamp:
+                self.chunks_layout.removeWidget(item.card)
+                item.card.deleteLater()
                 break
 
+        self._items = [it for it in self._items if it.timestamp != timestamp]
+
     def get_edited_chunks(self):
-        """Get the currently edited chunks and track which were actually edited."""
+        """Get the current chunk texts and record which were actually edited."""
         edited = []
         edited_flags = []
+        debug_logger.debug(f"Detecting edits in {len(self._items)} chunks")
 
-        # Get timestamps of manual chunks for identification
-        manual_timestamps = self.get_manual_chunk_timestamps()
-        debug_logger.debug(f"Detecting edits in {len(self._chunks)} chunks (manual timestamps: {manual_timestamps})")
-
-        for idx, (timestamp, text_edit) in enumerate(self._chunks):
-            current_text = text_edit.toPlainText()
-            # Use index-based lookup like the old code - arrays stay aligned
-            original_text = self._full_chunk_texts[idx] if idx < len(self._full_chunk_texts) else ""
-
+        for idx, item in enumerate(self._items):
+            current_text = item.text_edit.toPlainText()
             if not current_text:
-                current_text = original_text
+                current_text = item.original_text
 
-            # Check if this chunk is manually added by matching timestamp
-            ts_float = float(timestamp)
-            is_manually_added = any(abs(ts_float - mt) < 0.001 for mt in manual_timestamps)
-
-            # Manual chunks are always marked as edited
-            was_edited = is_manually_added or (current_text != original_text)
+            # Manual chunks are always treated as edited
+            was_edited = item.is_manual or (current_text != item.original_text)
 
             if was_edited:
-                marker = "[MANUAL]" if is_manually_added else "[EDITED]"
-                debug_logger.debug(f"  Chunk {idx} {marker}:")
-                debug_logger.debug(f"    Timestamp: {timestamp}, Original: {original_text[:40]}..., Current: {current_text[:40]}...")
+                marker = "[MANUAL]" if item.is_manual else "[EDITED]"
+                debug_logger.debug(f"  Chunk {idx} {marker}: ts={item.timestamp}, "
+                                   f"original={item.original_text[:40]}..., current={current_text[:40]}...")
             else:
                 debug_logger.debug(f"  Chunk {idx} [UNEDITED]")
 
-            edited.append((timestamp, current_text))
+            edited.append((item.timestamp, current_text))
             edited_flags.append(was_edited)
 
-        edit_count = sum(edited_flags)
-        debug_logger.debug(f"Edit detection complete: {edit_count}/{len(edited_flags)} chunks were edited")
-
-        # Store flags for later use in main_window
+        debug_logger.debug(f"Edit detection complete: {sum(edited_flags)}/{len(edited_flags)} chunks were edited")
         self._edited_flags = edited_flags
         return edited
 
     def get_edited_flags(self):
-        """Get which chunks were actually edited."""
-        return getattr(self, '_edited_flags', [])
+        """Get which chunks were actually edited (populated by get_edited_chunks)."""
+        return self._edited_flags
 
     def get_manually_added_chunks(self):
         """Get manually added chunks as List[List[List[Word]]]."""
-        return self._manually_added_chunks
+        return [item.words for item in self._items if item.is_manual]
 
     def get_deleted_chunk_timestamps(self):
         """Get set of timestamps for chunks that were deleted."""
         return self._deleted_chunk_timestamps
+
+    def get_manual_chunk_timestamps(self):
+        """Get start times (float) of manually added chunks, for identification."""
+        timestamps = []
+        for item in self._items:
+            if item.is_manual and item.words and item.words[0]:
+                timestamps.append(item.words[0][0].start)
+        return timestamps
 
     def _create_icon_from_svg(self, svg_string):
         """Create a QIcon from SVG string."""
@@ -359,14 +370,6 @@ class Step2Widget(QGroupBox):
         renderer.render(painter)
         painter.end()
         return QIcon(pixmap)
-
-    def get_manual_chunk_timestamps(self):
-        """Get timestamps of manually added chunks for identification."""
-        timestamps = []
-        for chunk in self._manually_added_chunks:
-            if chunk and chunk[0]:
-                timestamps.append(chunk[0][0].start)
-        return timestamps
 
     def open_add_chunk_dialog(self, start_time=None, end_time=None):
         """Open add chunk dialog with optional pre-filled times."""
@@ -385,8 +388,8 @@ class Step2Widget(QGroupBox):
             self._create_and_add_chunk(start_time, end_time, text)
 
     def _create_and_add_chunk(self, start_time, end_time, text):
-        """Create and add a chunk to the display."""
-        # Create Word objects from text with proportional timing
+        """Create a manual chunk (with proportional word timing) and insert it in order."""
+        # Build Word objects from text with proportional timing
         words_text = text.split()
         duration = end_time - start_time
         word_duration = duration / len(words_text) if words_text else 0
@@ -410,98 +413,36 @@ class Step2Widget(QGroupBox):
             chunk_lines[-1].append(word)
             current_line_chars += space_len + word_len
 
-        self._manually_added_chunks.append(chunk_lines)
         debug_logger.debug(f"Added manual chunk: {start_time:.3f}s - {end_time:.3f}s, {len(words_text)} words")
 
-        # Create the new chunk widget
-        text_lines = []
-        for line in chunk_lines:
-            line_text = " ".join([w.text for w in line])
-            text_lines.append(line_text)
-        text = "\n".join(text_lines)
+        # Reconstruct display text from all lines
+        display_text = "\n".join(" ".join(w.text for w in line) for line in chunk_lines)
 
         timestamp_str = f"{start_time:.3f}"
-        card, text_edit = self._create_chunk_card(timestamp_str, text)
-        text_edit.setPlainText(text)
+        card, text_edit = self._create_chunk_card(timestamp_str, display_text)
+        text_edit.setPlainText(display_text)
 
-        # Find correct sorted position
+        # Find correct sorted position by start time
         insert_pos = 0
         new_time = float(timestamp_str)
-        for i, (ts, _) in enumerate(self._chunks):
-            if float(ts) < new_time:
+        for i, item in enumerate(self._items):
+            if float(item.timestamp) < new_time:
                 insert_pos = i + 1
 
-        # Before inserting, capture current state for debugging
-        debug_logger.debug(f"Before insert: {len(self._chunks)} chunks, inserting at pos {insert_pos}")
-        if insert_pos > 0:
-            prev_ts, prev_edit = self._chunks[insert_pos - 1]
-            debug_logger.debug(f"  Chunk before insert pos: ts={prev_ts}, text={prev_edit.toPlainText()[:40]}")
-
-        # Insert into ALL data structures at the same position
-        self._chunks.insert(insert_pos, (timestamp_str, text_edit))
-        self._original_texts.insert(insert_pos, (timestamp_str, text))
-        self._full_chunk_texts.insert(insert_pos, text)
-
-        # After insert, check if previous chunk is still intact
-        if insert_pos > 0:
-            check_ts, check_edit = self._chunks[insert_pos - 1]
-            debug_logger.debug(f"After insert: chunk before still has text={check_edit.toPlainText()[:40]}")
-
-        # Insert into layout at the same position
+        self._items.insert(insert_pos, ChunkItem(
+            timestamp=timestamp_str,
+            original_text=display_text,
+            text_edit=text_edit,
+            card=card,
+            is_manual=True,
+            words=chunk_lines,
+        ))
         self.chunks_layout.insertWidget(insert_pos, card)
-        debug_logger.debug(f"Inserted chunk at position {insert_pos}")
-
-    def _refresh_chunk_display(self):
-        """Rebuild the chunk display with both original and manually added chunks."""
-        # Stop typing animator to avoid crash when rebuilding display
-        self._typing_animator.stop()
-
-        # Clear existing display
-        while self.chunks_layout.count():
-            item = self.chunks_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-
-        self._chunks = []
-        self._original_texts = []
-        self._full_chunk_texts = []
-
-        # Collect all chunks (original + manual) with their start times
-        all_chunks_with_time = []
-
-        # Add original transcribed chunks
-        for i, (timestamp, original_text) in enumerate(self._transcribed_original_texts):
-            all_chunks_with_time.append(('original', i, float(timestamp), timestamp, original_text))
-
-        # Add manually added chunks
-        for i, chunk_words_list in enumerate(self._manually_added_chunks):
-            if chunk_words_list and chunk_words_list[0]:
-                start_time = chunk_words_list[0][0].start
-                # Reconstruct text from ALL lines (not just first line)
-                text_lines = []
-                for line in chunk_words_list:
-                    line_text = " ".join([w.text for w in line])
-                    text_lines.append(line_text)
-                text = "\n".join(text_lines)
-                all_chunks_with_time.append(('manual', i, start_time, f"{start_time:.3f}", text))
-
-        # Sort by start time
-        all_chunks_with_time.sort(key=lambda x: x[2])
-
-        # Display in order (no animation, just show text)
-        for chunk_type, idx, _, timestamp_str, text in all_chunks_with_time:
-            card, text_edit = self._create_chunk_card(timestamp_str, text)
-            text_edit.setPlainText(text)
-            self.chunks_layout.addWidget(card)
-            self._chunks.append((timestamp_str, text_edit))
-            self._original_texts.append((timestamp_str, text))
-            self._full_chunk_texts.append(text)
-
-        self.chunks_layout.addStretch()
+        debug_logger.debug(f"Inserted manual chunk at position {insert_pos}")
 
     def _on_save_transcript_clicked(self):
         """Save edited chunks as SRT file."""
-        if not self._chunks:
+        if not self._items:
             self.result_label.setText("Error: No chunks available")
             return
 
@@ -528,14 +469,13 @@ class Step2Widget(QGroupBox):
                 return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
 
             srt_entries = []
-            for idx, (timestamp_str, text_edit) in enumerate(self._chunks, 1):
-                text = text_edit.toPlainText().strip()
+            for idx, item in enumerate(self._items, 1):
+                text = item.text_edit.toPlainText().strip()
                 if text:
-                    start_sec = float(timestamp_str)
+                    start_sec = float(item.timestamp)
                     # End time is start of next chunk, or start + 2s for last chunk
-                    if idx < len(self._chunks):
-                        next_timestamp = float(self._chunks[idx][0])
-                        end_sec = next_timestamp
+                    if idx < len(self._items):
+                        end_sec = float(self._items[idx].timestamp)
                     else:
                         end_sec = start_sec + 2.0
 
@@ -551,4 +491,3 @@ class Step2Widget(QGroupBox):
     def _on_generate_clicked(self):
         self.generate_btn.setEnabled(False)
         self.generation_started.emit()
-

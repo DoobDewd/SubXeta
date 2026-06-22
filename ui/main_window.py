@@ -312,12 +312,8 @@ class MainWindow(QMainWindow):
     def eventFilter(self, obj, event):
         """Capture keyboard events for global audio player control and mouse clicks to fill chunks."""
         if event.type() == QEvent.Type.MouseButtonPress:
-            # Fill all chunks on any click
-            self.step2._typing_animator.stop()
-            for timestamp, text_edit in self.step2._chunks:
-                idx = next((i for i, (ts, _) in enumerate(self.step2._chunks) if ts == timestamp), None)
-                if idx is not None and idx < len(self.step2._full_chunk_texts):
-                    text_edit.setPlainText(self.step2._full_chunk_texts[idx])
+            # Any click fills all chunks with their full text (skips typing animation)
+            self.step2.fill_all_chunks()
             return False
 
         if event.type() == QEvent.Type.KeyPress:
