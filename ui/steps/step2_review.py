@@ -100,6 +100,7 @@ class Step2Widget(QGroupBox):
     def _build_ui(self):
         layout = QVBoxLayout()
         layout.setSpacing(16)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         desc = QLabel("Remember: AI transcription can get some words wrong, make sure to review the subtitles!")
         desc_font = QFont()
@@ -108,7 +109,7 @@ class Step2Widget(QGroupBox):
         desc.setStyleSheet("color: #e0e0e0; background-color: transparent;")
         layout.addWidget(desc)
 
-        layout.addSpacing(20)
+        layout.addSpacing(8)
 
         self.status_label = QLabel("Waiting for transcription...")
         self.status_label.setStyleSheet("color: #e0e0e0; background-color: transparent; padding: 0px 12px;")
@@ -116,21 +117,16 @@ class Step2Widget(QGroupBox):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setMinimumHeight(350)
         chunks_widget = QWidget()
         chunks_widget.setStyleSheet("QWidget { background-color: #191e1c; }")
         self.chunks_layout = QVBoxLayout()
         self.chunks_layout.setSpacing(12)
         chunks_widget.setLayout(self.chunks_layout)
         scroll.setWidget(chunks_widget)
-        layout.addWidget(scroll)
+        layout.addWidget(scroll, stretch=1)
 
-        layout.addSpacing(20)
-
-        self.add_chunk_btn = QPushButton("Add Chunk")
-        self.add_chunk_btn.setEnabled(False)
-        self.add_chunk_btn.setFixedHeight(56)
-        self.add_chunk_btn.setMaximumWidth(150)
-        self.add_chunk_btn.clicked.connect(self._on_add_chunk_clicked)
+        layout.addSpacing(8)
 
         self.save_transcript_btn = QPushButton("Save Transcript")
         self.save_transcript_btn.setEnabled(False)
@@ -146,8 +142,6 @@ class Step2Widget(QGroupBox):
 
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
-        btn_layout.addWidget(self.add_chunk_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        btn_layout.addSpacing(12)
         btn_layout.addWidget(self.save_transcript_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         btn_layout.addSpacing(20)
         btn_layout.addWidget(self.generate_btn, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -161,8 +155,6 @@ class Step2Widget(QGroupBox):
         self.result_label = QLabel("")
         self.result_label.setStyleSheet("background-color: transparent; color: #00ff88; font-weight: bold;")
         layout.addWidget(self.result_label)
-
-        layout.addStretch()
         self.setLayout(layout)
 
     def set_status(self, text):
@@ -193,7 +185,6 @@ class Step2Widget(QGroupBox):
         self.chunks_layout.addStretch()
         self.generate_btn.setEnabled(True)
         self.save_transcript_btn.setEnabled(True)
-        self.add_chunk_btn.setEnabled(True)
         self._typing_animator.animate_sequence(typing_targets)
 
     def restart_typing(self):
@@ -307,10 +298,6 @@ class Step2Widget(QGroupBox):
             if chunk and chunk[0]:
                 timestamps.append(chunk[0][0].start)
         return timestamps
-
-    def _on_add_chunk_clicked(self):
-        """Show dialog to add a new chunk manually."""
-        self.open_add_chunk_dialog()
 
     def open_add_chunk_dialog(self, start_time=None, end_time=None):
         """Open add chunk dialog with optional pre-filled times."""

@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 from PyQt6.QtWidgets import (
-    QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget
+    QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget, QLineEdit
 )
 from PyQt6.QtCore import Qt, QTimer, QUrl, QByteArray, QSize, QEvent, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
@@ -276,23 +276,26 @@ class AudioPlayerWidget(QGroupBox):
         # In/Out time display
         inout_display_layout = QHBoxLayout()
         inout_display_layout.setSpacing(12)
+        inout_display_layout.setContentsMargins(0, 0, 0, 0)
 
         in_label = QLabel("In:")
-        in_label.setStyleSheet("color: #777777; font-size: 10px;")
+        in_label.setStyleSheet("color: #777777; font-size: 10px; background-color: transparent;")
         inout_display_layout.addWidget(in_label)
 
-        self.in_time_label = QLabel("00:00.000")
-        self.in_time_label.setStyleSheet("color: #00ff88; font-weight: bold;")
-        self.in_time_label.setMinimumWidth(75)
+        self.in_time_label = QLineEdit("0.000")
+        self.in_time_label.setStyleSheet("color: #00ff88; font-weight: bold; border: 1px solid #00ff88; padding: 4px 8px; border-radius: 4px; background-color: transparent;")
+        self.in_time_label.setMaximumWidth(100)
+        self.in_time_label.editingFinished.connect(self._on_in_time_edited)
         inout_display_layout.addWidget(self.in_time_label)
 
         out_label = QLabel("Out:")
-        out_label.setStyleSheet("color: #777777; font-size: 10px;")
+        out_label.setStyleSheet("color: #777777; font-size: 10px; background-color: transparent;")
         inout_display_layout.addWidget(out_label)
 
-        self.out_time_label = QLabel("00:00.000")
-        self.out_time_label.setStyleSheet("color: #00ff88; font-weight: bold;")
-        self.out_time_label.setMinimumWidth(75)
+        self.out_time_label = QLineEdit("0.000")
+        self.out_time_label.setStyleSheet("color: #00ff88; font-weight: bold; border: 1px solid #00ff88; padding: 4px 8px; border-radius: 4px; background-color: transparent;")
+        self.out_time_label.setMaximumWidth(100)
+        self.out_time_label.editingFinished.connect(self._on_out_time_edited)
         inout_display_layout.addWidget(self.out_time_label)
 
         inout_display_layout.addStretch()
@@ -520,19 +523,49 @@ class AudioPlayerWidget(QGroupBox):
         """Update In time label."""
         pos_ms = self.slider.in_marker
         seconds = pos_ms / 1000
-        minutes = int(seconds) // 60
-        secs = int(seconds) % 60
-        millis = int(pos_ms % 1000)
-        self.in_time_label.setText(f"{minutes:02d}:{secs:02d}.{millis:03d}")
+        self.in_time_label.setText(f"{seconds:.3f}")
 
     def _update_out_label(self):
         """Update Out time label."""
         pos_ms = self.slider.out_marker
         seconds = pos_ms / 1000
-        minutes = int(seconds) // 60
-        secs = int(seconds) % 60
-        millis = int(pos_ms % 1000)
-        self.out_time_label.setText(f"{minutes:02d}:{secs:02d}.{millis:03d}")
+        self.out_time_label.setText(f"{seconds:.3f}")
+
+    def _on_in_time_edited(self):
+        """Handle user editing In time field."""
+        try:
+            time_text = self.in_time_label.text()
+            # Parse seconds.milliseconds format (e.g., "1.234")
+            seconds = float(time_text)
+            total_ms = int(seconds * 1000)
+
+            # Clamp to valid range
+            total_ms = max(0, min(total_ms, self.slider.out_marker - 1))
+
+            self.slider.in_marker = total_ms
+            self.knob_control.in_changed.emit(total_ms)
+            self._update_in_label()
+        except ValueError:
+            # Invalid input, revert to current value
+            self._update_in_label()
+
+    def _on_out_time_edited(self):
+        """Handle user editing Out time field."""
+        try:
+            time_text = self.out_time_label.text()
+            # Parse seconds.milliseconds format (e.g., "1.234")
+            seconds = float(time_text)
+            total_ms = int(seconds * 1000)
+
+            # Clamp to valid range
+            total_ms = max(self.slider.in_marker + 1, min(total_ms, self.slider.maximum()))
+
+            self.slider.out_marker = total_ms
+            self.knob_control.out_changed.emit(total_ms)
+            self._update_out_label()
+        except ValueError:
+            # Invalid input, revert to current value
+            self._update_out_label()
 
     def _on_add_chunk_clicked(self):
         """Emit signal to add chunk with In/Out times."""
