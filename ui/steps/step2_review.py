@@ -222,7 +222,6 @@ class Step2Widget(QGroupBox):
 
     def _create_chunk_card(self, timestamp, text):
         card = ChunkCard()
-        card.chunk_timestamp = timestamp
         card.setStyleSheet(f"""
             QGroupBox {{
                 border: 1px solid {theme.GREEN};

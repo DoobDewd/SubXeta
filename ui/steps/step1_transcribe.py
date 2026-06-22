@@ -115,10 +115,6 @@ class Step1Widget(QGroupBox):
         self.progress_bar.start_shimmer()
         self.transcription_started.emit(self.audio_input.text())
 
-    def _update_progress_label(self, value):
-        """Update the progress percentage label."""
-        self.progress_label.setText(f"{value}%")
-
     def set_progress_with_stage(self, stage_name: str, percentage: int):
         """Update progress bar with stage name and percentage (0-100 per stage)."""
         # Check if this is an indeterminate stage (no real progress tracking)
