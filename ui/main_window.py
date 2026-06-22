@@ -12,7 +12,7 @@ from ui.steps.step1_transcribe import Step1Widget
 from ui.steps.step2_review import Step2Widget
 from ui.audio_player import AudioPlayerWidget
 from core.transcription import TranscriptionWorker
-from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts, rebuild_chunks_with_edits
+from core.chunks import load_whisper_json, group_into_chunks, chunk_to_texts, assemble_final_chunks
 from core.subtitle_gen_alien import generate_single_comp
 from core.settings import load_settings, save_settings
 from pathlib import Path
@@ -175,31 +175,6 @@ class MainWindow(QMainWindow):
         self.step1.progress_bar.setVisible(False)
         self.step1.progress_label.setVisible(False)
 
-    def _merge_chunks_by_time(self, original_chunks, manually_added_chunks):
-        """Merge original and manually added chunks, sorted by start time."""
-        chunk_list = []
-
-        debug_logger.debug(f"Merging {len(original_chunks)} original chunks with {len(manually_added_chunks)} manual chunks")
-
-        for i, chunk in enumerate(original_chunks):
-            if chunk and chunk[0]:
-                start_time = chunk[0][0].start
-                chunk_list.append((start_time, 'original', i, chunk))
-                debug_logger.debug(f"  Original chunk {i}: start={start_time:.3f}s")
-
-        for i, chunk in enumerate(manually_added_chunks):
-            if chunk and chunk[0]:
-                start_time = chunk[0][0].start
-                chunk_list.append((start_time, 'manual', i, chunk))
-                debug_logger.debug(f"  Manual chunk {i}: start={start_time:.3f}s")
-
-        chunk_list.sort(key=lambda x: x[0])
-        debug_logger.debug(f"After sorting, first 5 chunks:")
-        for i, (start_time, chunk_type, idx, _) in enumerate(chunk_list[:5]):
-            debug_logger.debug(f"  Position {i}: {chunk_type} chunk {idx} at {start_time:.3f}s")
-
-        return [chunk for _, _, _, chunk in chunk_list]
-
     def _on_generation_started(self):
         """Generate comp from edited chunks."""
         try:
@@ -207,69 +182,15 @@ class MainWindow(QMainWindow):
                 self.step2.result_label.setText("Error: No transcription data")
                 return
 
-            # Load original words
-            words = load_whisper_json(self._current_json_path)
-
-            # Get edited chunks and flags (includes manual chunks)
-            edited_chunks_all = self.step2.get_edited_chunks()
-            edited_flags_all = self.step2.get_edited_flags()
-            manual_timestamps = self.step2.get_manual_chunk_timestamps()
-            deleted_timestamps = self.step2.get_deleted_chunk_timestamps()
-
-            # Extract ONLY original chunks - skip manual chunks and deleted chunks
-            edited_chunks = []
-            edited_flags = []
-            for i, (ts, text) in enumerate(edited_chunks_all):
-                ts_float = float(ts)
-                is_manual = any(abs(ts_float - mt) < 0.001 for mt in manual_timestamps)
-                is_deleted = ts in deleted_timestamps
-                if not is_manual and not is_deleted:
-                    edited_chunks.append((ts, text))
-                    edited_flags.append(edited_flags_all[i])
-
-            debug_logger.debug(f"Passing to rebuild: {len(edited_chunks)} edited chunks (excluded {len(manual_timestamps)} manual, {len(deleted_timestamps)} deleted)")
-
-            # Filter _original_chunks to remove deleted ones before rebuilding
-            filtered_original_chunks = [chunk for chunk in self._original_chunks
-                                       if not any(abs(chunk[0][0].start - float(ts)) < 0.001 for ts in deleted_timestamps)]
-
-            # Rebuild with ONLY original non-deleted chunks
-            rebuilt_original_chunks = rebuild_chunks_with_edits(filtered_original_chunks, edited_chunks, edited_flags)
-
-            # Now merge the rebuilt original chunks with manually added chunks, sorted by time
-            manually_added = self.step2.get_manually_added_chunks()
-            manual_timestamps = self.step2.get_manual_chunk_timestamps()
-
-            debug_logger.debug(f"Manual chunks before filter: {len(manually_added)}")
-            debug_logger.debug(f"Manual timestamps: {manual_timestamps}")
-            debug_logger.debug(f"Deleted timestamps: {deleted_timestamps}")
-
-            # Filter out deleted manually added chunks
-            filtered_manually_added = []
-            for i, chunk in enumerate(manually_added):
-                if i < len(manual_timestamps):
-                    ts = manual_timestamps[i]
-                    is_deleted = any(abs(ts - float(dts)) < 0.001 for dts in deleted_timestamps)
-                    if not is_deleted:
-                        filtered_manually_added.append(chunk)
-                    else:
-                        debug_logger.debug(f"Filtering out deleted manual chunk: {ts}")
-
-            debug_logger.debug(f"Manual chunks after filter: {len(filtered_manually_added)}")
-
-            rebuilt_chunks = self._merge_chunks_by_time(rebuilt_original_chunks, filtered_manually_added)
-
-            # Log first few chunks before comp generation
-            debug_logger.debug(f"Final rebuilt_chunks: {len(rebuilt_chunks)} total")
-            for i in range(min(5, len(rebuilt_chunks))):
-                chunk = rebuilt_chunks[i]
-                if chunk and chunk[0] and chunk[0][0]:
-                    start = chunk[0][0].start
-                    all_w = []
-                    for line in chunk:
-                        all_w.extend(line)
-                    text = " ".join([w.text for w in all_w[:3]])
-                    debug_logger.debug(f"  Position {i}: start={start:.3f}s, text={text}")
+            # Gather the current edit state from the review widget
+            rebuilt_chunks = assemble_final_chunks(
+                original_chunks=self._original_chunks,
+                edited_chunks=self.step2.get_edited_chunks(),
+                edited_flags=self.step2.get_edited_flags(),
+                manual_timestamps=self.step2.get_manual_chunk_timestamps(),
+                manually_added_chunks=self.step2.get_manually_added_chunks(),
+                deleted_timestamps=self.step2.get_deleted_chunk_timestamps(),
+            )
 
             # Generate comp
             debug_logger.debug(f"Generating comp from {len(rebuilt_chunks)} chunks")

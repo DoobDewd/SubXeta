@@ -351,3 +351,82 @@ def rebuild_chunks_with_edits(original_chunks: List[List[List[Word]]], edited_ch
 
     debug_logger.debug(f"Chunk reconstruction complete: {len(rebuilt_chunks)} rebuilt chunks")
     return rebuilt_chunks
+
+
+def _chunk_start(chunk: List[List[Word]]):
+    """Start time of a chunk, or None if it has no words."""
+    if chunk and chunk[0]:
+        return chunk[0][0].start
+    return None
+
+
+def merge_chunks_by_time(original_chunks: List[List[List[Word]]],
+                         manual_chunks: List[List[List[Word]]]) -> List[List[List[Word]]]:
+    """Merge original and manually-added chunks into one list sorted by start time."""
+    combined = []
+    for chunk in original_chunks:
+        start = _chunk_start(chunk)
+        if start is not None:
+            combined.append((start, chunk))
+    for chunk in manual_chunks:
+        start = _chunk_start(chunk)
+        if start is not None:
+            combined.append((start, chunk))
+
+    combined.sort(key=lambda pair: pair[0])
+    debug_logger.debug(f"Merged {len(original_chunks)} original + {len(manual_chunks)} manual "
+                       f"into {len(combined)} chunks sorted by time")
+    return [chunk for _, chunk in combined]
+
+
+def assemble_final_chunks(original_chunks: List[List[List[Word]]],
+                          edited_chunks: List[Tuple[str, str]],
+                          edited_flags: List[bool],
+                          manual_timestamps: List[float],
+                          manually_added_chunks: List[List[List[Word]]],
+                          deleted_timestamps) -> List[List[List[Word]]]:
+    """Build the final ordered chunk list for comp generation.
+
+    Drops manual and deleted entries from the edit set, rebuilds the surviving
+    original (transcribed) chunks with their edited text/timing, then merges in
+    the surviving manually-added chunks sorted by start time.
+
+    Args:
+        original_chunks: transcribed chunks (word structures) from grouping.
+        edited_chunks: (timestamp_str, text) for every displayed chunk.
+        edited_flags: per-chunk "was edited" flags, aligned with edited_chunks.
+        manual_timestamps: start times (float) of manually-added chunks.
+        manually_added_chunks: word structures for manually-added chunks.
+        deleted_timestamps: set of timestamp strings the user deleted.
+    """
+    # Keep only original (non-manual, non-deleted) edits for the rebuild step
+    original_edits = []
+    original_edit_flags = []
+    for i, (ts, text) in enumerate(edited_chunks):
+        ts_float = float(ts)
+        is_manual = any(abs(ts_float - mt) < 0.001 for mt in manual_timestamps)
+        is_deleted = ts in deleted_timestamps
+        if not is_manual and not is_deleted:
+            original_edits.append((ts, text))
+            original_edit_flags.append(edited_flags[i])
+
+    debug_logger.debug(f"Assembling: {len(original_edits)} original edits "
+                       f"(excluded {len(manual_timestamps)} manual, {len(deleted_timestamps)} deleted)")
+
+    # Drop deleted chunks from the original transcription before rebuilding
+    surviving_original = [
+        chunk for chunk in original_chunks
+        if not any(abs(chunk[0][0].start - float(ts)) < 0.001 for ts in deleted_timestamps)
+    ]
+
+    rebuilt_original = rebuild_chunks_with_edits(surviving_original, original_edits, original_edit_flags)
+
+    # Drop deleted manually-added chunks
+    surviving_manual = []
+    for i, chunk in enumerate(manually_added_chunks):
+        if i < len(manual_timestamps):
+            ts = manual_timestamps[i]
+            if not any(abs(ts - float(dts)) < 0.001 for dts in deleted_timestamps):
+                surviving_manual.append(chunk)
+
+    return merge_chunks_by_time(rebuilt_original, surviving_manual)

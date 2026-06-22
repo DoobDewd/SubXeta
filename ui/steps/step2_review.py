@@ -209,7 +209,13 @@ class Step2Widget(QGroupBox):
         self._typing_animator.restart()
 
     def fill_all_chunks(self):
-        """Stop the typing animation and immediately show every chunk's full text."""
+        """If the typing animation is still running, finish it instantly.
+
+        No-op once typing has completed, so a click to edit (or after editing)
+        never overwrites the user's text.
+        """
+        if not self._typing_animator.is_active():
+            return
         self._typing_animator.stop()
         for item in self._items:
             item.text_edit.setPlainText(item.original_text)

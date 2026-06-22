@@ -142,6 +142,10 @@ class TypingAnimator:
         """Stop the animation."""
         self._timer.stop()
 
+    def is_active(self):
+        """True while a typing animation is currently in progress."""
+        return self._timer.isActive()
+
     def _tick(self):
         """Internal timer tick."""
         if self._current_index >= len(self._targets):
