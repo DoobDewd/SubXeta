@@ -332,44 +332,7 @@ class AudioPlayerWidget(QGroupBox):
         play_svg_hover = f'''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
-        play_icon = icon_from_svg(play_svg, 32)
-        play_icon_hover = icon_from_svg(play_svg_hover, 32)
-
-        self.play_btn = QPushButton()
-        self.play_btn.setIcon(play_icon)
-        self.play_btn.setIconSize(QSize(24, 24))
-        self.play_btn.setFixedHeight(40)
-        self.play_btn.setFixedWidth(50)
-        self.play_btn.clicked.connect(self._on_play_clicked)
-        self.play_btn.setEnabled(False)
-        self.play_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                padding: 0px;
-            }
-            QPushButton:disabled {
-                opacity: 0.5;
-            }
-        """)
-
-        # Store icons and sizes for hover effect
-        self.play_btn._normal_icon = play_icon
-        self.play_btn._hover_icon = play_icon_hover
-        self.play_btn._normal_size = QSize(24, 24)
-        self.play_btn._hover_size = QSize(28, 28)
-
-        def on_play_hover_enter():
-            if self.play_btn.isEnabled():
-                self.play_btn.setIcon(self.play_btn._hover_icon)
-                self.play_btn.setIconSize(self.play_btn._hover_size)
-
-        def on_play_hover_leave():
-            self.play_btn.setIcon(self.play_btn._normal_icon)
-            self.play_btn.setIconSize(self.play_btn._normal_size)
-
-        self.play_btn.enterEvent = lambda e: on_play_hover_enter()
-        self.play_btn.leaveEvent = lambda e: on_play_hover_leave()
+        self.play_btn = self._make_icon_button(play_svg, play_svg_hover, self._on_play_clicked)
         controls_layout.addWidget(self.play_btn)
 
         # Pause button
@@ -381,44 +344,7 @@ class AudioPlayerWidget(QGroupBox):
             <rect x="6" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
             <rect x="15" y="4" width="3" height="16" fill="{theme.GREEN_HOVER}"/>
         </svg>'''
-        pause_icon = icon_from_svg(pause_svg, 32)
-        pause_icon_hover = icon_from_svg(pause_svg_hover, 32)
-
-        self.pause_btn = QPushButton()
-        self.pause_btn.setIcon(pause_icon)
-        self.pause_btn.setIconSize(QSize(24, 24))
-        self.pause_btn.setFixedHeight(40)
-        self.pause_btn.setFixedWidth(50)
-        self.pause_btn.clicked.connect(self._on_pause_clicked)
-        self.pause_btn.setEnabled(False)
-        self.pause_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                padding: 0px;
-            }
-            QPushButton:disabled {
-                opacity: 0.5;
-            }
-        """)
-
-        # Store icons and sizes for hover effect
-        self.pause_btn._normal_icon = pause_icon
-        self.pause_btn._hover_icon = pause_icon_hover
-        self.pause_btn._normal_size = QSize(24, 24)
-        self.pause_btn._hover_size = QSize(28, 28)
-
-        def on_pause_hover_enter():
-            if self.pause_btn.isEnabled():
-                self.pause_btn.setIcon(self.pause_btn._hover_icon)
-                self.pause_btn.setIconSize(self.pause_btn._hover_size)
-
-        def on_pause_hover_leave():
-            self.pause_btn.setIcon(self.pause_btn._normal_icon)
-            self.pause_btn.setIconSize(self.pause_btn._normal_size)
-
-        self.pause_btn.enterEvent = lambda e: on_pause_hover_enter()
-        self.pause_btn.leaveEvent = lambda e: on_pause_hover_leave()
+        self.pause_btn = self._make_icon_button(pause_svg, pause_svg_hover, self._on_pause_clicked)
         controls_layout.addWidget(self.pause_btn)
 
         controls_layout.addStretch()
@@ -444,6 +370,45 @@ class AudioPlayerWidget(QGroupBox):
         """Setup timer for UI updates."""
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_time_label)
+
+    def _make_icon_button(self, svg, svg_hover, on_click):
+        """Create a flat, transparent icon button that brightens and grows its
+        icon on hover (only while enabled)."""
+        normal_icon = icon_from_svg(svg, 32)
+        hover_icon = icon_from_svg(svg_hover, 32)
+        normal_size = QSize(24, 24)
+        hover_size = QSize(28, 28)
+
+        btn = QPushButton()
+        btn.setIcon(normal_icon)
+        btn.setIconSize(normal_size)
+        btn.setFixedHeight(40)
+        btn.setFixedWidth(50)
+        btn.clicked.connect(on_click)
+        btn.setEnabled(False)
+        btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                padding: 0px;
+            }
+            QPushButton:disabled {
+                opacity: 0.5;
+            }
+        """)
+
+        def on_enter(_event):
+            if btn.isEnabled():
+                btn.setIcon(hover_icon)
+                btn.setIconSize(hover_size)
+
+        def on_leave(_event):
+            btn.setIcon(normal_icon)
+            btn.setIconSize(normal_size)
+
+        btn.enterEvent = on_enter
+        btn.leaveEvent = on_leave
+        return btn
 
     def showEvent(self, event):
         """Take focus when shown so keyboard events reach us."""
