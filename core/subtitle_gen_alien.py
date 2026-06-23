@@ -85,8 +85,29 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
     reset_frames = []
     debug_logger.debug(f"Generating animation keyframes for {len(chunks)} chunks at {fps} fps, frame_offset={frame_offset}")
 
-    # Ensure frame 1 starts at 0.0 (nothing revealed before first chunk)
-    keyframes[1] = 0.0
+    # Anchor the reveal at 0.0 at frame 1 (nothing revealed before the first
+    # chunk). Only do this when the first chunk actually starts after frame 1 --
+    # otherwise the anchor would land on/after the first revealed character,
+    # either emitting an invalid frame <= 0 or yanking an already-started reveal
+    # back to 0.0 (the brief reversal at the very start).
+    first_words = []
+    for line in (chunks[0] if chunks else []):
+        first_words.extend(line)
+    if first_words:
+        first_start_frame = round(first_words[0].start * fps) - frame_offset
+        if first_start_frame > 1:
+            keyframes[1] = 0.0
+
+    # Pre-compute each chunk's start frame. A chunk's reveal must finish strictly
+    # before the NEXT chunk begins, otherwise the two chunks' keyframes collide in
+    # the shared spline: the 1.0 can land after the next chunk has started (it
+    # briefly shows full text before resetting) or the reset-to-0 can land inside
+    # this chunk's still-rising reveal (it dips to 0 then climbs back). Bounding
+    # each chunk by its successor's start keeps every chunk in its own window.
+    chunk_start_frames = []
+    for chunk in chunks:
+        words = [w for line in chunk for w in line]
+        chunk_start_frames.append(round(words[0].start * fps) - frame_offset if words else None)
 
     for chunk_idx, chunk in enumerate(chunks):
         all_words = []
@@ -99,7 +120,11 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
             continue
 
         start_time = all_words[0].start
-        end_time = all_words[-1].end
+        # Use the maximum word end, not the last word's end: WhisperX timestamps
+        # can be out of order (a long earlier word may end after the final word),
+        # and using the last word's end would plant the 1.0 keyframe before the
+        # reveal has finished, making it dip back down near the end of the chunk.
+        end_time = max(w.end for w in all_words)
         duration = end_time - start_time
 
         # Check for zero-duration chunks
@@ -128,11 +153,35 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
                 char_pos += 1
 
         start_frame = round(start_time * fps) - frame_offset
-        final_frame = round(end_time * fps) - frame_offset
-        debug_logger.debug(f"  Frame range: {start_frame} → {final_frame} ({final_frame - start_frame + 1} frames)")
+        natural_end_frame = round(end_time * fps) - frame_offset
+
+        # Find the next non-empty chunk's start frame; the reveal must complete
+        # and hold before it.
+        next_start_frame = None
+        for j in range(chunk_idx + 1, len(chunks)):
+            if chunk_start_frames[j] is not None:
+                next_start_frame = chunk_start_frames[j]
+                break
+
+        if next_start_frame is not None:
+            # Complete the reveal at latest one frame before the next chunk so it
+            # has a frame to hold at 1.0 and then reset cleanly.
+            reveal_end_frame = min(natural_end_frame, next_start_frame - 1)
+        else:
+            reveal_end_frame = natural_end_frame
+        # Never let the reveal end before it starts (guards degenerate ordering
+        # where the next chunk starts at/before this one).
+        reveal_end_frame = max(reveal_end_frame, start_frame)
+        debug_logger.debug(f"  Frame range: {start_frame} → {reveal_end_frame} (natural end {natural_end_frame}, next start {next_start_frame})")
 
         # Sparse keyframing: generate keyframes only when characters are revealed
         char_keyframe_count = 0
+        # Track the last frame written for this chunk so the reveal can never run
+        # backwards. WhisperX word timestamps can overlap or be slightly out of
+        # order (and proportional timing splits during edits make this worse),
+        # which would otherwise produce a later character at an earlier frame and
+        # make the write-on briefly reverse before continuing.
+        prev_frame = start_frame
         for char_idx in range(total_len_eng):
             progress = (char_idx + 1) / total_len_eng
             progress = min(1.0, progress)
@@ -160,31 +209,35 @@ def generate_animation_keyframes(chunks: List[List[List[Word]]], fps: int, pause
             reveal_time = word.start + char_fraction * word_duration
             frame = round(reveal_time * fps) - frame_offset
 
-            # Only add keyframe if this frame hasn't been added yet
+            # Clamp into [prev_frame, reveal_end_frame]: monotonically
+            # non-decreasing (never reverse) and never spilling past the window
+            # into the next chunk (which would collide with its keyframes).
+            if frame < prev_frame:
+                frame = prev_frame
+            if frame > reveal_end_frame:
+                frame = reveal_end_frame
+            prev_frame = frame
+
+            # Since progress increases with char_idx, always store the latest
+            # (highest) progress reached by this frame.
             if frame not in keyframes:
-                keyframes[frame] = progress
                 char_keyframe_count += 1
+            keyframes[frame] = progress
 
-        debug_logger.debug(f"  Sparse keyframes: {char_keyframe_count} character-based keyframes (vs {final_frame - start_frame + 1} frames)")
+        debug_logger.debug(f"  Sparse keyframes: {char_keyframe_count} character-based keyframes")
 
-        keyframes[final_frame] = 1.0
+        # Complete the reveal at the (possibly capped) end of the window.
+        keyframes[reveal_end_frame] = 1.0
 
-        if chunk_idx < len(chunks) - 1:
-            next_chunk = chunks[chunk_idx + 1]
-            next_words = []
-            for line in next_chunk:
-                next_words.extend(line)
-            next_start_time = next_words[0].start
-            next_start_frame = round(next_start_time * fps)
-
-            # Sparse hold: just two boundary keyframes instead of one per frame
-            if next_start_frame > final_frame:
+        if next_start_frame is not None:
+            # Hold full reveal until the frame just before the next chunk starts.
+            if next_start_frame - 1 > reveal_end_frame:
                 keyframes[next_start_frame - 1] = 1.0
                 debug_logger.debug(f"  Hold at 1.0 until frame {next_start_frame - 1}")
-
-            if next_start_frame != final_frame:
-                reset_frames.append(next_start_frame)
-                debug_logger.debug(f"  Reset to 0.0 at frame {next_start_frame}")
+            # Reset to 0.0 exactly when the next chunk begins. Applied after the
+            # whole loop so it wins over the next chunk's first character keyframe.
+            reset_frames.append(next_start_frame)
+            debug_logger.debug(f"  Reset to 0.0 at frame {next_start_frame}")
 
     for reset_frame in reset_frames:
         keyframes[reset_frame] = 0.0
