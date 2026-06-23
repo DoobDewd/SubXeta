@@ -533,6 +533,11 @@ class AudioPlayerWidget(QGroupBox):
 
     def _on_position_changed(self, position):
         """Update slider when playback position changes."""
+        # While the user is dragging the handle they're in control — don't let
+        # the player's position (e.g. an end-of-media reset to 0) fight the drag,
+        # which otherwise flickers the playhead between start and end.
+        if self.slider.isSliderDown():
+            return
         self.slider.blockSignals(True)
         self.slider.setValue(position)
         self.slider.blockSignals(False)
@@ -595,8 +600,10 @@ class AudioPlayerWidget(QGroupBox):
             total_ms = max(0, min(total_ms, self.slider.out_marker - 1))
 
             self.slider.in_marker = total_ms
-            self.knob_control.in_changed.emit(total_ms)
+            self.knob_control.in_value = total_ms  # move the knob to match
             self._update_in_label()
+            self.slider.update()
+            self.knob_control.update()
         except ValueError:
             # Invalid input, revert to current value
             self._update_in_label()
@@ -613,8 +620,10 @@ class AudioPlayerWidget(QGroupBox):
             total_ms = max(self.slider.in_marker + 1, min(total_ms, self.slider.maximum()))
 
             self.slider.out_marker = total_ms
-            self.knob_control.out_changed.emit(total_ms)
+            self.knob_control.out_value = total_ms  # move the knob to match
             self._update_out_label()
+            self.slider.update()
+            self.knob_control.update()
         except ValueError:
             # Invalid input, revert to current value
             self._update_out_label()
@@ -628,6 +637,8 @@ class AudioPlayerWidget(QGroupBox):
         """Set In point to current playhead position."""
         # Use slider value if no value provided, otherwise use player position
         pos = self.slider.value() if value is None else value
+        # In can never be at/after Out (same clamp as dragging/typing)
+        pos = max(0, min(pos, self.slider.out_marker - 1))
         self.slider.in_marker = pos
         self.knob_control.in_value = pos
         self._update_in_label()
@@ -638,6 +649,8 @@ class AudioPlayerWidget(QGroupBox):
         """Set Out point to current playhead position."""
         # Use slider value if no value provided, otherwise use player position
         pos = self.slider.value() if value is None else value
+        # Out can never be at/before In (same clamp as dragging/typing)
+        pos = max(self.slider.in_marker + 1, min(pos, self.slider.maximum()))
         self.slider.out_marker = pos
         self.knob_control.out_value = pos
         self._update_out_label()
