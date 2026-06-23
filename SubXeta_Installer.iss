@@ -1,12 +1,12 @@
 [Setup]
 AppName=SubXeta
-AppVersion=1.2.0
+AppVersion=1.3.0
 AppPublisher=DoobDewd
 DefaultDirName={autopf}\SubXeta
 DefaultGroupName=SubXeta
 OutputDir=dist
 OutputBaseFilename=SubXeta_Installer
-VersionInfoVersion=1.2.0
+VersionInfoVersion=1.3.0
 VersionInfoCompany=DoobDewd
 VersionInfoProductName=SubXeta
 VersionInfoProductVersion=1.2.0
