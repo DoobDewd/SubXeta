@@ -32,11 +32,13 @@ BLACK = "#000000"          # text on green buttons
 BORDER = "#444444"         # control border (settings buttons)
 BORDER_HOVER = "#555555"   # control border on hover
 DISABLED_BG = "#333333"    # disabled button background
-MAGENTA = "#ff00ff"        # drag-active state
+MARKER = "#ffffff"         # playhead + played-progress + drag-active highlight
 
 # --- RGB tuples (for QColor / QPen) ---
 GREEN_RGB = (0, 255, 136)         # matches GREEN
 GREEN_KNOB_BORDER_RGB = (0, 200, 100)  # darker border on In/Out knobs
+MARKER_RGB = (255, 255, 255)      # matches MARKER (playhead + played progress)
+MARKER_BORDER_RGB = (170, 170, 170)  # grey border on the white playhead
 
 
 def green_rgba(alpha: float) -> str:

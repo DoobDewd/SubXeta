@@ -2,9 +2,10 @@
 import logging
 from pathlib import Path
 from PyQt6.QtWidgets import (
-    QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget, QLineEdit
+    QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget, QLineEdit,
+    QStyle, QStyleOptionSlider
 )
-from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, QRectF, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QFont, QPainter, QColor, QPen
 from ui import theme
@@ -26,6 +27,28 @@ class CustomSlider(QSlider):
         self.out_marker = 0  # Out point position (ms)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
+        # Hide the native full-width groove (we draw our own track spanning only
+        # the playhead's travel) and pin the handle to a fixed circle so its size
+        # is deterministic across platforms.
+        self.setStyleSheet(f"""
+            QSlider {{
+                background: transparent;
+            }}
+            QSlider::groove:horizontal {{
+                background: transparent;
+                height: 4px;
+            }}
+            QSlider::handle:horizontal {{
+                background: {theme.GREEN_BRIGHT};
+                width: 14px;
+                height: 14px;
+                margin: -5px 0;
+                border-radius: 7px;
+            }}
+            QSlider::handle:horizontal:hover {{
+                background: {theme.GREEN_HOVER};
+            }}
+        """)
 
     def _show_context_menu(self, pos):
         """Show context menu for setting In/Out."""
@@ -50,39 +73,89 @@ class CustomSlider(QSlider):
             super().keyPressEvent(event)
 
     def paintEvent(self, event):
-        """Draw slider with range highlight and In/Out marker lines."""
-        super().paintEvent(event)
+        """Fully custom paint (no base-style pass, so nothing overpaints the
+        overlays): a base track spanning exactly the playhead travel, a
+        played-progress fill, the In/Out range highlight + marker lines, and the
+        circular playhead on top."""
+        if self.maximum() <= 0:
+            return
 
         painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
 
-        # Draw semi-transparent range highlight
-        if self.maximum() > 0 and self.in_marker < self.out_marker:
-            in_x = self._value_to_pixel(self.in_marker)
-            out_x = self._value_to_pixel(self.out_marker)
+        cy = self.height() / 2
+        track_h = 4
+        cap = track_h / 2
+        x0 = self.handle_x_for_value(0)
+        x1 = self.handle_x_for_value(self.maximum())
+        play_x = self.handle_x_for_value(self.value())
 
-            # Semi-transparent green rectangle for In/Out range
-            range_rect_y = self.height() // 4
-            range_rect_height = self.height() // 2
-            painter.fillRect(int(in_x), range_rect_y, int(out_x - in_x), range_rect_height,
-                           QColor(*theme.GREEN_RGB, 50))  # Green with alpha
+        def band(left, right, color):
+            painter.setBrush(color)
+            painter.drawRoundedRect(QRectF(left, cy - track_h / 2, right - left, track_h), cap, cap)
 
-            # Draw In marker line (theme green) on the slider
+        # Base track, then played-progress fill on top (start -> playhead) in white
+        band(x0, x1, QColor(*theme.MARKER_RGB, 40))
+        band(x0, play_x, QColor(*theme.MARKER_RGB, 150))
+
+        # In/Out range highlight (under the playhead) in green
+        in_x = out_x = None
+        if self.in_marker < self.out_marker:
+            in_x = self.handle_x_for_value(self.in_marker)
+            out_x = self.handle_x_for_value(self.out_marker)
+            band(in_x, out_x, QColor(*theme.GREEN_RGB, 70))
+
+        # Playhead handle (circle) in white, grey border for definition on the fill
+        handle_r = 7
+        painter.setBrush(QColor(*theme.MARKER_RGB))
+        painter.setPen(QPen(QColor(*theme.MARKER_BORDER_RGB), 1))
+        painter.drawEllipse(QRectF(play_x - handle_r, cy - handle_r, handle_r * 2, handle_r * 2))
+
+        # In/Out marker lines drawn last so they stay visible over the playhead
+        if in_x is not None:
             pen = QPen(QColor(*theme.GREEN_RGB))
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawLine(int(in_x), 0, int(in_x), self.height())
-
-            # Draw Out marker line (theme green) on the slider
             painter.drawLine(int(out_x), 0, int(out_x), self.height())
 
         painter.end()
 
-    def _value_to_pixel(self, value):
-        """Convert slider value to pixel position."""
+    def _slider_geometry(self):
+        """Real groove/handle rects from the active Qt style (so overlays can
+        match exactly how the native handle is laid out)."""
+        opt = QStyleOptionSlider()
+        self.initStyleOption(opt)
+        style = self.style()
+        groove = style.subControlRect(
+            QStyle.ComplexControl.CC_Slider, opt, QStyle.SubControl.SC_SliderGroove, self)
+        handle = style.subControlRect(
+            QStyle.ComplexControl.CC_Slider, opt, QStyle.SubControl.SC_SliderHandle, self)
+        return opt, groove, handle
+
+    def handle_x_for_value(self, value):
+        """Pixel x of the handle CENTER for a value. Uses the real style
+        geometry: the handle center travels [handle_w/2 .. width - handle_w/2],
+        not [0 .. width], so In/Out overlays line up with the native playhead."""
         if self.maximum() == 0:
             return 0
-        # Linear mapping - offset applied in paintEvent
-        return (value / self.maximum()) * (self.width() - 1)
+        opt, groove, handle = self._slider_geometry()
+        span = groove.width() - handle.width()
+        pos = QStyle.sliderPositionFromValue(
+            self.minimum(), self.maximum(), value, span, opt.upsideDown)
+        return groove.x() + pos + handle.width() / 2
+
+    def value_for_handle_x(self, x):
+        """Inverse of handle_x_for_value: the value whose handle CENTER sits at
+        pixel x (slider-local coords)."""
+        if self.maximum() == 0:
+            return 0
+        opt, groove, handle = self._slider_geometry()
+        span = groove.width() - handle.width()
+        pos = x - groove.x() - handle.width() / 2
+        return QStyle.sliderValueFromPosition(
+            self.minimum(), self.maximum(), int(pos), span, opt.upsideDown)
 
 
 class InOutKnobControl(QWidget):
@@ -156,58 +229,53 @@ class InOutKnobControl(QWidget):
 
         knob_radius = 8
         knob_y = self.height() // 2
-        theme_green = QColor(*theme.GREEN_RGB)
-        knob_border = QColor(*theme.GREEN_KNOB_BORDER_RGB)
+        knob_fill = QColor(*theme.GREEN_RGB)  # green: matches the In/Out markers
+        knob_border = QColor(*theme.GREEN_KNOB_BORDER_RGB)  # darker green border
         line_height = 8  # Short line above knob
 
         if self.max_value > 0:
             # Draw In knob with line
             in_x = int(self._value_to_pixel(self.in_value))
             # Draw short vertical line above knob
-            pen = QPen(theme_green)
+            pen = QPen(knob_fill)
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawLine(in_x, knob_y - knob_radius - line_height, in_x, knob_y - knob_radius)
             # Draw knob
-            painter.setBrush(theme_green)
-            painter.setPen(knob_border)  # Darker green for border
+            painter.setBrush(knob_fill)
+            painter.setPen(knob_border)
             painter.drawEllipse(in_x - knob_radius, knob_y - knob_radius,
                               knob_radius * 2, knob_radius * 2)
 
             # Draw Out knob with line
             out_x = int(self._value_to_pixel(self.out_value))
             # Draw short vertical line above knob
-            pen = QPen(theme_green)
+            pen = QPen(knob_fill)
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawLine(out_x, knob_y - knob_radius - line_height, out_x, knob_y - knob_radius)
             # Draw knob
-            painter.setBrush(theme_green)
-            painter.setPen(knob_border)  # Darker green for border
+            painter.setBrush(knob_fill)
+            painter.setPen(knob_border)
             painter.drawEllipse(out_x - knob_radius, knob_y - knob_radius,
                               knob_radius * 2, knob_radius * 2)
 
         painter.end()
 
     def _value_to_pixel(self, value):
-        """Convert value to pixel position."""
-        if self.max_value == 0:
+        """Convert value to pixel position. Delegates to the slider's real style
+        geometry so the knobs sit exactly under the native playhead. The knob
+        control is laid out directly below the slider with the same x/width, so
+        slider-local pixel x equals knob-local pixel x."""
+        if self.max_value == 0 or self.slider is None:
             return 0
-        # Use slider's width for consistent positioning
-        width = self.slider.width() if self.slider else self.width()
-        # Linear mapping - offset applied in paintEvent
-        return (value / self.max_value) * (width - 1)
+        return self.slider.handle_x_for_value(value)
 
     def _get_value_from_pixel(self, pixel_x):
-        """Convert pixel position to value."""
-        if self.max_value == 0:
+        """Convert pixel position to value using the slider's style geometry."""
+        if self.max_value == 0 or self.slider is None:
             return 0
-        # Use slider's width for consistent positioning
-        width = self.slider.width() if self.slider else self.width()
-        if width <= 0:
-            return 0
-        pixel_pos = max(0, min(pixel_x, width))
-        return int((pixel_pos / width) * self.max_value)
+        return self.slider.value_for_handle_x(pixel_x)
 
 
 class AudioPlayerWidget(QGroupBox):

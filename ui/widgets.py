@@ -34,7 +34,7 @@ class DragDropArea(QWidget, CRTAnimatedMixin):
 
     _STYLE_DEFAULT  = f"QLabel {{ border: 2px dashed {theme.GREEN}; border-radius: 5px; padding: 40px; color: {theme.GREEN}; background-color: transparent; }}"
     _STYLE_HOVER    = f"QLabel {{ border: 2px solid {theme.GREEN};  border-radius: 5px; padding: 40px; color: {theme.GREEN}; background-color: transparent; }}"
-    _STYLE_DRAGGING = f"QLabel {{ border: 2px dashed {theme.MAGENTA}; border-radius: 5px; padding: 40px; color: {theme.MAGENTA}; background-color: transparent; }}"
+    _STYLE_DRAGGING = f"QLabel {{ border: 2px dashed {theme.MARKER}; border-radius: 5px; padding: 40px; color: {theme.MARKER}; background-color: transparent; }}"
 
     def _tick_crt_effect(self):
         self._crt_effect.tick()

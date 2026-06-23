@@ -30,7 +30,8 @@ class TabBar(QWidget):
         self._first_show = True
 
         for i, text in enumerate(["Transcribe Audio", "Review & Generate"]):
-            label = QLabel("")  # All start empty for animation
+            label = QLabel("", self)  # parented to TabBar so setVisible() never
+            # briefly shows it as a top-level window (flashes on startup)
             label.setCursor(Qt.CursorShape.PointingHandCursor)
             label.setContentsMargins(0, 0, 0, 0)
             label.setMaximumHeight(28)
@@ -45,7 +46,7 @@ class TabBar(QWidget):
         layout.addStretch()
 
         # Settings tab (far right)
-        settings_label = QLabel("Settings")
+        settings_label = QLabel("Settings", self)
         settings_label.setCursor(Qt.CursorShape.PointingHandCursor)
         settings_label.setContentsMargins(0, 0, 0, 0)
         settings_label.setMaximumHeight(28)
