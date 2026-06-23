@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QScrollArea, QWidget, QTextEdit, QHBoxLayout, QFileDialog,
     QDialog, QDoubleSpinBox, QMessageBox
 )
-from PyQt6.QtCore import pyqtSignal, Qt, QSize
+from PyQt6.QtCore import pyqtSignal, Qt, QSize, QTimer, QPoint, QRect
 from PyQt6.QtGui import QPainter, QFont
 from ui.animations import CRTAnimatedMixin, TypingAnimator
 from ui import theme
@@ -131,16 +131,18 @@ class Step2Widget(QGroupBox):
         self.status_label = QLabel("Waiting for transcription...")
         self.status_label.setStyleSheet(f"color: {theme.TEXT}; background-color: transparent; padding: 0px 12px;")
 
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setMinimumHeight(250)
+        self._scroll = QScrollArea()
+        self._scroll.setWidgetResizable(True)
+        self._scroll.setMinimumHeight(250)
         chunks_widget = QWidget()
         chunks_widget.setStyleSheet(f"QWidget {{ background-color: {theme.PANEL}; }}")
         self.chunks_layout = QVBoxLayout()
         self.chunks_layout.setSpacing(12)
         chunks_widget.setLayout(self.chunks_layout)
-        scroll.setWidget(chunks_widget)
-        layout.addWidget(scroll, stretch=1)
+        self._scroll.setWidget(chunks_widget)
+        # Pause CRT animation on cards scrolled out of view (viewport culling)
+        self._scroll.verticalScrollBar().valueChanged.connect(self._update_card_visibility)
+        layout.addWidget(self._scroll, stretch=1)
 
         layout.addSpacing(8)
 
@@ -175,6 +177,30 @@ class Step2Widget(QGroupBox):
     def set_status(self, text):
         self.status_label.setText(text)
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        # Geometry is settled once shown; recompute which cards are on-screen
+        self._schedule_visibility_update()
+
+    def _schedule_visibility_update(self):
+        """Defer a visibility pass to the next event loop tick so widget
+        geometry (after layout/insert/delete) is settled before we measure it.
+        (Scrolling re-runs it too; a brief overlap at first show is harmless.)"""
+        QTimer.singleShot(0, self._update_card_visibility)
+
+    def _update_card_visibility(self):
+        """Pause the CRT animation on cards scrolled out of the viewport and
+        resume the ones in view. Keeps the visible cards at full smoothness
+        while off-screen cards burn no CPU."""
+        viewport = self._scroll.viewport()
+        # Small vertical margin so a card resumes just before it scrolls in
+        viewport_rect = viewport.rect().adjusted(0, -40, 0, 40)
+        for item in self._items:
+            card = item.card
+            top_left = card.mapTo(viewport, QPoint(0, 0))
+            card_rect = QRect(top_left, card.size())
+            card.set_crt_running(viewport_rect.intersects(card_rect))
+
     def _clear_cards(self):
         """Remove every card widget from the scroll layout."""
         while self.chunks_layout.count():
@@ -204,6 +230,7 @@ class Step2Widget(QGroupBox):
         self.generate_btn.setEnabled(True)
         self.save_transcript_btn.setEnabled(True)
         self._typing_animator.animate_sequence(typing_targets)
+        self._schedule_visibility_update()
 
     def restart_typing(self):
         self._typing_animator.restart()
@@ -316,6 +343,7 @@ class Step2Widget(QGroupBox):
                 break
 
         self._items = [it for it in self._items if it.timestamp != timestamp]
+        self._schedule_visibility_update()
 
     def get_edited_chunks(self):
         """Get the current chunk texts and record which were actually edited."""
@@ -433,6 +461,7 @@ class Step2Widget(QGroupBox):
         ))
         self.chunks_layout.insertWidget(insert_pos, card)
         debug_logger.debug(f"Inserted manual chunk at position {insert_pos}")
+        self._schedule_visibility_update()
 
     def _on_save_transcript_clicked(self):
         """Save edited chunks as SRT file."""

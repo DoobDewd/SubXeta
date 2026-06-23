@@ -89,6 +89,16 @@ class CRTAnimatedMixin:
         """Draw CRT effect on painter. Call from paintEvent."""
         self._crt_effect.draw(painter, rect)
 
+    def set_crt_running(self, running):
+        """Pause/resume the CRT animation timer (used for viewport culling so
+        off-screen widgets don't burn CPU repainting)."""
+        if not hasattr(self, '_crt_timer'):
+            return
+        if running and not self._crt_timer.isActive():
+            self._crt_timer.start()
+        elif not running and self._crt_timer.isActive():
+            self._crt_timer.stop()
+
 
 class TypingAnimator:
     """Handles character-by-character typing animation for any widget with setText()."""

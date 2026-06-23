@@ -19,7 +19,7 @@ import logging
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow
-from ui.splash import show_splash_with_spinner
+from ui.splash import create_splash, animate_splash_until
 
 # Enable debug logging (comment out for production)
 DEBUG = True
@@ -75,14 +75,16 @@ if DEBUG:
 def main():
     app = QApplication(sys.argv)
 
-    # Show splash screen
-    splash = show_splash_with_spinner(app, duration=2.0)
+    # Show the splash immediately, then build the window while it's on screen
+    splash, splash_pixmap, splash_start = create_splash(app)
 
-    # Create and show main window
     window = MainWindow()
-    window.show()
 
-    # Hide splash
+    # Only fill whatever time remains up to the minimum (no fixed wait in front
+    # of the build) — total splash time is max(build_time, min_duration)
+    animate_splash_until(app, splash, splash_pixmap, splash_start, min_duration=1.0)
+
+    window.show()
     if splash:
         splash.finish(window)
 
